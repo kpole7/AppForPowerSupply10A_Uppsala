@@ -12,6 +12,7 @@
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Scroll.H>
 #include <FL/Fl_Widget.H>
+#include <FL/fl_draw.H>
 
 #include "gui_widgets.h"
 
@@ -47,6 +48,38 @@ static const char* getErrorDescription(FailureCodes Error);
 // Function definitions
 //.................................................................................................
 
+PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) :
+		Fl_Widget(X, Y, W, H, Label), State(IndicatorLightState::OFF) {
+}
+
+void PowerIndicator::setBrightness(IndicatorLightState NewState) {
+	if (State != NewState) {
+		State = NewState;
+		redraw();
+	}
+}
+
+void PowerIndicator::draw() {
+	const Fl_Color ColorOn = fl_rgb_color(0x40, 0xFF, 0x40);
+	const Fl_Color ColorDim = fl_rgb_color(0x4C, 0x80, 0x4C); // 0x20, 0x80, 0x20
+	const Fl_Color ColorOff = fl_rgb_color(0x30, 0x52, 0x30); // 0x30, 0x4A, 0x30
+	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C); // 0x40, 0x40, 0x40
+
+	int Diameter = (w() < h()) ? w() : h();
+	int PosX = x() + (w() - Diameter) / 2;
+	int PosY = y() + (h() - Diameter) / 2;
+
+	fl_color(ColorRim);
+	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
+
+	int Rim = (Diameter >= 12) ? 3 : 1;
+	int Inner = Diameter - 2 * Rim;
+	if (Inner > 0) {
+		fl_color(State == IndicatorLightState::ON ? ColorOn : (State == IndicatorLightState::DIM ? ColorDim : ColorOff));
+		fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 360.0);
+	}
+}
+
 void initializeGraphicWidgets() {
 	int GeneralStatusTextBoxPositionX = 130; 
 	GeneralStatusTextBoxPtr = new Fl_Box(GeneralStatusTextBoxPositionX, 1, 
@@ -64,6 +97,15 @@ void initializeGraphicWidgets() {
 	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, 
 		(MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
+
+	PowerIndicator* PowerIndicatorPtr = new PowerIndicator(50, 50, 30, 30);
+	(void)PowerIndicatorPtr;
+
+	PowerIndicator* PowerIndicator2Ptr = new PowerIndicator(50, 100, 30, 30);
+	PowerIndicator2Ptr->setBrightness(IndicatorLightState::DIM);
+
+	PowerIndicator* PowerIndicator3Ptr = new PowerIndicator(50, 150, 30, 30);
+	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
 }
 
 void showFailureMessageWidget(FailureCodes FailureCodeForGui) {

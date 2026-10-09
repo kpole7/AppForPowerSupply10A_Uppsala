@@ -10,6 +10,7 @@
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Window.H>
 #include <atomic>
+#include <cstdint>
 #include <string>
 
 #include "config.h"
@@ -23,6 +24,31 @@
 #define MAIN_MENU_HEIGHT 22
 
 #define COLOR_BACKGROUND 0x35
+
+//.................................................................................................
+// Widgets
+//.................................................................................................
+
+enum class IndicatorLightState : uint8_t {
+	OFF = 0,
+    DIM = 1,
+	ON = 2
+};
+
+/// Indicator lamp: a colored circle with a dark gray outline
+class PowerIndicator : public Fl_Widget {
+public:
+	PowerIndicator(int X, int Y, int W, int H, const char *Label = nullptr);
+
+	/// Sets the brightness of the indicator: OFF (dark grayish green), DIM (dim green), or ON (bright green)
+	void setBrightness(IndicatorLightState NewState);
+
+protected:
+	void draw() override;
+
+private:
+	IndicatorLightState State;
+};
 
 //.................................................................................................
 // Function prototypes
