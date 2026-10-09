@@ -25,6 +25,15 @@
 // Definitions of types
 //.................................................................................................
 
+class OnErrorGroup : public Fl_Group {
+  public:
+	OnErrorGroup(int X, int Y, int W, int H, const char *L = nullptr);
+	void draw() override;
+
+  private:
+	RunTimeFailureCodes CurrentRuntimeFailureCode;
+	Fl_Box *ErrorTextBoxPtr;
+};
 
 //.................................................................................................
 // Local constants
@@ -42,7 +51,7 @@ static Fl_Box *FailureMessagePtr;
 // Local function prototypes
 //.................................................................................................
 
-static const char* getErrorDescription(FailureCodes Error);
+static const char* getErrorDescription(InitializationFailureCodes Error);
 
 //.................................................................................................
 // Function definitions
@@ -63,19 +72,22 @@ void PowerIndicator::draw() {
 	const Fl_Color ColorOn = fl_rgb_color(0x40, 0xFF, 0x40);
 	const Fl_Color ColorDim = fl_rgb_color(0x70, 0x70+0x30, 0x70);
 	const Fl_Color ColorOff = fl_rgb_color(0x70, 0x70+0x08, 0x70);
+	const Fl_Color ColorUndefined = fl_rgb_color(0x70+0x60, 0x70+0x08+0x60, 0x70+0x60);
 	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
+	const Fl_Color ColorRimUndefined = fl_rgb_color(0x4C+0x80, 0x4C+0x80, 0x4C+0x80);
 
 	int Diameter = (w() < h()) ? w() : h();
 	int PosX = x() + (w() - Diameter) / 2;
 	int PosY = y() + (h() - Diameter) / 2;
 
-	fl_color(ColorRim);
+	fl_color(State == IndicatorLightState::UNDEFINED ? ColorRimUndefined : ColorRim);
 	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
 
 	int Rim = (Diameter >= 12) ? 3 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
-		fl_color(State == IndicatorLightState::ON ? ColorOn : (State == IndicatorLightState::DIM ? ColorDim : ColorOff));
+		fl_color(State == IndicatorLightState::ON ? ColorOn : (State == IndicatorLightState::DIM ? ColorDim : 
+			(State == IndicatorLightState::UNDEFINED ? ColorUndefined : ColorOff)));
 		fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 360.0);
 	}
 }
@@ -101,9 +113,14 @@ void initializeGraphicWidgets() {
 	PowerIndicator* PowerIndicatorPtr = new PowerIndicator(25, 50, 30, 30);
 	(void)PowerIndicatorPtr;
 
+	PowerIndicator* PowerIndicator2Ptr = new PowerIndicator(75, 50, 30, 30);
+	PowerIndicator2Ptr->setBrightness(IndicatorLightState::UNDEFINED);
+
+	PowerIndicator* PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
+	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
 }
 
-void showFailureMessageWidget(FailureCodes FailureCodeForGui) {
+void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {
 	static char Buffer[300];
 	snprintf(Buffer, sizeof(Buffer) - 1, 
 		"Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać dodatkowe informacje", 
@@ -117,62 +134,26 @@ void showFailureMessageWidget(FailureCodes FailureCodeForGui) {
 	}
 }
 
-// TODO Napisać od nowa
-static const char* getErrorDescription(FailureCodes Error) {
+// TODO write once again
+static const char* getErrorDescription(InitializationFailureCodes Error) {
 	switch (Error) {
-		case FailureCodes::NO_FAILURE:
+		case InitializationFailureCodes::NO_FAILURE:
 			return "Brak błędów";
-		case FailureCodes::ERROR_COMMAND_LINE_SYNTAX:
+		case InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX:
 			return "Błąd składniowy w linii komendy";
-		case FailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
+		case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
 			return "Nie można uzyskać ścieżki do programu";
-		case FailureCodes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
+		case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
 			return "Błąd otwierania pliku konfiguracyjnego";
-		case FailureCodes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
+		case InitializationFailureCodes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
 			return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
+		case InitializationFailureCodes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
 			return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_CUP_INSERTING_TIMEOUTS_NOT_FOUND:
-			return "Nie znaleziono opisu limitów czasu wsuwania kubków w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_CUP_WITHDRAWING_TIMEOUTS_NOT_FOUND:
-			return "Nie znaleziono opisu limitów czasu schowania kubków w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_CALIBRATION_CURRENTS_NOT_FOUND:
-			return "Nie znaleziono prądów kalibracyjnych w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_CALIBRATION_ADC_READINGS_NOT_FOUND:
-			return "Nie znaleziono danych kalibracyjnych w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_REDUNDANT_CUP_NAME:
-			return "Nadmiarowa nazwa kubka w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_REDUNDANT_PARAMETER_DEFINITION:
-			return "Nadmiarowa deklaracja parametru w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_REDUNDANT_CURRENT_DEFINITION:
-			return "Nadmiarowa deklaracja prądu kalibracyjnego w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_REDUNDANT_ADC_READING:
-			return "Nadmiarowa deklaracja odczytu ADC";
-		case FailureCodes::ERROR_SETTINGS_CONVERTION_TO_NUMBER:
-			return "Błąd konwersji liczby w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_VALUE_OUT_OF_RANGE:
-			return "Niepoprawna wartość liczby w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_TOO_HIGH_CURRENT_VALUE:
-			return "Prąd kalibracyjny przekracza maksymalną wartość w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_SETTINGS_INCORRECT_CUP_OR_CHANNEL_INDEX:
-			return "Niepoprawny indeks kubka lub kanału w pliku konfiguracyjnym";
-		case FailureCodes::ERROR_MODBUS_INITIALIZATION_1:
-			return "Błąd inicjalizacji Modbus 1";
-		case FailureCodes::ERROR_MODBUS_INITIALIZATION_2:
-			return "Błąd inicjalizacji Modbus 2";
-		case FailureCodes::ERROR_MODBUS_OPENING:
-			return "Błąd otwierania Modbus";
-		case FailureCodes::ERROR_MODBUS_READING:
-			return "Błąd odczytu Modbus";
-		case FailureCodes::ERROR_MODBUS_WRITING:
-			return "Błąd zapisu Modbus";
-		case FailureCodes::ERROR_MODBUS_FRAME_READ:
-			return "Błąd ramki odczytu Modbus";
-		case FailureCodes::ERROR_DEVICE_NAME_MISMATCH:
+		case InitializationFailureCodes::ERROR_DEVICE_NAME_MISMATCH:
 			return "Nieprawidłowa nazwa urządzenia odczytana z Modbus";
-		case FailureCodes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
+		case InitializationFailureCodes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
 			return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
-		case FailureCodes::ANOTHER_ERROR:
+		case InitializationFailureCodes::ANOTHER_ERROR:
 			return "Błąd ogólny";
 		default:
 			return "Nieznany błąd";

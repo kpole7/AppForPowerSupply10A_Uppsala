@@ -32,7 +32,8 @@
 enum class IndicatorLightState : uint8_t {
 	OFF = 0,
     DIM = 1,
-	ON = 2
+	ON = 2,
+    UNDEFINED = 3
 };
 
 /// Indicator lamp: a colored circle with a dark gray outline
@@ -50,12 +51,30 @@ private:
 	IndicatorLightState State;
 };
 
+enum class MainPowerState : uint8_t {
+	OFF = 0,
+    RISING = 2,
+    ON = 1,
+    FALLING = 3,
+    UNDEFINED = 4
+};
+
+/// Main power controls
+class MainPowerGroup : public Fl_Group {
+  private:
+    MainPowerState CurrentState;
+    PowerIndicator* PowerIndicatorPtr;
+    Fl_Button* PowerSwitchPtr;
+    Fl_Box* StatusTextBoxPtr;
+
+};
+
 //.................................................................................................
 // Function prototypes
 //.................................................................................................
 
 void initializeGraphicWidgets();
 
-void showFailureMessageWidget(FailureCodes FailureCodeForGui);
+void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui);
 
 #endif // SOURCE_GUI_WIDGETS_H_

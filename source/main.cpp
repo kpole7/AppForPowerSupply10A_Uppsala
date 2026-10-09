@@ -76,15 +76,15 @@ static void setupCriticalSignalHandler();
 
 static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data);
 
-static FailureCodes mainInitializations(int argc, char **argv);
+static InitializationFailureCodes mainInitializations(int argc, char **argv);
 
-static FailureCodes determineVerbosity(int argc, char **argv);
+static InitializationFailureCodes determineVerbosity(int argc, char **argv);
 
 static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *);
 
 static void callbackForMenuItemHelp(Fl_Widget *, void *);
 
-static FailureCodes determineApplicationPath(char *Argv0);
+static InitializationFailureCodes determineApplicationPath(char *Argv0);
 
 //.................................................................................................
 // The main application
@@ -93,7 +93,7 @@ static FailureCodes determineApplicationPath(char *Argv0);
 int main(int argc, char **argv) {
 	setupCriticalSignalHandler();
 
-	FailureCodes ErrorCode = mainInitializations(argc, argv);
+	InitializationFailureCodes ErrorCode = mainInitializations(argc, argv);
 
 	// Main window of the application
 	Fl::scheme("gtk+");
@@ -128,7 +128,7 @@ int main(int argc, char **argv) {
 
 	// initializeFailureMessageWidget();
 
-	if (FailureCodes::NO_FAILURE == ErrorCode) {
+	if (InitializationFailureCodes::NO_FAILURE == ErrorCode) {
 		initializeGraphicWidgets();
 	}
 	else {
@@ -223,12 +223,12 @@ static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data) {
 	ApplicationWindow->hide(); // close the application
 }
 
-static FailureCodes mainInitializations(int argc, char **argv) {
+static InitializationFailureCodes mainInitializations(int argc, char **argv) {
 //	initializeSerialCommunicationModule();
 
-	FailureCodes FailureCode = determineVerbosity(argc, argv);
+	InitializationFailureCodes FailureCode = determineVerbosity(argc, argv);
 
-	if (FailureCodes::NO_FAILURE == FailureCode) {
+	if (InitializationFailureCodes::NO_FAILURE == FailureCode) {
 		FailureCode = determineApplicationPath(argv[0]);
 	}
 	// if (FailureCodes::NO_FAILURE == FailureCode) {
@@ -254,7 +254,7 @@ static FailureCodes mainInitializations(int argc, char **argv) {
 	return FailureCode;
 }
 
-static FailureCodes determineVerbosity(int argc, char **argv) {
+static InitializationFailureCodes determineVerbosity(int argc, char **argv) {
 	for (int J = 1; J < argc; J++) {
 		std::string Argument = argv[J];
 		if (Argument == "-v") {
@@ -267,13 +267,13 @@ static FailureCodes determineVerbosity(int argc, char **argv) {
 		}
 		else {
 			std::cout << "Nieznany argument: " << Argument << '\n';
-			return FailureCodes::ERROR_COMMAND_LINE_SYNTAX;
+			return InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX;
 		}
 	}
 	if (VerboseMode) {
 		std::cout << "Tryb \"verbose\"" << '\n';
 	}
-	return FailureCodes::NO_FAILURE;
+	return InitializationFailureCodes::NO_FAILURE;
 }
 
 static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
@@ -302,7 +302,7 @@ static void callbackForMenuItemHelp(Fl_Widget *, void *) {
 
 /// The function searches for the directory where the executable file is located
 /// @return code defined in FailureCodes
-static FailureCodes determineApplicationPath(char *Argv0) {
+static InitializationFailureCodes determineApplicationPath(char *Argv0) {
 	char Path[PATH_MAX];
 	ConfigurationFilePathPtr = nullptr;
 
@@ -320,8 +320,8 @@ static FailureCodes determineApplicationPath(char *Argv0) {
 	}
 	else {
 		std::cerr << "Nie udało się uzyskać ścieżki do programu." << '\n';
-		return FailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
+		return InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
 	}
-	return FailureCodes::NO_FAILURE;
+	return InitializationFailureCodes::NO_FAILURE;
 }
 
