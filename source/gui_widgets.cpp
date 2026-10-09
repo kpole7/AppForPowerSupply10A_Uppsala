@@ -35,7 +35,6 @@
 //.................................................................................................
 
 static Fl_Box *GeneralStatusTextBoxPtr;
-
 static Fl_Box *FailureMessagePtr;
 
 //.................................................................................................
@@ -52,6 +51,7 @@ void initializeGraphicWidgets() {
 	int GeneralStatusTextBoxPositionX = 130; 
 	GeneralStatusTextBoxPtr = new Fl_Box(GeneralStatusTextBoxPositionX, 1, 
 		MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20, "Tu powinny być różne dane");
+	GeneralStatusTextBoxPtr->hide();
 	GeneralStatusTextBoxPtr->labelfont(FL_COURIER);
 	GeneralStatusTextBoxPtr->labelsize(8);
 	GeneralStatusTextBoxPtr->labelcolor(FL_BLACK);
@@ -60,6 +60,10 @@ void initializeGraphicWidgets() {
 	GeneralStatusTextBoxPtr->color(FL_CYAN);
 	GeneralStatusTextBoxPtr->box(FL_FLAT_BOX);
 #endif
+
+	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, 
+		(MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
+	FailureMessagePtr->hide();
 }
 
 void showFailureMessageWidget(FailureCodes FailureCodeForGui) {
