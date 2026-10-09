@@ -28,5 +28,8 @@
 // Function prototypes
 //.................................................................................................
 
+void initializeGraphicWidgets();
+
+void showFailureMessageWidget(FailureCodes FailureCodeForGui);
 
 #endif // SOURCE_GUI_WIDGETS_H_

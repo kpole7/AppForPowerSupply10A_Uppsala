@@ -11,6 +11,7 @@
 
 #define CONFIGURATION_FILE_NAME "KwadrupoleWLiniiPionowej.cfg"
 
+#define PSU_NUMBER 2
 
 // Attention: compare with getErrorDescription()
 enum class FailureCodes {

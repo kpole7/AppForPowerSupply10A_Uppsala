@@ -36,8 +36,6 @@ target_include_directories(AppForPowerSupply10A_Uppsala PRIVATE
 )
 
 
-
-
 target_link_libraries(AppForPowerSupply10A_Uppsala PRIVATE
   fltk
   X11
@@ -46,7 +44,6 @@ target_link_libraries(AppForPowerSupply10A_Uppsala PRIVATE
   png
   z
 )
-
 
 
 # ------------------------------------------------------------------------------
@@ -58,22 +55,19 @@ set_target_properties(AppForPowerSupply10A_Uppsala PROPERTIES
 
 add_custom_command(TARGET AppForPowerSupply10A_Uppsala POST_BUILD
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${CMAKE_CURRENT_SOURCE_DIR}/KwadrupoleWLiniiPionowej.cfg"
-          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/KwadrupoleWLiniiPionowej.cfg"
+          "${CMAKE_CURRENT_SOURCE_DIR}/kwadrupole-linia-pionowa.cfg"
+          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/kwadrupole-linia-pionowa.cfg"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${CMAKE_CURRENT_SOURCE_DIR}/doc/KwadrupoleWLiniiPionowej.pdf"
-          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/KwadrupoleWLiniiPionowej.pdf"
+          "${CMAKE_CURRENT_SOURCE_DIR}/doc/kwadrupole-linia-pionowa-v.2.pdf"
+          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/kwadrupole-linia-pionowa-v.2.pdf"
   COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${CMAKE_CURRENT_SOURCE_DIR}/doc/AppForPowerSupply10A_Uppsala.png"
-          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/AppForPowerSupply10A_Uppsala.png"
-  COMMAND ${CMAKE_COMMAND} -E copy_if_different
-          "${CMAKE_CURRENT_SOURCE_DIR}/doc/AppForPowerSupply10A_Uppsala.svg"
-          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/AppForPowerSupply10A_Uppsala.svg"
+          "${CMAKE_CURRENT_SOURCE_DIR}/png_graphics/find-location-symbolic.png"
+          "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>/find-location-symbolic.png"
   COMMENT "Copying runtime resources to build output directory"
 )
 
 # ------------------------------------------------------------------------------
-# Sanitizery: equivalents of targets make asan/ubsan/sanitize + run-*
+# Sanitizers: equivalents of targets make asan/ubsan/sanitize + run-*
 # ------------------------------------------------------------------------------
 option(ENABLE_ASAN "Enable AddressSanitizer" OFF)
 option(ENABLE_UBSAN "Enable UndefinedBehaviorSanitizer" OFF)

@@ -102,7 +102,7 @@ int main(int argc, char **argv) {
 	ApplicationWindow->begin();
 	ApplicationWindow->color(COLOR_BACKGROUND);
 	ApplicationWindow->callback(onMainWindowCloseCallback); // Window close event is handled
-	const std::string WindowIconPath = ThisApplicationDirectory + "/kwadrupole-linia-pionowa.png";
+	const std::string WindowIconPath = ThisApplicationDirectory + "/find-location-symbolic.png";
 	Fl_PNG_Image *WindowIcon = new Fl_PNG_Image(WindowIconPath.c_str());
 	if ((nullptr != WindowIcon) && (nullptr != WindowIcon->data()) && (WindowIcon->w() > 0) && (WindowIcon->h() > 0)) {
 		ApplicationWindow->icon(WindowIcon);
@@ -128,13 +128,12 @@ int main(int argc, char **argv) {
 
 	// initializeFailureMessageWidget();
 
-	// if (FailureCodes::NO_FAILURE == ErrorCode) {
-	// 	initializeGraphicWidgets();
-	// 	ApplicationWindow->resizable(getScrollableCupsAreaWidget());
-	// }
-	// else {
-	// 	showFailureMessageWidget(ErrorCode);
-	// }
+	if (FailureCodes::NO_FAILURE == ErrorCode) {
+		initializeGraphicWidgets();
+	}
+	else {
+		showFailureMessageWidget(ErrorCode);
+	}
 
 	ApplicationWindow->end();
 	ApplicationWindow->show();
@@ -152,7 +151,7 @@ int main(int argc, char **argv) {
 // Function definitions
 //.................................................................................................
 
-// Overlay handle() method
+/// Overlay handle() method
 int WindowEscProof::handle(int event) {
 	if (event == FL_KEYDOWN) {              // Check if it is a key event
 		if (Fl::event_key() == FL_Escape) { // Check if it is the Esc key
@@ -162,7 +161,7 @@ int WindowEscProof::handle(int event) {
 	return Fl_Window::handle(event); // For other events, call the default handler
 }
 
-// This function is used to save the log file in case of SIGSEGV and so on
+/// This function is used to save the log file in case of SIGSEGV and so on
 static void criticalHandler(int Signal) {
 	void *Frames[100];
 	int NumberOfFrames = backtrace(Frames, 100);
