@@ -61,9 +61,9 @@ void PowerIndicator::setBrightness(IndicatorLightState NewState) {
 
 void PowerIndicator::draw() {
 	const Fl_Color ColorOn = fl_rgb_color(0x40, 0xFF, 0x40);
-	const Fl_Color ColorDim = fl_rgb_color(0x4C, 0x80, 0x4C); // 0x20, 0x80, 0x20
-	const Fl_Color ColorOff = fl_rgb_color(0x30, 0x52, 0x30); // 0x30, 0x4A, 0x30
-	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C); // 0x40, 0x40, 0x40
+	const Fl_Color ColorDim = fl_rgb_color(0x70, 0x70+0x30, 0x70);
+	const Fl_Color ColorOff = fl_rgb_color(0x70, 0x70+0x08, 0x70);
+	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
 
 	int Diameter = (w() < h()) ? w() : h();
 	int PosX = x() + (w() - Diameter) / 2;
@@ -98,14 +98,9 @@ void initializeGraphicWidgets() {
 		(MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
-	PowerIndicator* PowerIndicatorPtr = new PowerIndicator(50, 50, 30, 30);
+	PowerIndicator* PowerIndicatorPtr = new PowerIndicator(25, 50, 30, 30);
 	(void)PowerIndicatorPtr;
 
-	PowerIndicator* PowerIndicator2Ptr = new PowerIndicator(50, 100, 30, 30);
-	PowerIndicator2Ptr->setBrightness(IndicatorLightState::DIM);
-
-	PowerIndicator* PowerIndicator3Ptr = new PowerIndicator(50, 150, 30, 30);
-	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
 }
 
 void showFailureMessageWidget(FailureCodes FailureCodeForGui) {
