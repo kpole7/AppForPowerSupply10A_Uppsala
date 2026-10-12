@@ -118,6 +118,9 @@ void initializeGraphicWidgets() {
 
 	PowerIndicator* PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
 	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
+
+	PowerIndicator* PowerIndicator4Ptr = new PowerIndicator(75, 100, 30, 30);
+	PowerIndicator4Ptr->setBrightness(IndicatorLightState::DIM);
 }
 
 void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {

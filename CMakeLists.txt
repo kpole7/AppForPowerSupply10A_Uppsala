@@ -10,6 +10,7 @@ endif()
 add_executable(AppForPowerSupply10A_Uppsala
   source/main.cpp
   source/gui_widgets.cpp
+  include/usart_master.h
 #  source/peripheral_thread.cpp
 #  source/shared_data.cpp
 #  source/modified_rstl_master.cpp
