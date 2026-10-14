@@ -3,12 +3,14 @@
 
 #include "debug.h"
 
+#include <iostream>
 #include <cerrno>
 #include <poll.h>
 #include <stdexcept>
 #include <system_error>
 #include <termios.h>
 #include <unistd.h>
+#include <cassert>
 
 namespace {
 
@@ -46,10 +48,11 @@ class ConsoleMode {
 
 } // namespace
 
-int readConsoleKeyNonBlocking() {
-	static const ConsoleMode Mode;
-	(void)Mode;
 
+ConsoleMode *ConsoleModePtr = nullptr;
+
+
+int readConsoleKeyNonBlocking() {
 	pollfd Input{STDIN_FILENO, POLLIN, 0};
 	int PollResult;
 	do {
@@ -76,4 +79,35 @@ int readConsoleKeyNonBlocking() {
 		throw std::system_error(errno, std::generic_category(), "read");
 	}
 	return ReadResult == 1 ? Key : -1;
+}
+
+
+
+void peripheralsInitializations() {
+    if (ConsoleModePtr == nullptr) {
+        ConsoleModePtr = new ConsoleMode();
+    }
+}
+
+bool peripheralsTick(bool TerminationSignal) {
+	if (TerminationSignal) {
+		delete ConsoleModePtr;
+		ConsoleModePtr = nullptr;
+		return false;
+	}
+
+	assert(ConsoleModePtr != nullptr);
+	int PreviousKey = -1;
+	int Key = readConsoleKeyNonBlocking();
+	if (Key != PreviousKey){
+		if ((Key >= (int)' ') && (Key <= (int)'~')){
+			std::cout << "Key changed: " << (char)Key << std::endl;
+		}
+		else {
+			std::cout << "Key changed: " << Key << std::endl;
+		}
+	}
+	PreviousKey = Key;
+
+	return true; // Continue running peripherals by default
 }

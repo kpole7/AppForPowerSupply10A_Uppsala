@@ -109,6 +109,8 @@ static void peripheralThreadTiming() {
 static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
+    peripheralsInitializations();
+
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
@@ -130,14 +132,11 @@ static void peripheralThreadHandler() {
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
 }
 
-
-
-
-
+#if 0 // debugging
 
 /// @brief Handles a single tick of peripheral operations.
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
-/// @return true if the peripheral operations should continue, false if they be terminated
+/// @return true if the peripheral operations should continue, false if they may end
 bool peripheralsTick(bool TerminationSignal) {
     static int LoopCounter = 0;
     LoopCounter++;
@@ -147,13 +146,12 @@ bool peripheralsTick(bool TerminationSignal) {
         DebugCounter++;
         std::cout << "DebugCounter: " << DebugCounter << '\n';
     }
-#if 1 // debugging
+
     static int ContinuationCounter = 10;
     if (TerminationSignal && (ContinuationCounter > 0)) {
         ContinuationCounter--;
     }
     return ContinuationCounter > 0;
-#else
-    return !TerminationSignal; // continue running if no termination signal
-#endif
 }
+
+#endif // debugging
