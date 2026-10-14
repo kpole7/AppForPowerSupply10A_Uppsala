@@ -1,3 +1,6 @@
+/// @file debug.cpp
+/// @brief Provides non-blocking console input functionality.
+
 #include "debug.h"
 
 #include <cerrno>
