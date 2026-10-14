@@ -9,6 +9,7 @@ endif()
 
 add_executable(AppForPowerSupply10A_Uppsala
   source/main.cpp
+  source/debug.cpp
   source/gui_widgets.cpp
   include/usart_master.h
 #  source/peripheral_thread.cpp
@@ -116,4 +117,3 @@ add_custom_target(run-sanitize
   DEPENDS AppForPowerSupply10A_Uppsala
   WORKING_DIRECTORY "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>"
 )
-
