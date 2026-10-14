@@ -8,17 +8,17 @@
 #include <chrono>
 
 
-#define MAX_RESPONSE_LENGTH 100
+#define MAX_RESPONSE_LENGTH 300
 
 
-enum class UsartState {
+enum class UsartLowLevelState {
     Uninitialized,
     Open,
     Closed,
     Error
 };
 
-enum class UsartError {
+enum class UsartLowLevelError {
     None,
     UsartDeviceNotFound,
     OpenFailed,
@@ -26,30 +26,52 @@ enum class UsartError {
     ReadFailed,
     WriteFailed,
     InternalError,
+    SlaveOutOfOrder,
+    CallError,
     Unknown
+};
+
+enum class UsartTransferState {
+    Idle, // wait for a new outgoing data to be sent
+    Sending,
+    WaitingForResponse,
+    Receiving,
+    Completed,
+    WaitingLimitExceeded, // the slave did not respond within the expected waiting limit
+    IncorrectlyReceiving, // if the response is too long for a single command but not long enough to be considered a permanent error
+    IncorrectlyCompleted, // ingoing transfer has ended but the response is too long
+    IncorrectlyNoisy, // fatal error due to excessive noise on the line
+    InternalError,
+    CallError
 };
 
 class LowLevelUsart {
   private:
+    UsartLowLevelState State;
+    UsartTransferState TransferState;
+    UsartLowLevelError ErrorCode;
     std::string* NameOfPort;
-    UsartState State;
     int SerialPortHandler;
-    UsartError ErrorCode;
     char TotalResponse[MAX_RESPONSE_LENGTH];
     uint16_t TotalReceivedBytes;
-    std::chrono::high_resolution_clock::time_point TimeWhenSilenceStarted;
+    std::chrono::high_resolution_clock::time_point TimeWhenOutgoingDataEnded;
+    std::chrono::high_resolution_clock::time_point TimeWhenResponseStarted;
+    std::chrono::high_resolution_clock::time_point TimeWhenReceivedLastByte;
+    std::chrono::milliseconds WaitingLimit;
+    std::chrono::milliseconds ResponseDurationLimit;
   public:
     LowLevelUsart();
     ~LowLevelUsart();
     void openUsart(const std::string& Name);
     std::string getName() const;
-    UsartState getState() const;
-    UsartError getErrorCode() const;
-    bool collectInputDataUntilSilence();
+    UsartLowLevelState getState() const;
+    UsartTransferState getTransferState() const;
+    UsartLowLevelError getErrorCode() const;
+    void resetUsartMaster();
+    void sendOutputData(const char* Buffer, int Length, std::chrono::milliseconds WaitingTimeout, 
+      std::chrono::milliseconds ResponseTimeout);
+    UsartTransferState collectInputDataUntilSilence();
     int getInputData(char* Buffer, int BufferSize);
-    int sendOutputData(const char* Buffer, int Length);
-    void clearInputBuffer();
-    std::chrono::milliseconds getWaitTime() const;
 };
 
 #endif // USART_MASTER_H

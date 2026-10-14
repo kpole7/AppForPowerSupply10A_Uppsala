@@ -231,26 +231,10 @@ static InitializationFailureCodes mainInitializations(int argc, char **argv) {
 	if (InitializationFailureCodes::NO_FAILURE == FailureCode) {
 		FailureCode = determineApplicationPath(argv[0]);
 	}
-	// if (FailureCodes::NO_FAILURE == FailureCode) {
-	// 	FailureCode = configurationFileParsing();
-	// }
-//	if (FailureCodes::NO_FAILURE == FailureCode) {
-//		FailureCode = initializeModbus();
-//	}
-	// for (int Cup = 0; Cup < CUPS_NUMBER; Cup++) {
-	// 	for (int J = 0; J < MODBUS_INPUTS_PER_CUP; J++) {
-	// 		int TemporaryRegisterIndex = Cup * MODBUS_INPUTS_PER_CUP + J;
-	// 		assert(TemporaryRegisterIndex < MODBUS_INPUT_REGISTERS_NUMBER);
-	// 		atomic_store_explicit(&ModbusInputRegisters[TemporaryRegisterIndex], 0xFFFF, std::memory_order_release);
-	// 	}
-	// }
-	// for (int Cup = 0; Cup < CUPS_NUMBER; Cup++) {
-	// 	for (int J = 0; J < MODBUS_COILS_PER_CUP; J++) {
-	// 		int TemporaryRegisterIndex = Cup * MODBUS_COILS_PER_CUP + J;
-	// 		assert(TemporaryRegisterIndex < MODBUS_COILS_NUMBER);
-	// 		atomic_store_explicit(&ModbusCoilsReadout[TemporaryRegisterIndex], false, std::memory_order_release);
-	// 	}
-	// }
+
+
+
+
 	return FailureCode;
 }
 
