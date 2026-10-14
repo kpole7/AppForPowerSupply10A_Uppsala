@@ -25,6 +25,7 @@
 #include <FL/fl_ask.H>
 
 #include "gui_widgets.h"
+#include "peripheral_thread.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -140,9 +141,9 @@ int main(int argc, char **argv) {
 
 	Fl::lock(); // Enable multi-threading support in FLTK; register a callback function for Fl::awake()
 
-	// if (FailureCodes::NO_FAILURE == ErrorCode) {
-	// 	serialCommunicationStart();
-	// }
+	if (InitializationFailureCodes::NO_FAILURE == ErrorCode) {
+		peripheralThreadStart();
+	}
 
 	return Fl::run();
 }
@@ -219,7 +220,7 @@ static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data) {
 	if (VerboseMode) {
 		std::cout << "Zamykanie aplikacji" << '\n';
 	}
-//	serialCommunicationExit();
+	peripheralThreadExit();
 	ApplicationWindow->hide(); // close the application
 }
 
@@ -231,6 +232,8 @@ static InitializationFailureCodes mainInitializations(int argc, char **argv) {
 	if (InitializationFailureCodes::NO_FAILURE == FailureCode) {
 		FailureCode = determineApplicationPath(argv[0]);
 	}
+
+	initializePeripheralThreadModule();
 
 
 
