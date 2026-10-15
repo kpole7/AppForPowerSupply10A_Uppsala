@@ -100,7 +100,7 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 	}
 
 	assert(ConsoleModePtr != nullptr);
-	int PreviousKey = -1;
+	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
 	if (Key != PreviousKey){
 		if ((Key >= (int)' ') && (Key <= (int)'~')){

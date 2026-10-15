@@ -167,7 +167,7 @@ static void criticalHandler(int Signal) {
 	void *Frames[100];
 	int NumberOfFrames = backtrace(Frames, 100);
 
-	FILE *LogFileHandler = fopen("backtrace_Faraday_cups.log", "a");
+	FILE *LogFileHandler = fopen("backtrace_on_crash.log", "a");
 	if (nullptr != LogFileHandler) {
 		time_t TimeNow = time(nullptr);
 		fprintf(LogFileHandler, "\n=== Backtrace (");
