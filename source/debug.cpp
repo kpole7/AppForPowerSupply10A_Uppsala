@@ -3,14 +3,14 @@
 
 #include "debug.h"
 
-#include <iostream>
+#include <cassert>
 #include <cerrno>
+#include <iostream>
 #include <poll.h>
 #include <stdexcept>
 #include <system_error>
 #include <termios.h>
 #include <unistd.h>
-#include <cassert>
 
 namespace {
 
@@ -35,9 +35,7 @@ class ConsoleMode {
 		}
 	}
 
-	~ConsoleMode() {
-		tcsetattr(STDIN_FILENO, TCSANOW, &OriginalMode);
-	}
+	~ConsoleMode() { tcsetattr(STDIN_FILENO, TCSANOW, &OriginalMode); }
 
 	ConsoleMode(const ConsoleMode &) = delete;
 	ConsoleMode &operator=(const ConsoleMode &) = delete;
@@ -48,9 +46,7 @@ class ConsoleMode {
 
 } // namespace
 
-
 ConsoleMode *ConsoleModePtr = nullptr;
-
 
 int readConsoleKeyNonBlocking() {
 	pollfd Input{STDIN_FILENO, POLLIN, 0};
@@ -81,12 +77,10 @@ int readConsoleKeyNonBlocking() {
 	return ReadResult == 1 ? Key : -1;
 }
 
-
-
 void peripheralsInitializations() {
-    if (ConsoleModePtr == nullptr) {
-        ConsoleModePtr = new ConsoleMode();
-    }
+	if (ConsoleModePtr == nullptr) {
+		ConsoleModePtr = new ConsoleMode();
+	}
 }
 
 /// @brief Handles a single tick of peripheral operations.
@@ -102,8 +96,8 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 	assert(ConsoleModePtr != nullptr);
 	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
-	if (Key != PreviousKey){
-		if ((Key >= (int)' ') && (Key <= (int)'~')){
+	if (Key != PreviousKey) {
+		if ((Key >= (int)' ') && (Key <= (int)'~')) {
 			std::cout << "Key changed: " << (char)Key << '\n';
 		}
 		else {

@@ -20,7 +20,6 @@
 // Preprocessor directives
 //.................................................................................................
 
-
 //.................................................................................................
 // Definitions of types
 //.................................................................................................
@@ -39,7 +38,6 @@ class OnErrorGroup : public Fl_Group {
 // Local constants
 //.................................................................................................
 
-
 //.................................................................................................
 // Local variables
 //.................................................................................................
@@ -51,15 +49,13 @@ static Fl_Box *FailureMessagePtr;
 // Local function prototypes
 //.................................................................................................
 
-static const char* getErrorDescription(InitializationFailureCodes Error);
+static const char *getErrorDescription(InitializationFailureCodes Error);
 
 //.................................................................................................
 // Function definitions
 //.................................................................................................
 
-PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) :
-		Fl_Widget(X, Y, W, H, Label), State(IndicatorLightState::OFF) {
-}
+PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label), State(IndicatorLightState::OFF) {}
 
 void PowerIndicator::setBrightness(IndicatorLightState NewState) {
 	if (State != NewState) {
@@ -69,11 +65,11 @@ void PowerIndicator::setBrightness(IndicatorLightState NewState) {
 }
 
 void PowerIndicator::draw() {
-	const Fl_Color ColorOn           = fl_rgb_color(0x30, 0xFF, 0x30);
-	const Fl_Color ColorDim          = fl_rgb_color(0x70, 0xA0, 0x70);
-	const Fl_Color ColorOff          = fl_rgb_color(0x80, 0x88, 0x80);
-	const Fl_Color ColorUndefined    = fl_rgb_color(0xD0, 0xD8, 0xD0);
-	const Fl_Color ColorRim          = fl_rgb_color(0x4C, 0x4C, 0x4C);
+	const Fl_Color ColorOn = fl_rgb_color(0x30, 0xFF, 0x30);
+	const Fl_Color ColorDim = fl_rgb_color(0x70, 0xA0, 0x70);
+	const Fl_Color ColorOff = fl_rgb_color(0x80, 0x88, 0x80);
+	const Fl_Color ColorUndefined = fl_rgb_color(0xD0, 0xD8, 0xD0);
+	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
 	const Fl_Color ColorRimUndefined = fl_rgb_color(0xCC, 0xCC, 0xCC);
 
 	int Diameter = (w() < h()) ? w() : h();
@@ -104,9 +100,9 @@ void PowerIndicator::draw() {
 }
 
 void initializeGraphicWidgets() {
-	int GeneralStatusTextBoxPositionX = 130; 
-	GeneralStatusTextBoxPtr = new Fl_Box(GeneralStatusTextBoxPositionX, 1, 
-		MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20, "Tu powinny być różne dane");
+	int GeneralStatusTextBoxPositionX = 130;
+	GeneralStatusTextBoxPtr =
+	    new Fl_Box(GeneralStatusTextBoxPositionX, 1, MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20, "Tu powinny być różne dane");
 	GeneralStatusTextBoxPtr->hide();
 	GeneralStatusTextBoxPtr->labelfont(FL_COURIER);
 	GeneralStatusTextBoxPtr->labelsize(8);
@@ -117,28 +113,27 @@ void initializeGraphicWidgets() {
 	GeneralStatusTextBoxPtr->box(FL_FLAT_BOX);
 #endif
 
-	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, 
-		(MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
+	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
-	PowerIndicator* PowerIndicatorPtr = new PowerIndicator(25, 50, 30, 30);
+	PowerIndicator *PowerIndicatorPtr = new PowerIndicator(25, 50, 30, 30);
 	(void)PowerIndicatorPtr;
 
-	PowerIndicator* PowerIndicator2Ptr = new PowerIndicator(75, 50, 30, 30);
+	PowerIndicator *PowerIndicator2Ptr = new PowerIndicator(75, 50, 30, 30);
 	PowerIndicator2Ptr->setBrightness(IndicatorLightState::UNDEFINED);
 
-	PowerIndicator* PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
+	PowerIndicator *PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
 	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
 
-	PowerIndicator* PowerIndicator4Ptr = new PowerIndicator(75, 100, 30, 30);
+	PowerIndicator *PowerIndicator4Ptr = new PowerIndicator(75, 100, 30, 30);
 	PowerIndicator4Ptr->setBrightness(IndicatorLightState::DIM);
 }
 
 void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {
 	static char Buffer[300];
-	snprintf(Buffer, sizeof(Buffer) - 1, 
-		"Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać dodatkowe informacje", 
-		getErrorDescription(FailureCodeForGui));
+	snprintf(Buffer, sizeof(Buffer) - 1,
+	         "Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać dodatkowe informacje",
+	         getErrorDescription(FailureCodeForGui));
 	FailureMessagePtr->label(Buffer);
 	FailureMessagePtr->show();
 	if (VerboseMode) {
@@ -149,27 +144,27 @@ void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {
 }
 
 // TODO write once again
-static const char* getErrorDescription(InitializationFailureCodes Error) {
+static const char *getErrorDescription(InitializationFailureCodes Error) {
 	switch (Error) {
-		case InitializationFailureCodes::NO_FAILURE:
-			return "Brak błędów";
-		case InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX:
-			return "Błąd składniowy w linii komendy";
-		case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
-			return "Nie można uzyskać ścieżki do programu";
-		case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
-			return "Błąd otwierania pliku konfiguracyjnego";
-		case InitializationFailureCodes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
-			return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
-		case InitializationFailureCodes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
-			return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-		case InitializationFailureCodes::ERROR_DEVICE_NAME_MISMATCH:
-			return "Nieprawidłowa nazwa urządzenia odczytana z Modbus";
-		case InitializationFailureCodes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
-			return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
-		case InitializationFailureCodes::ANOTHER_ERROR:
-			return "Błąd ogólny";
-		default:
-			return "Nieznany błąd";
+	case InitializationFailureCodes::NO_FAILURE:
+		return "Brak błędów";
+	case InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX:
+		return "Błąd składniowy w linii komendy";
+	case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
+		return "Nie można uzyskać ścieżki do programu";
+	case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
+		return "Błąd otwierania pliku konfiguracyjnego";
+	case InitializationFailureCodes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
+		return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
+	case InitializationFailureCodes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
+		return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
+	case InitializationFailureCodes::ERROR_DEVICE_NAME_MISMATCH:
+		return "Nieprawidłowa nazwa urządzenia odczytana z Modbus";
+	case InitializationFailureCodes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
+		return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
+	case InitializationFailureCodes::ANOTHER_ERROR:
+		return "Błąd ogólny";
+	default:
+		return "Nieznany błąd";
 	}
 }

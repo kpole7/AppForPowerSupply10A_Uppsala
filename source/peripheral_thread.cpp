@@ -2,9 +2,9 @@
 /// @brief Implements a separate thread and timing functionality for peripheral operations.
 
 #include <FL/Fl.H>
-#include <thread>
 #include <chrono>
 #include <iostream>
+#include <thread>
 
 #include "peripheral_thread.h"
 
@@ -14,7 +14,7 @@
 
 #define PERIPHERAL_THREAD_LOOP_DURATION 50 // milliseconds
 
-#define SHUT_DOWN_TIMEOUT 1000  // milliseconds
+#define SHUT_DOWN_TIMEOUT 1000 // milliseconds
 
 #define SHUT_DOWN_LOOP_DELAY 20 // milliseconds
 
@@ -112,7 +112,7 @@ static void peripheralThreadTiming() {
 static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-    peripheralsInitializations();
+	peripheralsInitializations();
 
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
@@ -121,7 +121,7 @@ static void peripheralThreadHandler() {
 
 		peripheralThreadTiming();
 
-        DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
+		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
 
 #if 0 // debugging
 		std::chrono::high_resolution_clock::time_point TimeAfter = std::chrono::high_resolution_clock::now();

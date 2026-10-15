@@ -98,8 +98,7 @@ int main(int argc, char **argv) {
 
 	// Main window of the application
 	Fl::scheme("gtk+");
-	ApplicationWindow =
-	    new WindowEscProof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
+	ApplicationWindow = new WindowEscProof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
 	ApplicationWindow->begin();
 	ApplicationWindow->color(COLOR_BACKGROUND);
 	ApplicationWindow->callback(onMainWindowCloseCallback); // Window close event is handled
@@ -225,7 +224,7 @@ static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data) {
 }
 
 static InitializationFailureCodes mainInitializations(int argc, char **argv) {
-//	initializeSerialCommunicationModule();
+	//	initializeSerialCommunicationModule();
 
 	InitializationFailureCodes FailureCode = determineVerbosity(argc, argv);
 
@@ -234,9 +233,6 @@ static InitializationFailureCodes mainInitializations(int argc, char **argv) {
 	}
 
 	initializePeripheralThreadModule();
-
-
-
 
 	return FailureCode;
 }
@@ -301,8 +297,7 @@ static InitializationFailureCodes determineApplicationPath(char *Argv0) {
 #if 0
         	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
 #endif
-			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n' 
-			<< " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
+			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n' << " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
 		}
 	}
 	else {
@@ -311,4 +306,3 @@ static InitializationFailureCodes determineApplicationPath(char *Argv0) {
 	}
 	return InitializationFailureCodes::NO_FAILURE;
 }
-

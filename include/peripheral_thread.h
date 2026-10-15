@@ -5,7 +5,6 @@
 
 #include <atomic>
 
-
 void initializePeripheralThreadModule();
 
 void peripheralThreadStart();

@@ -29,44 +29,32 @@
 // Widgets
 //.................................................................................................
 
-enum class IndicatorLightState : uint8_t {
-	OFF = 0,
-    DIM = 1,
-	ON = 2,
-    UNDEFINED = 3
-};
+enum class IndicatorLightState : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED = 3 };
 
 /// Indicator lamp: a colored circle with a dark gray outline
 class PowerIndicator : public Fl_Widget {
-public:
+  public:
 	PowerIndicator(int X, int Y, int W, int H, const char *Label = nullptr);
 
 	/// Sets the brightness of the indicator: OFF (dark grayish green), DIM (dim green), or ON (bright green)
 	void setBrightness(IndicatorLightState NewState);
 
-protected:
+  protected:
 	void draw() override;
 
-private:
+  private:
 	IndicatorLightState State;
 };
 
-enum class MainPowerState : uint8_t {
-	OFF = 0,
-    RISING = 2,
-    ON = 1,
-    FALLING = 3,
-    UNDEFINED = 4
-};
+enum class MainPowerState : uint8_t { OFF = 0, RISING = 2, ON = 1, FALLING = 3, UNDEFINED = 4 };
 
 /// Main power controls
 class MainPowerGroup : public Fl_Group {
   private:
-    MainPowerState CurrentState;
-    PowerIndicator* PowerIndicatorPtr;
-    Fl_Button* PowerSwitchPtr;
-    Fl_Box* StatusTextBoxPtr;
-
+	MainPowerState CurrentState;
+	PowerIndicator *PowerIndicatorPtr;
+	Fl_Button *PowerSwitchPtr;
+	Fl_Box *StatusTextBoxPtr;
 };
 
 //.................................................................................................
