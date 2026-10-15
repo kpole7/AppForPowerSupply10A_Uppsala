@@ -69,12 +69,12 @@ void PowerIndicator::setBrightness(IndicatorLightState NewState) {
 }
 
 void PowerIndicator::draw() {
-	const Fl_Color ColorOn = fl_rgb_color(0x40, 0xFF, 0x40);
-	const Fl_Color ColorDim = fl_rgb_color(0x70, 0x70+0x30, 0x70);
-	const Fl_Color ColorOff = fl_rgb_color(0x70, 0x70+0x08, 0x70);
-	const Fl_Color ColorUndefined = fl_rgb_color(0x70+0x60, 0x70+0x08+0x60, 0x70+0x60);
-	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
-	const Fl_Color ColorRimUndefined = fl_rgb_color(0x4C+0x80, 0x4C+0x80, 0x4C+0x80);
+	const Fl_Color ColorOn           = fl_rgb_color(0x30, 0xFF, 0x30);
+	const Fl_Color ColorDim          = fl_rgb_color(0x70, 0xA0, 0x70);
+	const Fl_Color ColorOff          = fl_rgb_color(0x80, 0x88, 0x80);
+	const Fl_Color ColorUndefined    = fl_rgb_color(0xD0, 0xD8, 0xD0);
+	const Fl_Color ColorRim          = fl_rgb_color(0x4C, 0x4C, 0x4C);
+	const Fl_Color ColorRimUndefined = fl_rgb_color(0xCC, 0xCC, 0xCC);
 
 	int Diameter = (w() < h()) ? w() : h();
 	int PosX = x() + (w() - Diameter) / 2;
