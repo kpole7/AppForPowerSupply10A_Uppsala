@@ -89,7 +89,10 @@ void peripheralsInitializations() {
     }
 }
 
-bool peripheralsTick(bool TerminationSignal) {
+/// @brief Handles a single tick of peripheral operations.
+/// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
+/// @return true if the peripheral operations should continue, false if they can be terminated
+bool debuggingPeripheralsTick(bool TerminationSignal) {
 	if (TerminationSignal) {
 		delete ConsoleModePtr;
 		ConsoleModePtr = nullptr;

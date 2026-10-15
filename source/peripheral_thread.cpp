@@ -32,6 +32,8 @@ static std::atomic<bool> PeripheralThreadIsStopped;
 
 static std::thread peripheralThread;
 
+static bool DebugingPeripheralsEnable;
+
 static std::chrono::high_resolution_clock::time_point PeripheralThreadLoopStart;
 static std::chrono::high_resolution_clock::time_point TimeNow;
 static int64_t PeripheralThreadTimeInMilliseconds;
@@ -50,6 +52,7 @@ static void peripheralThreadHandler();
 void initializePeripheralThreadModule() {
 	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
+	DebugingPeripheralsEnable = true;
 }
 
 /// This function initializes the module variables and launches a new thread to support peripherals
@@ -114,12 +117,11 @@ static void peripheralThreadHandler() {
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
-    bool PeripheralThreadRunning = true;
-	while (PeripheralThreadRunning) {
+	while (DebugingPeripheralsEnable) {
 
 		peripheralThreadTiming();
 
-        PeripheralThreadRunning = peripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
+        DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
 
 #if 0 // debugging
 		std::chrono::high_resolution_clock::time_point TimeAfter = std::chrono::high_resolution_clock::now();
@@ -131,27 +133,3 @@ static void peripheralThreadHandler() {
 	// exit
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
 }
-
-#if 0 // debugging
-
-/// @brief Handles a single tick of peripheral operations.
-/// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
-/// @return true if the peripheral operations should continue, false if they may end
-bool peripheralsTick(bool TerminationSignal) {
-    static int LoopCounter = 0;
-    LoopCounter++;
-    LoopCounter &= 0x03;
-    if (0 == LoopCounter) {
-        static int DebugCounter = 0;
-        DebugCounter++;
-        std::cout << "DebugCounter: " << DebugCounter << '\n';
-    }
-
-    static int ContinuationCounter = 10;
-    if (TerminationSignal && (ContinuationCounter > 0)) {
-        ContinuationCounter--;
-    }
-    return ContinuationCounter > 0;
-}
-
-#endif // debugging
