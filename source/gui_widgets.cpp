@@ -55,7 +55,7 @@ static const char *getErrorDescription(InitializationFailureCodes Error);
 // Function definitions
 //.................................................................................................
 
-PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label), State(IndicatorLightState::OFF) {}
+PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
 void PowerIndicator::setBrightness(IndicatorLightState NewState) {
 	if (State != NewState) {

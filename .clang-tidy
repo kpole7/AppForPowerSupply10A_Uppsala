@@ -2,6 +2,7 @@ Checks: >
   clang-analyzer-*,
   bugprone-*,
   performance-*,
+  -performance-enum-size,
   modernize-avoid-bind,
   modernize-concat-nested-namespaces,
   modernize-deprecated-headers,
@@ -83,4 +84,5 @@ Checks: >
 WarningsAsErrors: ''
 HeaderFilterRegex: '.*'
 FormatStyle: none
-
+ExtraArgs:
+  - -Wno-unused-private-field

@@ -43,7 +43,7 @@ class PowerIndicator : public Fl_Widget {
 	void draw() override;
 
   private:
-	IndicatorLightState State;
+	IndicatorLightState State{IndicatorLightState::OFF};
 };
 
 enum class MainPowerState : uint8_t { OFF = 0, RISING = 2, ON = 1, FALLING = 3, UNDEFINED = 4 };
@@ -51,7 +51,7 @@ enum class MainPowerState : uint8_t { OFF = 0, RISING = 2, ON = 1, FALLING = 3, 
 /// Main power controls
 class MainPowerGroup : public Fl_Group {
   private:
-	MainPowerState CurrentState;
+	MainPowerState CurrentState{MainPowerState::OFF};
 	PowerIndicator *PowerIndicatorPtr;
 	Fl_Button *PowerSwitchPtr;
 	Fl_Box *StatusTextBoxPtr;
