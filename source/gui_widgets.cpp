@@ -86,8 +86,19 @@ void PowerIndicator::draw() {
 	int Rim = (Diameter >= 12) ? 3 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
-		fl_color(State == IndicatorLightState::ON ? ColorOn : (State == IndicatorLightState::DIM ? ColorDim : 
-			(State == IndicatorLightState::UNDEFINED ? ColorUndefined : ColorOff)));
+		if (IndicatorLightState::ON == State) {
+			fl_color(ColorOn);
+		}
+		else if (IndicatorLightState::DIM == State) {
+			fl_color(ColorDim);
+		}
+		else if (IndicatorLightState::UNDEFINED == State) {
+			fl_color(ColorUndefined);
+		}
+		else {
+			fl_color(ColorOff);
+		}
+
 		fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 360.0);
 	}
 }

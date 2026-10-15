@@ -17,7 +17,7 @@ namespace {
 class ConsoleMode {
   public:
 	ConsoleMode() {
-		if (!isatty(STDIN_FILENO)) {
+		if (0 == isatty(STDIN_FILENO)) {
 			throw std::runtime_error("Standard input is not a terminal");
 		}
 
@@ -104,10 +104,10 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 	int Key = readConsoleKeyNonBlocking();
 	if (Key != PreviousKey){
 		if ((Key >= (int)' ') && (Key <= (int)'~')){
-			std::cout << "Key changed: " << (char)Key << std::endl;
+			std::cout << "Key changed: " << (char)Key << '\n';
 		}
 		else {
-			std::cout << "Key changed: " << Key << std::endl;
+			std::cout << "Key changed: " << Key << '\n';
 		}
 	}
 	PreviousKey = Key;

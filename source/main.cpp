@@ -116,7 +116,7 @@ int main(int argc, char **argv) {
 	Fl_Menu_Bar MenuWidget(0, 0, MAIN_WINDOW_WIDTH, MAIN_MENU_HEIGHT);
 	MenuWidget.box(FL_FLAT_BOX);
 
-	MenuWidget.add("Narzędzia/Status/Ukryty", 0, callbackForMenuItemStatus, (void *)0, FL_MENU_RADIO);
+	MenuWidget.add("Narzędzia/Status/Ukryty", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
 	int indexOfMenuItemStatusNormal = MenuWidget.add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
 	MenuWidget.add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)2, FL_MENU_RADIO);
 	MenuWidget.add("Pomoc/Instrukcja użytkowania", 0, callbackForMenuItemHelp);
@@ -195,7 +195,7 @@ static void criticalHandler(int Signal) {
 			for (int i = 0; i < NumberOfFrames; i++) {
 				fprintf(LogFileHandler, "%s\n", Symbols[i]);
 			}
-			free(Symbols);
+			free(reinterpret_cast<void *>(Symbols));
 		}
 		fclose(LogFileHandler);
 	}
