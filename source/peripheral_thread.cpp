@@ -7,6 +7,7 @@
 #include <thread>
 
 #include "peripheral_thread.h"
+#include "shared_data.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -19,12 +20,6 @@
 #define SHUT_DOWN_LOOP_DELAY 20 // milliseconds
 
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
-
-//...............................................................................................
-// Global variables
-//...............................................................................................
-
-std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter{0};
 
 //...............................................................................................
 // Local variables
@@ -55,20 +50,21 @@ static void peripheralThreadHandler();
 // Function definitions
 //.................................................................................................
 
+/// @brief Initializes the peripheral thread module. This function is being called in the FLTK thread.
 void initializePeripheralThreadModule() {
 	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
 	DebugingPeripheralsEnable = true;
 }
 
-/// This function initializes the module variables and launches a new thread to support peripherals
+/// This function launches a new thread to support peripherals. It should be called in the FLTK thread.
 void peripheralThreadStart() {
 	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
 	atomic_store_explicit(&PeripheralThreadIsStopped, false, std::memory_order_release);
 	peripheralThread = std::thread(peripheralThreadHandler);
 }
 
-/// This function is called by FLTK onMainWindowCloseCallback event handler
+/// This function is called by the FLTK onMainWindowCloseCallback event handler. It stops the peripheral thread safely.
 void peripheralThreadExit() {
 	if (atomic_load_explicit(&PeripheralThreadIsStopped, std::memory_order_acquire)) {
 		return;
@@ -93,6 +89,31 @@ void peripheralThreadExit() {
 	}
 }
 
+/// This function runs the second thread (FLTK is the main thread).
+/// The peripheral thread supports Modbus communication and sends signals to FLTK to refresh graphics.
+static void peripheralThreadHandler() {
+	std::this_thread::sleep_for(std::chrono::milliseconds(100));
+
+	peripheralsInitializations();
+
+	PeripheralThreadTimeInMilliseconds = 0;
+	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
+
+	while (DebugingPeripheralsEnable) {
+
+		peripheralThreadTiming();
+
+		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
+
+	} // while (...)
+	// exit
+	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
+}
+
+/// @brief Handles the timing for the peripheral thread loop.
+/// @details This function calculates the elapsed time since the start of the peripheral thread loop,
+/// compares it with the expected loop duration, and if the loop is running out of time,
+/// it increments the PeripheralsRunningOutOfTimeCounter atomically, ensuring it does not exceed UINT16_MAX.
 static void peripheralThreadTiming() {
 	// timing
 	PeripheralThreadTimeInMilliseconds += PERIPHERAL_THREAD_LOOP_DURATION;
@@ -124,23 +145,3 @@ static void peripheralThreadTiming() {
 	}
 }
 
-/// This function runs the second thread (FLTK is the main thread).
-/// The peripheral thread supports Modbus communication and sends signals to FLTK to refresh graphics.
-static void peripheralThreadHandler() {
-	std::this_thread::sleep_for(std::chrono::milliseconds(100));
-
-	peripheralsInitializations();
-
-	PeripheralThreadTimeInMilliseconds = 0;
-	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
-
-	while (DebugingPeripheralsEnable) {
-
-		peripheralThreadTiming();
-
-		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
-
-	} // while (...)
-	// exit
-	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
-}

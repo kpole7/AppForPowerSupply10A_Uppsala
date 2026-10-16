@@ -3,6 +3,7 @@
 /// Abbreviations:
 ///		uA = micro amperes
 /// 	FSM = finite state machine
+///		PSU = power supply unit (it stands for the multichannel power supply unit used in this application)
 
 #include <atomic>
 #include <cassert>
@@ -26,6 +27,7 @@
 
 #include "gui_widgets.h"
 #include "peripheral_thread.h"
+#include "shared_data.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -45,24 +47,11 @@ class WindowEscProof : public Fl_Double_Window {
 };
 
 //.................................................................................................
-// Global variables
+// Local variables
 //.................................................................................................
-
-/// This variable is set if there is argument "-v" or "--verbose" in command line
-bool VerboseMode;
 
 /// This variable points to the main application window
 WindowEscProof *ApplicationWindow;
-
-int StatusLevelForGui;
-
-std::string ThisApplicationDirectory;
-
-std::string ConfigurationFilePath;
-
-//.................................................................................................
-// Local variables
-//.................................................................................................
 
 /// This variable is used to locate the configuration file
 static std::string *ConfigurationFilePathPtr;
@@ -77,15 +66,15 @@ static void setupCriticalSignalHandler();
 
 static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data);
 
-static InitializationFailureCodes mainInitializations(int argc, char **argv);
+static initialization_failure_codes mainInitializations(int argc, char **argv);
 
-static InitializationFailureCodes determineVerbosity(int argc, char **argv);
+static initialization_failure_codes determineVerbosity(int argc, char **argv);
 
 static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *);
 
 static void callbackForMenuItemHelp(Fl_Widget *, void *);
 
-static InitializationFailureCodes determineApplicationPath(char *Argv0);
+static initialization_failure_codes determineApplicationPath(char *Argv0);
 
 //.................................................................................................
 // The main application
@@ -94,7 +83,7 @@ static InitializationFailureCodes determineApplicationPath(char *Argv0);
 int main(int argc, char **argv) {
 	setupCriticalSignalHandler();
 
-	InitializationFailureCodes ErrorCode = mainInitializations(argc, argv);
+	initialization_failure_codes ErrorCode = mainInitializations(argc, argv);
 
 	// Main window of the application
 	Fl::scheme("gtk+");
@@ -128,7 +117,7 @@ int main(int argc, char **argv) {
 
 	// initializeFailureMessageWidget();
 
-	if (InitializationFailureCodes::NO_FAILURE == ErrorCode) {
+	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
 		initializeGraphicWidgets();
 	}
 	else {
@@ -140,7 +129,7 @@ int main(int argc, char **argv) {
 
 	Fl::lock(); // Enable multi-threading support in FLTK; register a callback function for Fl::awake()
 
-	if (InitializationFailureCodes::NO_FAILURE == ErrorCode) {
+	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
 		peripheralThreadStart();
 	}
 
@@ -151,7 +140,10 @@ int main(int argc, char **argv) {
 // Function definitions
 //.................................................................................................
 
-/// Overlay handle() method
+/// Overlay handle() method; it changes the behavior of the Esc key.
+/// @details This method overrides the default handle() method of the FLTK window.
+/// It checks for key events and specifically intercepts the Esc key press,
+/// returning 1 to block the default behavior of closing the window when Esc is pressed.
 int WindowEscProof::handle(int event) {
 	if (event == FL_KEYDOWN) {              // Check if it is a key event
 		if (Fl::event_key() == FL_Escape) { // Check if it is the Esc key
@@ -161,7 +153,7 @@ int WindowEscProof::handle(int event) {
 	return Fl_Window::handle(event); // For other events, call the default handler
 }
 
-/// This function is used to save the log file in case of SIGSEGV and so on
+/// This function is used to save the log file in case of SIGSEGV and so on; it is for debugging purposes.
 static void criticalHandler(int Signal) {
 	void *Frames[100];
 	int NumberOfFrames = backtrace(Frames, 100);
@@ -202,7 +194,7 @@ static void criticalHandler(int Signal) {
 	kill(getpid(), Signal);
 }
 
-// this function hooks up the function criticalHandler()
+// This function hooks up the function criticalHandler()
 static void setupCriticalSignalHandler() {
 	signal(SIGSEGV, criticalHandler);
 	signal(SIGABRT, criticalHandler);
@@ -211,24 +203,24 @@ static void setupCriticalSignalHandler() {
 	signal(SIGBUS, criticalHandler);
 }
 
-// Window close event is handled here
+// This function handles the main window close event
 static void onMainWindowCloseCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget; // intentionally unused
 	(void)Data;   // intentionally unused
 
-	if (VerboseMode) {
+	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 		std::cout << "Zamykanie aplikacji" << '\n';
 	}
 	peripheralThreadExit();
 	ApplicationWindow->hide(); // close the application
 }
 
-static InitializationFailureCodes mainInitializations(int argc, char **argv) {
+static initialization_failure_codes mainInitializations(int argc, char **argv) {
 	//	initializeSerialCommunicationModule();
 
-	InitializationFailureCodes FailureCode = determineVerbosity(argc, argv);
+	initialization_failure_codes FailureCode = determineVerbosity(argc, argv);
 
-	if (InitializationFailureCodes::NO_FAILURE == FailureCode) {
+	if (initialization_failure_codes::NO_FAILURE == FailureCode) {
 		FailureCode = determineApplicationPath(argv[0]);
 	}
 
@@ -237,11 +229,11 @@ static InitializationFailureCodes mainInitializations(int argc, char **argv) {
 	return FailureCode;
 }
 
-static InitializationFailureCodes determineVerbosity(int argc, char **argv) {
+static initialization_failure_codes determineVerbosity(int argc, char **argv) {
 	for (int J = 1; J < argc; J++) {
 		std::string Argument = argv[J];
 		if (Argument == "-v") {
-			VerboseMode = true;
+			atomic_store_explicit(&VerboseMode, true, std::memory_order_release);
 
 #if 0 // debugging
             std::string Argument0 = argv[0];
@@ -250,13 +242,13 @@ static InitializationFailureCodes determineVerbosity(int argc, char **argv) {
 		}
 		else {
 			std::cout << "Nieznany argument: " << Argument << '\n';
-			return InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX;
+			return initialization_failure_codes::ERROR_COMMAND_LINE_SYNTAX;
 		}
 	}
-	if (VerboseMode) {
+	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 		std::cout << "Tryb \"verbose\"" << '\n';
 	}
-	return InitializationFailureCodes::NO_FAILURE;
+	return initialization_failure_codes::NO_FAILURE;
 }
 
 static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
@@ -267,7 +259,7 @@ static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
 	}
 
 	StatusLevelForGui = static_cast<int>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data()));
-	if (VerboseMode) {
+	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 		std::cout << "Opcja Status ustawiona na wartość: " << StatusLevelForGui << '\n';
 	}
 }
@@ -285,7 +277,7 @@ static void callbackForMenuItemHelp(Fl_Widget *, void *) {
 
 /// The function searches for the directory where the executable file is located
 /// @return code defined in FailureCodes
-static InitializationFailureCodes determineApplicationPath(char *Argv0) {
+static initialization_failure_codes determineApplicationPath(char *Argv0) {
 	char Path[PATH_MAX];
 	ConfigurationFilePathPtr = nullptr;
 
@@ -293,7 +285,7 @@ static InitializationFailureCodes determineApplicationPath(char *Argv0) {
 		ThisApplicationDirectory = dirname(Path);
 		ConfigurationFilePath = ThisApplicationDirectory;
 		ConfigurationFilePathPtr = &ConfigurationFilePath;
-		if (VerboseMode) {
+		if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 #if 0
         	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
 #endif
@@ -302,7 +294,7 @@ static InitializationFailureCodes determineApplicationPath(char *Argv0) {
 	}
 	else {
 		std::cerr << "Nie udało się uzyskać ścieżki do programu." << '\n';
-		return InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
+		return initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
 	}
-	return InitializationFailureCodes::NO_FAILURE;
+	return initialization_failure_codes::NO_FAILURE;
 }

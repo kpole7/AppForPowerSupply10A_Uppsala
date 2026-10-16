@@ -9,9 +9,9 @@
 
 #define MAX_RESPONSE_LENGTH 300
 
-enum class UsartLowLevelState { Uninitialized, Open, Closed, Error };
+enum class usart_low_level_state { Uninitialized, Open, Closed, Error };
 
-enum class UsartLowLevelError {
+enum class usart_low_level_error {
 	None,
 	UsartDeviceNotFound,
 	OpenFailed,
@@ -24,7 +24,7 @@ enum class UsartLowLevelError {
 	Unknown
 };
 
-enum class UsartTransferState {
+enum class usart_transfer_state {
 	Idle, // wait for a new outgoing data to be sent
 	Sending,
 	WaitingForResponse,
@@ -40,9 +40,9 @@ enum class UsartTransferState {
 
 class LowLevelUsart {
   private:
-	UsartLowLevelState State;
-	UsartTransferState TransferState;
-	UsartLowLevelError ErrorCode;
+	usart_low_level_state State;
+	usart_transfer_state TransferState;
+	usart_low_level_error ErrorCode;
 	std::string *NameOfPort;
 	int SerialPortHandler;
 	char TotalResponse[MAX_RESPONSE_LENGTH];
@@ -58,12 +58,12 @@ class LowLevelUsart {
 	~LowLevelUsart();
 	void openUsart(const std::string &Name);
 	std::string getName() const;
-	UsartLowLevelState getState() const;
-	UsartTransferState getTransferState() const;
-	UsartLowLevelError getErrorCode() const;
+	usart_low_level_state getState() const;
+	usart_transfer_state getTransferState() const;
+	usart_low_level_error getErrorCode() const;
 	void resetUsartMaster();
 	void sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, std::chrono::milliseconds ResponseTimeout);
-	UsartTransferState collectInputDataUntilSilence();
+	usart_transfer_state collectInputDataUntilSilence();
 	int getInputData(char *Buffer, int BufferSize);
 };
 

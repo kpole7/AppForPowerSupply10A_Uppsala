@@ -14,6 +14,7 @@
 #include <string>
 
 #include "config.h"
+#include "shared_data.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -29,7 +30,7 @@
 // Widgets
 //.................................................................................................
 
-enum class IndicatorLightState : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED = 3 };
+enum class indicator_light_state : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED = 3 };
 
 /// Indicator lamp: a colored circle with a dark gray outline
 class PowerIndicator : public Fl_Widget {
@@ -37,21 +38,19 @@ class PowerIndicator : public Fl_Widget {
 	PowerIndicator(int X, int Y, int W, int H, const char *Label = nullptr);
 
 	/// Sets the brightness of the indicator: OFF (dark grayish green), DIM (dim green), or ON (bright green)
-	void setBrightness(IndicatorLightState NewState);
+	void setBrightness(indicator_light_state NewState);
 
   protected:
 	void draw() override;
 
   private:
-	IndicatorLightState State{IndicatorLightState::OFF};
+	indicator_light_state State{indicator_light_state::OFF};
 };
-
-enum class MainPowerState : uint8_t { OFF = 0, RISING = 2, ON = 1, FALLING = 3, UNDEFINED = 4 };
 
 /// Main power controls
 class MainPowerGroup : public Fl_Group {
   private:
-	MainPowerState CurrentState{MainPowerState::OFF};
+	main_power_state CurrentState{main_power_state::OFF};
 	PowerIndicator *PowerIndicatorPtr;
 	Fl_Button *PowerSwitchPtr;
 	Fl_Box *StatusTextBoxPtr;
@@ -63,6 +62,6 @@ class MainPowerGroup : public Fl_Group {
 
 void initializeGraphicWidgets();
 
-void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui);
+void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui);
 
 #endif // SOURCE_GUI_WIDGETS_H_

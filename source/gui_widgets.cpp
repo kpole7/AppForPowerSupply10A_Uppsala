@@ -30,7 +30,7 @@ class OnErrorGroup : public Fl_Group {
 	void draw() override;
 
   private:
-	RunTimeFailureCodes CurrentRuntimeFailureCode;
+	run_time_failure_codes CurrentRuntimeFailureCode;
 	Fl_Box *ErrorTextBoxPtr;
 };
 
@@ -49,7 +49,7 @@ static Fl_Box *FailureMessagePtr;
 // Local function prototypes
 //.................................................................................................
 
-static const char *getErrorDescription(InitializationFailureCodes Error);
+static const char *getErrorDescription(initialization_failure_codes Error);
 
 //.................................................................................................
 // Function definitions
@@ -57,7 +57,7 @@ static const char *getErrorDescription(InitializationFailureCodes Error);
 
 PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
-void PowerIndicator::setBrightness(IndicatorLightState NewState) {
+void PowerIndicator::setBrightness(indicator_light_state NewState) {
 	if (State != NewState) {
 		State = NewState;
 		redraw();
@@ -76,19 +76,19 @@ void PowerIndicator::draw() {
 	int PosX = x() + (w() - Diameter) / 2;
 	int PosY = y() + (h() - Diameter) / 2;
 
-	fl_color(State == IndicatorLightState::UNDEFINED ? ColorRimUndefined : ColorRim);
+	fl_color(State == indicator_light_state::UNDEFINED ? ColorRimUndefined : ColorRim);
 	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
 
 	int Rim = (Diameter >= 12) ? 3 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
-		if (IndicatorLightState::ON == State) {
+		if (indicator_light_state::ON == State) {
 			fl_color(ColorOn);
 		}
-		else if (IndicatorLightState::DIM == State) {
+		else if (indicator_light_state::DIM == State) {
 			fl_color(ColorDim);
 		}
-		else if (IndicatorLightState::UNDEFINED == State) {
+		else if (indicator_light_state::UNDEFINED == State) {
 			fl_color(ColorUndefined);
 		}
 		else {
@@ -120,23 +120,23 @@ void initializeGraphicWidgets() {
 	(void)PowerIndicatorPtr;
 
 	PowerIndicator *PowerIndicator2Ptr = new PowerIndicator(75, 50, 30, 30);
-	PowerIndicator2Ptr->setBrightness(IndicatorLightState::UNDEFINED);
+	PowerIndicator2Ptr->setBrightness(indicator_light_state::UNDEFINED);
 
 	PowerIndicator *PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
-	PowerIndicator3Ptr->setBrightness(IndicatorLightState::ON);
+	PowerIndicator3Ptr->setBrightness(indicator_light_state::ON);
 
 	PowerIndicator *PowerIndicator4Ptr = new PowerIndicator(75, 100, 30, 30);
-	PowerIndicator4Ptr->setBrightness(IndicatorLightState::DIM);
+	PowerIndicator4Ptr->setBrightness(indicator_light_state::DIM);
 }
 
-void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {
+void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 	static char Buffer[300];
 	snprintf(Buffer, sizeof(Buffer) - 1,
 	         "Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać dodatkowe informacje",
 	         getErrorDescription(FailureCodeForGui));
 	FailureMessagePtr->label(Buffer);
 	FailureMessagePtr->show();
-	if (VerboseMode) {
+	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 		std::cout << "--------------------------------------GUI FAILURE MESSAGE--------------------------------------" << '\n';
 		std::cout << Buffer << '\n';
 		std::cout << "-----------------------------------------------------------------------------------------------" << '\n';
@@ -144,25 +144,25 @@ void showFailureMessageWidget(InitializationFailureCodes FailureCodeForGui) {
 }
 
 // TODO write once again
-static const char *getErrorDescription(InitializationFailureCodes Error) {
+static const char *getErrorDescription(initialization_failure_codes Error) {
 	switch (Error) {
-	case InitializationFailureCodes::NO_FAILURE:
+	case initialization_failure_codes::NO_FAILURE:
 		return "Brak błędów";
-	case InitializationFailureCodes::ERROR_COMMAND_LINE_SYNTAX:
+	case initialization_failure_codes::ERROR_COMMAND_LINE_SYNTAX:
 		return "Błąd składniowy w linii komendy";
-	case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
+	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
 		return "Nie można uzyskać ścieżki do programu";
-	case InitializationFailureCodes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
+	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
 		return "Błąd otwierania pliku konfiguracyjnego";
-	case InitializationFailureCodes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
+	case initialization_failure_codes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
 		return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
-	case InitializationFailureCodes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
+	case initialization_failure_codes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
 		return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-	case InitializationFailureCodes::ERROR_DEVICE_NAME_MISMATCH:
+	case initialization_failure_codes::ERROR_DEVICE_NAME_MISMATCH:
 		return "Nieprawidłowa nazwa urządzenia odczytana z Modbus";
-	case InitializationFailureCodes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
+	case initialization_failure_codes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
 		return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
-	case InitializationFailureCodes::ANOTHER_ERROR:
+	case initialization_failure_codes::ANOTHER_ERROR:
 		return "Błąd ogólny";
 	default:
 		return "Nieznany błąd";

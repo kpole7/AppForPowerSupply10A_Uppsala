@@ -14,7 +14,7 @@
 #define PSU_NUMBER 2
 
 // Attention: compare with getErrorDescription()
-enum class InitializationFailureCodes {
+enum class initialization_failure_codes {
 	NO_FAILURE,
 	ERROR_COMMAND_LINE_SYNTAX,
 	ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH,
@@ -26,22 +26,10 @@ enum class InitializationFailureCodes {
 	ANOTHER_ERROR,
 };
 
-enum class RunTimeFailureCodes {
+enum class run_time_failure_codes {
 	NO_FAILURE,
 	CONNECTION_LOST,
 	WRONG_ANSWERS,
 };
-
-//.................................................................................................
-// Global variables
-//.................................................................................................
-
-extern bool VerboseMode;
-
-extern int StatusLevelForGui;
-
-extern std::string ThisApplicationDirectory;
-
-extern std::string ConfigurationFilePath;
 
 #endif // SOURCE_CONFIG_H_

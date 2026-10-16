@@ -5,8 +5,6 @@
 
 #include <atomic>
 
-extern std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter;
-
 void initializePeripheralThreadModule();
 
 void peripheralThreadStart();
