@@ -21,6 +21,12 @@
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
 
 //...............................................................................................
+// Global variables
+//...............................................................................................
+
+std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter{0};
+
+//...............................................................................................
 // Local variables
 //...............................................................................................
 
@@ -92,7 +98,9 @@ static void peripheralThreadTiming() {
 	PeripheralThreadTimeInMilliseconds += PERIPHERAL_THREAD_LOOP_DURATION;
 	TimeNow = std::chrono::high_resolution_clock::now();
 	std::chrono::milliseconds DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
+	bool ItIsRunningOutOfTime = true;
 	while (DurationTime.count() < PeripheralThreadTimeInMilliseconds) {
+		ItIsRunningOutOfTime = false;
 		TimeNow = std::chrono::high_resolution_clock::now();
 		DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
 		if (DurationTime.count() >= PeripheralThreadTimeInMilliseconds) {
@@ -104,6 +112,15 @@ static void peripheralThreadTiming() {
 
 		TimeNow = std::chrono::high_resolution_clock::now();
 		DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
+	}
+	if (ItIsRunningOutOfTime) {
+		// atomic increment of PeripheralsRunningOutOfTimeCounter with saturation at UINT16_MAX
+		auto value = PeripheralsRunningOutOfTimeCounter.load(std::memory_order_relaxed);
+		while (value < UINT16_MAX &&
+			!PeripheralsRunningOutOfTimeCounter.compare_exchange_weak(value, static_cast<uint16_t>(value + 1),
+				std::memory_order_relaxed)) {
+		}
+
 	}
 }
 
@@ -122,12 +139,6 @@ static void peripheralThreadHandler() {
 		peripheralThreadTiming();
 
 		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
-
-#if 0 // debugging
-		std::chrono::high_resolution_clock::time_point TimeAfter = std::chrono::high_resolution_clock::now();
-		std::chrono::milliseconds ProcessingTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeAfter - TimeNow);
-		std::cout << "Peripheral thread " << PeripheralThreadTimeInMilliseconds << "  " << ProcessingTime.count() << '\n';
-#endif
 
 	} // while (...)
 	// exit
