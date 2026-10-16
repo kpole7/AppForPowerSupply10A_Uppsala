@@ -51,7 +51,7 @@ static void printNewTransferState(usart_transfer_state State);
 // Public method definitions
 //.................................................................................................
 
-LowLevelUsart::LowLevelUsart() {
+low_level_usart::low_level_usart() {
 	State = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
 	ErrorCode = usart_low_level_error::None;
@@ -66,7 +66,7 @@ LowLevelUsart::LowLevelUsart() {
 	ResponseDurationLimit = (std::chrono::milliseconds)0;
 }
 
-LowLevelUsart::~LowLevelUsart() {
+low_level_usart::~low_level_usart() {
 	if (SerialPortHandler != -1) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
@@ -77,7 +77,7 @@ LowLevelUsart::~LowLevelUsart() {
 	}
 }
 
-void LowLevelUsart::openUsart(const std::string &Name) {
+void low_level_usart::openUsart(const std::string &Name) {
 	if (usart_low_level_state::Uninitialized != State) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
@@ -123,7 +123,7 @@ void LowLevelUsart::openUsart(const std::string &Name) {
 	State = usart_low_level_state::Open;
 }
 
-std::string LowLevelUsart::getName() const {
+std::string low_level_usart::getName() const {
 	if (NameOfPort != nullptr) {
 		return *NameOfPort;
 	}
@@ -132,13 +132,13 @@ std::string LowLevelUsart::getName() const {
 	}
 }
 
-usart_low_level_state LowLevelUsart::getState() const { return State; }
+usart_low_level_state low_level_usart::getState() const { return State; }
 
-usart_transfer_state LowLevelUsart::getTransferState() const { return TransferState; }
+usart_transfer_state low_level_usart::getTransferState() const { return TransferState; }
 
-usart_low_level_error LowLevelUsart::getErrorCode() const { return ErrorCode; }
+usart_low_level_error low_level_usart::getErrorCode() const { return ErrorCode; }
 
-void LowLevelUsart::resetUsartMaster() {
+void low_level_usart::resetUsartMaster() {
 	State = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
 	ErrorCode = usart_low_level_error::None;
@@ -152,7 +152,7 @@ void LowLevelUsart::resetUsartMaster() {
 	ResponseDurationLimit = (std::chrono::milliseconds)0;
 }
 
-void LowLevelUsart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
+void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
                                    std::chrono::milliseconds ResponseTimeout) {
 	if (usart_low_level_state::Open != State) {
 		ErrorCode = usart_low_level_error::CallError;
@@ -179,7 +179,7 @@ void LowLevelUsart::sendOutputData(const char *Buffer, int Length, std::chrono::
 
 /// @brief Collect input data from the USART until a period of silence is detected.
 /// @return True if data was successfully collected, false otherwise.
-usart_transfer_state LowLevelUsart::collectInputDataUntilSilence() {
+usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 	std::chrono::milliseconds SilenceDuration(0);
 	std::chrono::high_resolution_clock::time_point TimeNow;
 
@@ -323,7 +323,7 @@ usart_transfer_state LowLevelUsart::collectInputDataUntilSilence() {
 	return TransferState;
 }
 
-int LowLevelUsart::getInputData(char *Buffer, int BufferSize) {
+int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 	if (usart_transfer_state::Completed != TransferState) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);

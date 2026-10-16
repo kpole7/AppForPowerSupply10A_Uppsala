@@ -7,7 +7,7 @@
 #include <thread>
 
 #include "peripheral_thread.h"
-#include "shared_data.h"
+#include "shared_resources.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -20,6 +20,14 @@
 #define SHUT_DOWN_LOOP_DELAY 20 // milliseconds
 
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
+
+//...............................................................................................
+// Global variables
+//...............................................................................................
+
+bool AwakeRefreshWholeGui = false;
+
+bool AwakeRefreshDebugInfoGui = false;
 
 //...............................................................................................
 // Local variables
@@ -100,11 +108,19 @@ static void peripheralThreadHandler() {
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
 	while (DebugingPeripheralsEnable) {
-
 		peripheralThreadTiming();
+		AwakeRefreshWholeGui = false;
+
+
 
 		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
 
+
+
+		if (AwakeRefreshWholeGui) {
+			Fl::awake(refreshWholeGui, nullptr);
+			AwakeRefreshWholeGui = false;
+		}
 	} // while (...)
 	// exit
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
@@ -138,10 +154,7 @@ static void peripheralThreadTiming() {
 		// atomic increment of PeripheralsRunningOutOfTimeCounter with saturation at UINT16_MAX
 		auto value = PeripheralsRunningOutOfTimeCounter.load(std::memory_order_relaxed);
 		while (value < UINT16_MAX &&
-			!PeripheralsRunningOutOfTimeCounter.compare_exchange_weak(value, static_cast<uint16_t>(value + 1),
-				std::memory_order_relaxed)) {
+		       !PeripheralsRunningOutOfTimeCounter.compare_exchange_weak(value, static_cast<uint16_t>(value + 1), std::memory_order_relaxed)) {
 		}
-
 	}
 }
-

@@ -12,7 +12,7 @@ add_executable(AppForPowerSupply10A_Uppsala
   source/debug.cpp
   source/gui_widgets.cpp
   source/peripheral_thread.cpp
-  source/shared_data.cpp
+  source/shared_resources.cpp
 #  source/modified_rstl_master.cpp
 #  source/settings_file.cpp
 )

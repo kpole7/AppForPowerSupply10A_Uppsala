@@ -27,7 +27,7 @@
 
 #include "gui_widgets.h"
 #include "peripheral_thread.h"
-#include "shared_data.h"
+#include "shared_resources.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -40,9 +40,9 @@
 //.................................................................................................
 
 /// This is Esc-proof window (a FLTK standard window is sensitive to Esc)
-class WindowEscProof : public Fl_Double_Window {
+class window_esc_proof : public Fl_Double_Window {
   public:
-	WindowEscProof(int W, int H, const char *title) : Fl_Double_Window(W, H, title) {}
+	window_esc_proof(int W, int H, const char *title) : Fl_Double_Window(W, H, title) {}
 	int handle(int event) override;
 };
 
@@ -51,7 +51,7 @@ class WindowEscProof : public Fl_Double_Window {
 //.................................................................................................
 
 /// This variable points to the main application window
-WindowEscProof *ApplicationWindow;
+window_esc_proof *ApplicationWindow;
 
 /// This variable is used to locate the configuration file
 static std::string *ConfigurationFilePathPtr;
@@ -87,7 +87,7 @@ int main(int argc, char **argv) {
 
 	// Main window of the application
 	Fl::scheme("gtk+");
-	ApplicationWindow = new WindowEscProof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
+	ApplicationWindow = new window_esc_proof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
 	ApplicationWindow->begin();
 	ApplicationWindow->color(COLOR_BACKGROUND);
 	ApplicationWindow->callback(onMainWindowCloseCallback); // Window close event is handled
@@ -144,7 +144,7 @@ int main(int argc, char **argv) {
 /// @details This method overrides the default handle() method of the FLTK window.
 /// It checks for key events and specifically intercepts the Esc key press,
 /// returning 1 to block the default behavior of closing the window when Esc is pressed.
-int WindowEscProof::handle(int event) {
+int window_esc_proof::handle(int event) {
 	if (event == FL_KEYDOWN) {              // Check if it is a key event
 		if (Fl::event_key() == FL_Escape) { // Check if it is the Esc key
 			return 1;                       // Block the default behavior

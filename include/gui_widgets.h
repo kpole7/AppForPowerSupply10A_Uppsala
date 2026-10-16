@@ -14,7 +14,7 @@
 #include <string>
 
 #include "config.h"
-#include "shared_data.h"
+#include "shared_resources.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -33,9 +33,9 @@
 enum class indicator_light_state : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED = 3 };
 
 /// Indicator lamp: a colored circle with a dark gray outline
-class PowerIndicator : public Fl_Widget {
+class power_indicator : public Fl_Widget {
   public:
-	PowerIndicator(int X, int Y, int W, int H, const char *Label = nullptr);
+	power_indicator(int X, int Y, int W, int H, const char *Label = nullptr);
 
 	/// Sets the brightness of the indicator: OFF (dark grayish green), DIM (dim green), or ON (bright green)
 	void setBrightness(indicator_light_state NewState);
@@ -44,14 +44,17 @@ class PowerIndicator : public Fl_Widget {
 	void draw() override;
 
   private:
-	indicator_light_state State{indicator_light_state::OFF};
+	indicator_light_state State{indicator_light_state::UNDEFINED};
 };
 
 /// Main power controls
-class MainPowerGroup : public Fl_Group {
+class main_power_group : public Fl_Group {
+  public:
+	main_power_group(int X, int Y, int W, int H, const char *L = nullptr);
+	void setState(main_power_state NewState);
   private:
-	main_power_state CurrentState{main_power_state::OFF};
-	PowerIndicator *PowerIndicatorPtr;
+	main_power_state CurrentState{main_power_state::UNDEFINED};
+	power_indicator *PowerIndicatorPtr;
 	Fl_Button *PowerSwitchPtr;
 	Fl_Box *StatusTextBoxPtr;
 };

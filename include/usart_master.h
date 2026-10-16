@@ -38,7 +38,7 @@ enum class usart_transfer_state {
 	CallError
 };
 
-class LowLevelUsart {
+class low_level_usart {
   private:
 	usart_low_level_state State;
 	usart_transfer_state TransferState;
@@ -54,8 +54,8 @@ class LowLevelUsart {
 	std::chrono::milliseconds ResponseDurationLimit;
 
   public:
-	LowLevelUsart();
-	~LowLevelUsart();
+	low_level_usart();
+	~low_level_usart();
 	void openUsart(const std::string &Name);
 	std::string getName() const;
 	usart_low_level_state getState() const;

@@ -1,18 +1,20 @@
-/// @file shared_data.h
+/// @file shared_resources.h
+/// @brief Shared data and functions between FLTK thread and the peripheral thread.
 
-#ifndef SOURCE_SHARED_DATA_H_
-#define SOURCE_SHARED_DATA_H_
+#ifndef SOURCE_SHARED_RESOURCES_H_
+#define SOURCE_SHARED_RESOURCES_H_
 
 #include <atomic>
 #include <chrono>
 #include <cstdint>
+#include <string>
 
 //.................................................................................................
 // Types
 //.................................................................................................
 
 /// @brief Minimal representation of the main power state visible to the user.
-enum class main_power_state : uint8_t { OFF = 0, RISING = 2, ON = 1, FALLING = 3, UNDEFINED = 4 };
+enum class main_power_state : uint8_t { OFF = 0, RISING = 1, ON = 2, FALLING = 3, UNDEFINED = 4 };
 
 //.................................................................................................
 // Global variables
@@ -39,4 +41,10 @@ extern std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter;
 extern std::atomic<main_power_state> SharedMainPowerState;
 
 
-#endif // SOURCE_SHARED_DATA_H_
+
+
+void refreshWholeGui(void *Data);
+
+
+
+#endif // SOURCE_SHARED_RESOURCES_H_

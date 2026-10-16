@@ -3,7 +3,17 @@
 #ifndef PERIPHERAL_THREAD_H
 #define PERIPHERAL_THREAD_H
 
-#include <atomic>
+//.................................................................................................
+// Global variables
+//.................................................................................................
+
+extern bool AwakeRefreshWholeGui;
+
+extern bool AwakeRefreshDebugInfoGui;
+
+//.................................................................................................
+// Function prototypes
+//.................................................................................................
 
 void initializePeripheralThreadModule();
 

@@ -1,8 +1,6 @@
 /// @file debug.cpp
 /// @brief Provides non-blocking console input functionality.
 
-#include "debug.h"
-
 #include <cassert>
 #include <cerrno>
 #include <iostream>
@@ -12,11 +10,15 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "debug.h"
+#include "shared_resources.h"
+#include "peripheral_thread.h"
+
 namespace {
 
-class ConsoleMode {
+class console_mode {
   public:
-	ConsoleMode() {
+	console_mode() {
 		if (0 == isatty(STDIN_FILENO)) {
 			throw std::runtime_error("Standard input is not a terminal");
 		}
@@ -35,10 +37,10 @@ class ConsoleMode {
 		}
 	}
 
-	~ConsoleMode() { tcsetattr(STDIN_FILENO, TCSANOW, &OriginalMode); }
+	~console_mode() { tcsetattr(STDIN_FILENO, TCSANOW, &OriginalMode); }
 
-	ConsoleMode(const ConsoleMode &) = delete;
-	ConsoleMode &operator=(const ConsoleMode &) = delete;
+	console_mode(const console_mode &) = delete;
+	console_mode &operator=(const console_mode &) = delete;
 
   private:
 	termios OriginalMode{};
@@ -46,7 +48,7 @@ class ConsoleMode {
 
 } // namespace
 
-ConsoleMode *ConsoleModePtr = nullptr;
+console_mode *ConsoleModePtr = nullptr;
 
 int readConsoleKeyNonBlocking() {
 	pollfd Input{STDIN_FILENO, POLLIN, 0};
@@ -79,7 +81,7 @@ int readConsoleKeyNonBlocking() {
 
 void peripheralsInitializations() {
 	if (ConsoleModePtr == nullptr) {
-		ConsoleModePtr = new ConsoleMode();
+		ConsoleModePtr = new console_mode();
 	}
 }
 
@@ -96,12 +98,39 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 	assert(ConsoleModePtr != nullptr);
 	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
-	if (Key != PreviousKey) {
-		if ((Key >= (int)' ') && (Key <= (int)'~')) {
-			std::cout << "Key changed: " << (char)Key << '\n';
+
+	if ((PreviousKey == -1) && (Key != -1)) {
+		if (Key == 'S') {
+			main_power_state PsuState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
+			switch (PsuState) {
+			case main_power_state::OFF:
+				PsuState = main_power_state::RISING;
+				break;
+			case main_power_state::RISING:
+				PsuState = main_power_state::ON;
+				break;
+			case main_power_state::ON:
+				PsuState = main_power_state::FALLING;
+				break;
+			default:
+				PsuState = main_power_state::OFF;
+				break;
+			}
+			atomic_store_explicit(&SharedMainPowerState, PsuState, std::memory_order_release);
+			AwakeRefreshWholeGui = true;
+			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << static_cast<int>(PsuState) << '\n';
+		}
+		else if (Key == 's') {
+			atomic_store_explicit(&SharedMainPowerState, main_power_state::UNDEFINED, std::memory_order_release);
+			AwakeRefreshWholeGui = true;
+			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << 
+				static_cast<int>(main_power_state::UNDEFINED) << " (UNDEFINED)" << '\n';
+		}
+		else if ((Key >= (int)' ') && (Key <= (int)'~')) {
+			std::cout << "Key pressed: " << (char)Key << '\n';
 		}
 		else {
-			std::cout << "Key changed: " << Key << '\n';
+			std::cout << "Key pressed: " << Key << '\n';
 		}
 	}
 	PreviousKey = Key;

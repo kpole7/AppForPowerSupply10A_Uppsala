@@ -1,10 +1,11 @@
-/// @file gui_widgets.c
+/// @file gui_widgets.cpp
 
 #include <cassert>
 #include <cstdio>
 #include <iostream>
 #include <memory>
 #include <string>
+
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
@@ -24,9 +25,9 @@
 // Definitions of types
 //.................................................................................................
 
-class OnErrorGroup : public Fl_Group {
+class on_error_group : public Fl_Group {
   public:
-	OnErrorGroup(int X, int Y, int W, int H, const char *L = nullptr);
+	on_error_group(int X, int Y, int W, int H, const char *L = nullptr);
 	void draw() override;
 
   private:
@@ -45,6 +46,15 @@ class OnErrorGroup : public Fl_Group {
 static Fl_Box *GeneralStatusTextBoxPtr;
 static Fl_Box *FailureMessagePtr;
 
+
+
+
+static power_indicator *PowerIndicatorPtr;
+
+
+
+
+
 //.................................................................................................
 // Local function prototypes
 //.................................................................................................
@@ -55,16 +65,16 @@ static const char *getErrorDescription(initialization_failure_codes Error);
 // Function definitions
 //.................................................................................................
 
-PowerIndicator::PowerIndicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
+power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
-void PowerIndicator::setBrightness(indicator_light_state NewState) {
+void power_indicator::setBrightness(indicator_light_state NewState) {
 	if (State != NewState) {
 		State = NewState;
 		redraw();
 	}
 }
 
-void PowerIndicator::draw() {
+void power_indicator::draw() {
 	const Fl_Color ColorOn = fl_rgb_color(0x30, 0xFF, 0x30);
 	const Fl_Color ColorDim = fl_rgb_color(0x70, 0xA0, 0x70);
 	const Fl_Color ColorOff = fl_rgb_color(0x80, 0x88, 0x80);
@@ -116,17 +126,8 @@ void initializeGraphicWidgets() {
 	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
-	PowerIndicator *PowerIndicatorPtr = new PowerIndicator(25, 50, 30, 30);
+	PowerIndicatorPtr = new power_indicator(25, 50, 30, 30);
 	(void)PowerIndicatorPtr;
-
-	PowerIndicator *PowerIndicator2Ptr = new PowerIndicator(75, 50, 30, 30);
-	PowerIndicator2Ptr->setBrightness(indicator_light_state::UNDEFINED);
-
-	PowerIndicator *PowerIndicator3Ptr = new PowerIndicator(125, 50, 30, 30);
-	PowerIndicator3Ptr->setBrightness(indicator_light_state::ON);
-
-	PowerIndicator *PowerIndicator4Ptr = new PowerIndicator(75, 100, 30, 30);
-	PowerIndicator4Ptr->setBrightness(indicator_light_state::DIM);
 }
 
 void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
@@ -167,4 +168,35 @@ static const char *getErrorDescription(initialization_failure_codes Error) {
 	default:
 		return "Nieznany błąd";
 	}
+}
+
+//.................................................................................................
+// Definitions of functions related to peripheral thread
+//.................................................................................................
+
+void refreshWholeGui(void *Data) {
+	(void)Data; // intentionally unused
+
+	indicator_light_state CurrentState;
+
+	switch (atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire)) {
+		case main_power_state::UNDEFINED:
+			CurrentState = indicator_light_state::UNDEFINED;
+			break;
+		case main_power_state::ON:
+			CurrentState = indicator_light_state::ON;
+			break;
+		case main_power_state::OFF:
+			CurrentState = indicator_light_state::OFF;
+			break;
+		case main_power_state::RISING:
+		case main_power_state::FALLING:
+			CurrentState = indicator_light_state::DIM;
+			break;
+		default:
+			std::cout << "Unexpected main power state" << '\n';
+			break;
+	}
+
+	PowerIndicatorPtr->setBrightness(CurrentState);
 }
