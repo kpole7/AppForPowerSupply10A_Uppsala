@@ -197,7 +197,7 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 		ErrorCode = usart_low_level_error::InternalError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 	}
-	if (-1 != SerialPortHandler) {
+	if (-1 == SerialPortHandler) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
 		ErrorCode = usart_low_level_error::InternalError;
