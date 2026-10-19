@@ -56,6 +56,13 @@ class low_level_usart {
 	std::chrono::milliseconds WaitingLimit;
 	std::chrono::milliseconds ResponseDurationLimit;
 
+	bool validateCollectionState();
+	usart_transfer_state failCollection(bool ClosePort);
+	usart_transfer_state readAvailableInput(std::chrono::high_resolution_clock::time_point TimeNow);
+	usart_transfer_state processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
+	                                          std::chrono::high_resolution_clock::time_point TimeNow);
+	usart_transfer_state handleSilence(std::chrono::high_resolution_clock::time_point TimeNow);
+
   public:
 	low_level_usart();
 	~low_level_usart();
