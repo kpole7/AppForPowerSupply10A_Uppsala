@@ -6,8 +6,9 @@
 #include <iostream>
 #include <thread>
 
+#include "debug.h"
 #include "peripheral_thread.h"
-#include "shared_resources.h"
+#include "multithread_resources.h"
 
 //.................................................................................................
 // Preprocessor directives
@@ -58,13 +59,6 @@ static void peripheralThreadHandler();
 // Function definitions
 //.................................................................................................
 
-/// @brief Initializes the peripheral thread module. This function is being called in the FLTK thread.
-void initializePeripheralThreadModule() {
-	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
-	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);
-	DebugingPeripheralsEnable = true;
-}
-
 /// This function launches a new thread to support peripherals. It should be called in the FLTK thread.
 void peripheralThreadStart() {
 	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
@@ -91,9 +85,6 @@ void peripheralThreadExit() {
 	}
 	if (peripheralThread.joinable() && peripheralThread.get_id() != std::this_thread::get_id()) {
 		peripheralThread.join();
-#if 0
-        std::cout << "Peripherals closed; delay loop ran " << SHUT_DOWN_COUNT_DOWN - TimeoutCounter << " times" << '\n';
-#endif
 	}
 }
 
@@ -102,25 +93,20 @@ void peripheralThreadExit() {
 static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
-	peripheralsInitializations();
+	debugPeripheralsInitializations();
+
+	DebugingPeripheralsEnable = true;
 
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
 	while (DebugingPeripheralsEnable) {
-		peripheralThreadTiming();
-		AwakeRefreshWholeGui = false;
-
-
-
-		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
-
-
-
 		if (AwakeRefreshWholeGui) {
 			Fl::awake(refreshWholeGui, nullptr);
 			AwakeRefreshWholeGui = false;
 		}
+		peripheralThreadTiming();
+		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
 	} // while (...)
 	// exit
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);

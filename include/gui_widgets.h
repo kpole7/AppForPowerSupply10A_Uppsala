@@ -9,12 +9,11 @@
 #include <FL/Fl_Double_Window.H> // to eliminate flickering
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Window.H>
-#include <atomic>
 #include <cstdint>
 #include <string>
 
 #include "config.h"
-#include "shared_resources.h"
+#include "multithread_resources.h"
 
 //.................................................................................................
 // Preprocessor directives

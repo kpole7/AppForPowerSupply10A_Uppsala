@@ -11,8 +11,12 @@
 #include <unistd.h>
 
 #include "debug.h"
-#include "shared_resources.h"
+#include "multithread_resources.h"
 #include "peripheral_thread.h"
+
+//.................................................................................................
+// Classes
+//.................................................................................................
 
 namespace {
 
@@ -48,8 +52,23 @@ class console_mode {
 
 } // namespace
 
-console_mode *ConsoleModePtr = nullptr;
 
+//.................................................................................................
+// Local variables
+//.................................................................................................
+
+static console_mode *ConsoleModePtr = nullptr;
+
+//.................................................................................................
+// Function prototypes
+//.................................................................................................
+
+int readConsoleKeyNonBlocking();
+
+
+
+/// Reads one byte from the console without waiting.
+/// Returns the byte value, or -1 when no input is available.
 int readConsoleKeyNonBlocking() {
 	pollfd Input{STDIN_FILENO, POLLIN, 0};
 	int PollResult;
@@ -79,7 +98,7 @@ int readConsoleKeyNonBlocking() {
 	return ReadResult == 1 ? Key : -1;
 }
 
-void peripheralsInitializations() {
+void debugPeripheralsInitializations() {
 	if (ConsoleModePtr == nullptr) {
 		ConsoleModePtr = new console_mode();
 	}

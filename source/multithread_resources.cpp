@@ -1,8 +1,7 @@
-/// @file shared_resources.cpp
+/// @file multithread_resources.cpp
 /// @brief Shared data between FLTK thread and the peripheral thread.
 
-#include "shared_resources.h"
-#include <atomic>
+#include "multithread_resources.h"
 #include <cstdint> // for uint16_t
 #include <string>
 
@@ -12,12 +11,12 @@
 
 std::atomic<bool> VerboseMode{false};
 
-int StatusLevelForGui;
-
-std::string ThisApplicationDirectory;
-
-std::string ConfigurationFilePath;
+std::atomic<uint8_t> StatusLevelForGui{DEFAULT_STATUS_LEVEL_FOR_GUI};
 
 std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter{0};
 
 std::atomic<main_power_state> SharedMainPowerState{main_power_state::UNDEFINED};
+
+std::string ThisApplicationDirectory;
+
+std::string ConfigurationFilePath;

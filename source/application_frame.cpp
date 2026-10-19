@@ -1,11 +1,10 @@
-/// @file main.cpp
+/// @file application_frame.cpp
 ///
 /// Abbreviations:
 ///		uA = micro amperes
 /// 	FSM = finite state machine
 ///		PSU = power supply unit (it stands for the multichannel power supply unit used in this application)
 
-#include <atomic>
 #include <cassert>
 #include <climits> // for PATH_MAX
 #include <csignal>
@@ -26,14 +25,7 @@
 #include <FL/fl_ask.H>
 
 #include "gui_widgets.h"
-#include "peripheral_thread.h"
-#include "shared_resources.h"
-
-//.................................................................................................
-// Preprocessor directives
-//.................................................................................................
-
-#define DEFAULT_STATUS_LEVEL 1
+#include "multithread_resources.h"
 
 //.................................................................................................
 // Definitions of types
@@ -112,8 +104,6 @@ int main(int argc, char **argv) {
 	Fl_Menu_Item *MenuItems = const_cast<Fl_Menu_Item *>(MenuWidget.menu());
 	MenuWidget.setonly(&MenuItems[indexOfMenuItemStatusNormal]);
 	MenuWidget.textsize(12);
-
-	StatusLevelForGui = DEFAULT_STATUS_LEVEL;
 
 	// initializeFailureMessageWidget();
 
@@ -224,8 +214,6 @@ static initialization_failure_codes mainInitializations(int argc, char **argv) {
 		FailureCode = determineApplicationPath(argv[0]);
 	}
 
-	initializePeripheralThreadModule();
-
 	return FailureCode;
 }
 
@@ -258,9 +246,9 @@ static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
 		return;
 	}
 
-	StatusLevelForGui = static_cast<int>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data()));
+	atomic_store_explicit(&StatusLevelForGui, static_cast<uint8_t>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data())), std::memory_order_release);
 	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
-		std::cout << "Opcja Status ustawiona na wartość: " << StatusLevelForGui << '\n';
+		std::cout << "Opcja Status ustawiona na wartość: " << atomic_load_explicit(&StatusLevelForGui, std::memory_order_acquire) << '\n';
 	}
 }
 
