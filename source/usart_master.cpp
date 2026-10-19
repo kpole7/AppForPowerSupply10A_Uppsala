@@ -127,9 +127,7 @@ std::string low_level_usart::getName() const {
 	if (NameOfPort != nullptr) {
 		return *NameOfPort;
 	}
-	else {
-		return "";
-	}
+	return "";
 }
 
 usart_low_level_state low_level_usart::getState() const { return State; }
@@ -141,6 +139,7 @@ usart_low_level_error low_level_usart::getErrorCode() const { return ErrorCode; 
 void low_level_usart::resetUsartMaster() {
 	State = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
+	printNewTransferState(TransferState);
 	ErrorCode = usart_low_level_error::None;
 
 	memset(TotalResponse, 0, MAX_RESPONSE_LENGTH);
@@ -153,7 +152,7 @@ void low_level_usart::resetUsartMaster() {
 }
 
 void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
-                                   std::chrono::milliseconds ResponseTimeout) {
+                                     std::chrono::milliseconds ResponseTimeout) {
 	if (usart_low_level_state::Open != State) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
@@ -164,23 +163,25 @@ void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono
 	ResponseDurationLimit = ResponseTimeout;
 
 	TransferState = usart_transfer_state::Sending;
+	printNewTransferState(TransferState);
 
-	int BytesWritten = write(SerialPortHandler, Buffer, Length);
+	int BytesWritten = (int)write(SerialPortHandler, Buffer, Length);
 	if (BytesWritten != Length) {
 		ErrorCode = usart_low_level_error::WriteFailed;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		TransferState = usart_transfer_state::InternalError;
+		printNewTransferState(TransferState);
 		return;
 	}
 
 	TimeWhenOutgoingDataEnded = std::chrono::high_resolution_clock::now();
 	TransferState = usart_transfer_state::WaitingForResponse;
+	printNewTransferState(TransferState);
 }
 
 /// @brief Collect input data from the USART until a period of silence is detected.
 /// @return True if data was successfully collected, false otherwise.
 usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
-	std::chrono::milliseconds SilenceDuration(0);
 	std::chrono::high_resolution_clock::time_point TimeNow;
 
 	if (usart_low_level_state::Open != State) {
@@ -208,10 +209,11 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 		NameOfPort = nullptr;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		TransferState = usart_transfer_state::InternalError;
+		printNewTransferState(TransferState);
 		return TransferState;
 	}
 
-	std::chrono::high_resolution_clock::time_point TimeNow = std::chrono::high_resolution_clock::now();
+	TimeNow = std::chrono::high_resolution_clock::now();
 
 	// check if there is data available in the input buffer of the serial port
 	fd_set SerialReadFds;
@@ -230,12 +232,13 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 		delete NameOfPort;
 		NameOfPort = nullptr;
 		TransferState = usart_transfer_state::InternalError;
+		printNewTransferState(TransferState);
 	}
 	else if ((SerialPortState > 0) && FD_ISSET(SerialPortHandler, &SerialReadFds)) {
 		// There is something in the input buffer of the serial port
 
 		char ReceivedBytes[500];
-		int NumberOfReceived = read(SerialPortHandler, &ReceivedBytes[0], sizeof(ReceivedBytes));
+		int NumberOfReceived = (int)read(SerialPortHandler, &ReceivedBytes[0], sizeof(ReceivedBytes));
 		assert(NumberOfReceived <= (int)sizeof(ReceivedBytes));
 
 		if (NumberOfReceived > 0) {
@@ -243,16 +246,19 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 				assert(usart_transfer_state::WaitingForResponse == TransferState);
 				TimeWhenResponseStarted = TimeNow;
 				TransferState = usart_transfer_state::Receiving;
+				printNewTransferState(TransferState);
 			}
 			else {
 				auto ReceivingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenResponseStarted);
 				if (ReceivingDuration.count() > ResponseDurationLimit.count()) {
 					if (ReceivingDuration.count() > RESPONSE_DURATION_ABSOLUTE_LIMIT_MS) {
 						TransferState = usart_transfer_state::IncorrectlyNoisy;
+						printNewTransferState(TransferState);
 						ErrorCode = usart_low_level_error::SlaveOutOfOrder;
 						return TransferState;
 					}
 					TransferState = usart_transfer_state::IncorrectlyReceiving;
+					printNewTransferState(TransferState);
 					return TransferState;
 				}
 			}
@@ -271,6 +277,7 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 					delete NameOfPort;
 					NameOfPort = nullptr;
 					TransferState = usart_transfer_state::InternalError;
+					printNewTransferState(TransferState);
 					return TransferState;
 				}
 			}
@@ -287,6 +294,7 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 			delete NameOfPort;
 			NameOfPort = nullptr;
 			TransferState = usart_transfer_state::InternalError;
+			printNewTransferState(TransferState);
 		}
 	}
 	else {
@@ -299,6 +307,7 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 			auto SilenceDuration = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenOutgoingDataEnded);
 			if (SilenceDuration.count() > WaitingLimit.count()) {
 				TransferState = usart_transfer_state::WaitingLimitExceeded;
+				printNewTransferState(TransferState);
 			}
 		}
 		else {
@@ -307,16 +316,17 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 			if (SilenceDuration.count() > SILENCE_DETECTION_PERIOD_MS) {
 				if (usart_transfer_state::Receiving == TransferState) {
 					TransferState = usart_transfer_state::Completed;
+					printNewTransferState(TransferState);
 					return TransferState;
 				}
-				else if (usart_transfer_state::IncorrectlyReceiving == TransferState) {
+				if (usart_transfer_state::IncorrectlyReceiving == TransferState) {
 					TransferState = usart_transfer_state::IncorrectlyCompleted;
+					printNewTransferState(TransferState);
 					return TransferState;
 				}
-				else {
-					// unexpected transfer state, treat as internal error
-				}
+				// unexpected transfer state, treat as internal error
 				TransferState = usart_transfer_state::InternalError;
+				printNewTransferState(TransferState);
 			}
 		}
 	}
@@ -324,7 +334,7 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 }
 
 int low_level_usart::getInputData(char *Buffer, int BufferSize) {
-	if (usart_transfer_state::Completed != TransferState) {
+	if ((usart_transfer_state::Completed != TransferState) || (BufferSize >= MAX_RESPONSE_LENGTH)) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		close(SerialPortHandler);
@@ -333,9 +343,18 @@ int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 		delete NameOfPort;
 		NameOfPort = nullptr;
 		TransferState = usart_transfer_state::CallError;
+		printNewTransferState(TransferState);
 		return -1;
 	}
-	return 0;
+
+	size_t Length = strlen(TotalResponse);
+	if (Length >= (size_t)BufferSize) {
+		return 0;
+	}
+
+	strncpy(Buffer, TotalResponse, BufferSize);
+	Buffer[BufferSize - 1] = '\0'; // Ensure null-termination
+	return (int)Length;
 }
 
 //........................................................................................................
@@ -381,19 +400,19 @@ static int configureSerialPort(const char *DeviceName) {
 
 #if DEBUG_USART_MASTER
 
-char *UsartLowLevelStateTexts[] = {"Uninitialized", "Open", "Closed", "Error"};
+char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
 
-char *UsartTransferStateTexts[] = {"Idle",
-                                   "Sending",
-                                   "WaitingForResponse",
-                                   "Receiving",
-                                   "Completed",
-                                   "WaitingLimitExceeded",
-                                   "IncorrectlyReceiving",
-                                   "IncorrectlyCompleted",
-                                   "IncorrectlyNoisy",
-                                   "InternalError",
-                                   "CallError"};
+char UsartTransferStateTexts[11][21] = {"Idle",
+                                        "Sending",
+                                        "WaitingForResponse",
+                                        "Receiving",
+                                        "Completed",
+                                        "WaitingLimitExceeded",
+                                        "IncorrectlyReceiving",
+                                        "IncorrectlyCompleted",
+                                        "IncorrectlyNoisy",
+                                        "InternalError",
+                                        "CallError"};
 
 static void printNewState(usart_low_level_state State) {
 	static usart_low_level_state PreviousState = usart_low_level_state::Uninitialized;

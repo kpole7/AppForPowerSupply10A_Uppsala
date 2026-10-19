@@ -6,7 +6,6 @@
 #include <memory>
 #include <string>
 
-
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Group.H>
@@ -46,14 +45,7 @@ class on_error_group : public Fl_Group {
 static Fl_Box *GeneralStatusTextBoxPtr;
 static Fl_Box *FailureMessagePtr;
 
-
-
-
 static power_indicator *PowerIndicatorPtr;
-
-
-
-
 
 //.................................................................................................
 // Local function prototypes
@@ -107,10 +99,9 @@ void power_indicator::draw() {
 		fl_color(ColorOn);
 		if (Inner > 0) {
 			fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 270.0, 360.0);
-			fl_pie(PosX + Rim, PosY + Rim, Inner, Inner,   0.0,  90.0);
+			fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 90.0);
 		}
 	}
-
 }
 
 void initializeGraphicWidgets() {
@@ -184,22 +175,22 @@ void refreshWholeGui(void *Data) {
 	indicator_light_state CurrentState;
 
 	switch (atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire)) {
-		case main_power_state::UNDEFINED:
-			CurrentState = indicator_light_state::UNDEFINED;
-			break;
-		case main_power_state::ON:
-			CurrentState = indicator_light_state::ON;
-			break;
-		case main_power_state::OFF:
-			CurrentState = indicator_light_state::OFF;
-			break;
-		case main_power_state::RISING:
-		case main_power_state::FALLING:
-			CurrentState = indicator_light_state::DIM;
-			break;
-		default:
-			std::cout << "Unexpected main power state" << '\n';
-			break;
+	case main_power_state::UNDEFINED:
+		CurrentState = indicator_light_state::UNDEFINED;
+		break;
+	case main_power_state::ON:
+		CurrentState = indicator_light_state::ON;
+		break;
+	case main_power_state::OFF:
+		CurrentState = indicator_light_state::OFF;
+		break;
+	case main_power_state::RISING:
+	case main_power_state::FALLING:
+		CurrentState = indicator_light_state::DIM;
+		break;
+	default:
+		std::cout << "Unexpected main power state" << '\n';
+		break;
 	}
 
 	PowerIndicatorPtr->setBrightness(CurrentState);

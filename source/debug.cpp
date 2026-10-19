@@ -52,7 +52,6 @@ class console_mode {
 
 } // namespace
 
-
 //.................................................................................................
 // Local variables
 //.................................................................................................
@@ -64,8 +63,6 @@ static console_mode *ConsoleModePtr = nullptr;
 //.................................................................................................
 
 int readConsoleKeyNonBlocking();
-
-
 
 /// Reads one byte from the console without waiting.
 /// Returns the byte value, or -1 when no input is available.
@@ -142,8 +139,8 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 		else if (Key == 's') {
 			atomic_store_explicit(&SharedMainPowerState, main_power_state::UNDEFINED, std::memory_order_release);
 			AwakeRefreshWholeGui = true;
-			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << 
-				static_cast<int>(main_power_state::UNDEFINED) << " (UNDEFINED)" << '\n';
+			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << static_cast<int>(main_power_state::UNDEFINED)
+			          << " (UNDEFINED)" << '\n';
 		}
 		else if ((Key >= (int)' ') && (Key <= (int)'~')) {
 			std::cout << "Key pressed: " << (char)Key << '\n';

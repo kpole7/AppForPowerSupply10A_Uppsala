@@ -51,6 +51,7 @@ class main_power_group : public Fl_Group {
   public:
 	main_power_group(int X, int Y, int W, int H, const char *L = nullptr);
 	void setState(main_power_state NewState);
+
   private:
 	main_power_state CurrentState{main_power_state::UNDEFINED};
 	power_indicator *PowerIndicatorPtr;

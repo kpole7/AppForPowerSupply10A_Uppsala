@@ -7,8 +7,8 @@
 #include <thread>
 
 #include "debug.h"
-#include "peripheral_thread.h"
 #include "multithread_resources.h"
+#include "peripheral_thread.h"
 
 //.................................................................................................
 // Preprocessor directives

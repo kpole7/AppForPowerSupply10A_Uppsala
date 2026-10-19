@@ -246,7 +246,8 @@ static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
 		return;
 	}
 
-	atomic_store_explicit(&StatusLevelForGui, static_cast<uint8_t>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data())), std::memory_order_release);
+	atomic_store_explicit(&StatusLevelForGui, static_cast<uint8_t>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data())),
+	                      std::memory_order_release);
 	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
 		std::cout << "Opcja Status ustawiona na wartość: " << atomic_load_explicit(&StatusLevelForGui, std::memory_order_acquire) << '\n';
 	}

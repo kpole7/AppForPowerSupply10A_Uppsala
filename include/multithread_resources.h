@@ -47,7 +47,6 @@ extern std::string ThisApplicationDirectory;
 /// @details This variable can be set only once, during the initialization of the application.
 extern std::string ConfigurationFilePath;
 
-
 //.................................................................................................
 // Prototypes of functions that are called from the FLTK thread, but impact the peripheral thread.
 //.................................................................................................
@@ -61,7 +60,5 @@ void peripheralThreadExit();
 //.................................................................................................
 
 void refreshWholeGui(void *Data);
-
-
 
 #endif // MULTITHREAD_RESOURCES_H_

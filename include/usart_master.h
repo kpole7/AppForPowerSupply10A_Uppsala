@@ -3,9 +3,12 @@
 #ifndef USART_MASTER_H
 #define USART_MASTER_H
 
+#include <cassert>
 #include <chrono>
 #include <inttypes.h>
 #include <string>
+
+static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 
 #define MAX_RESPONSE_LENGTH 300
 
@@ -57,10 +60,10 @@ class low_level_usart {
 	low_level_usart();
 	~low_level_usart();
 	void openUsart(const std::string &Name);
-	std::string getName() const;
-	usart_low_level_state getState() const;
-	usart_transfer_state getTransferState() const;
-	usart_low_level_error getErrorCode() const;
+	[[nodiscard]] std::string getName() const;
+	[[nodiscard]] usart_low_level_state getState() const;
+	[[nodiscard]] usart_transfer_state getTransferState() const;
+	[[nodiscard]] usart_low_level_error getErrorCode() const;
 	void resetUsartMaster();
 	void sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, std::chrono::milliseconds ResponseTimeout);
 	usart_transfer_state collectInputDataUntilSilence();
