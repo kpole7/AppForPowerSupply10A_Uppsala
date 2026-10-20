@@ -1,6 +1,8 @@
 /// @file multithread_resources.h
 /// @brief Shared data and functions between FLTK thread and the peripheral thread.
 
+// TODO review + update
+
 #ifndef MULTITHREAD_RESOURCES_H_
 #define MULTITHREAD_RESOURCES_H_
 

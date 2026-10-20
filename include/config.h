@@ -13,6 +13,7 @@
 
 #define PSU_NUMBER 2
 
+// TODO review
 // Attention: compare with getErrorDescription()
 enum class initialization_failure_codes {
 	NO_FAILURE,
@@ -26,6 +27,7 @@ enum class initialization_failure_codes {
 	ANOTHER_ERROR,
 };
 
+// TODO review
 enum class run_time_failure_codes {
 	NO_FAILURE,
 	CONNECTION_LOST,

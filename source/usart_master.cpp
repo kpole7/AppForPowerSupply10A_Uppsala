@@ -1,7 +1,7 @@
 /// @file usart_master.cpp
 /// @brief Implementation of communication with the slave device based on RP2040 microcontroller.
 ///
-/// @details This file contains low-level layer for communication between the master and slave devices using USART.
+/// @details This file contains low-level layer for communication between the master and the slave device using USART.
 /// This application runs on the master device (PC) and communicates with the slave device (RP2040 microcontroller).
 /// The master device sends commands to the slave device and receives responses.
 /// At this low-level layer, the communication is organized in such a way that the master sends a continuous packet of bytes
@@ -96,9 +96,7 @@ void low_level_usart::openUsart(const std::string &Name) {
 	}
 	if (usart_low_level_error::None != ErrorCode) {
 		State = usart_low_level_state::Error;
-#if DEBUG_USART_MASTER
 		printNewState(State);
-#endif
 		return;
 	}
 
@@ -190,6 +188,30 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 	return readAvailableInput(TimeNow);
 }
 
+int low_level_usart::getInputData(char *Buffer, int BufferSize) {
+	if ((usart_transfer_state::Completed != TransferState) || (BufferSize >= MAX_RESPONSE_LENGTH)) {
+		ErrorCode = usart_low_level_error::CallError;
+		failCollection(usart_transfer_state::CallError);
+		return -1;
+	}
+
+	size_t Length = strlen(TotalResponse);
+	if (Length >= (size_t)BufferSize) {
+
+		// TODO: review
+		return 0;
+	}
+
+	strncpy(Buffer, TotalResponse, BufferSize);
+	TransferState = usart_transfer_state::Idle;
+	printNewTransferState(TransferState);
+	return (int)Length;
+}
+ 
+//.................................................................................................
+// Private method definitions
+//.................................................................................................
+
 bool low_level_usart::validateCollectionState() {
 	if (usart_low_level_state::Open != State) {
 		ErrorCode = usart_low_level_error::CallError;
@@ -211,22 +233,22 @@ bool low_level_usart::validateCollectionState() {
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 	}
 	if (usart_low_level_error::None != ErrorCode) {
-		failCollection(false);
+		failCollection(usart_transfer_state::InternalError);
 		return false;
 	}
 	return true;
 }
 
-usart_transfer_state low_level_usart::failCollection(bool ClosePort) {
-	if (ClosePort && -1 != SerialPortHandler) {
+usart_transfer_state low_level_usart::failCollection(usart_transfer_state NewTransferState, int Line) {
+	if (-1 != SerialPortHandler) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
 	}
 	State = usart_low_level_state::Error;
 	delete NameOfPort;
 	NameOfPort = nullptr;
-	printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-	TransferState = usart_transfer_state::InternalError;
+	printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, Line);
+	TransferState = NewTransferState;
 	printNewTransferState(TransferState);
 	return TransferState;
 }
@@ -240,8 +262,7 @@ usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resol
 
 	if (SerialPortState == -1) {
 		ErrorCode = usart_low_level_error::SelectFailed;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		return failCollection(true);
+		return failCollection(usart_transfer_state::CallError);
 	}
 	if ((SerialPortState <= 0) || !FD_ISSET(SerialPortHandler, &SerialReadFds)) {
 		return handleSilence(TimeNow);
@@ -253,8 +274,7 @@ usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resol
 
 	if (NumberOfReceived <= 0) {
 		ErrorCode = usart_low_level_error::ReadFailed;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		return failCollection(true);
+		return failCollection(usart_transfer_state::CallError);
 	}
 
 	return processReceivedInput(ReceivedBytes, NumberOfReceived, TimeNow);
@@ -291,8 +311,7 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 		}
 
 		ErrorCode = usart_low_level_error::InternalError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		return failCollection(true);
+		return failCollection(usart_transfer_state::InternalError);
 	}
 
 	TotalResponse[TotalReceivedBytes] = 0;
@@ -330,30 +349,6 @@ usart_transfer_state low_level_usart::handleSilence(std::chrono::high_resolution
 	TransferState = usart_transfer_state::InternalError;
 	printNewTransferState(TransferState);
 	return TransferState;
-}
-
-int low_level_usart::getInputData(char *Buffer, int BufferSize) {
-	if ((usart_transfer_state::Completed != TransferState) || (BufferSize >= MAX_RESPONSE_LENGTH)) {
-		ErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		close(SerialPortHandler);
-		SerialPortHandler = -1;
-		State = usart_low_level_state::Error;
-		delete NameOfPort;
-		NameOfPort = nullptr;
-		TransferState = usart_transfer_state::CallError;
-		printNewTransferState(TransferState);
-		return -1;
-	}
-
-	size_t Length = strlen(TotalResponse);
-	if (Length >= (size_t)BufferSize) {
-		return 0;
-	}
-
-	strncpy(Buffer, TotalResponse, BufferSize);
-	Buffer[BufferSize - 1] = '\0'; // Ensure null-termination
-	return (int)Length;
 }
 
 //........................................................................................................
@@ -398,7 +393,6 @@ static int configureSerialPort(const char *DeviceName) {
 }
 
 #if DEBUG_USART_MASTER
-
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
 
 char UsartTransferStateTexts[11][21] = {"Idle",
@@ -412,20 +406,24 @@ char UsartTransferStateTexts[11][21] = {"Idle",
                                         "IncorrectlyNoisy",
                                         "InternalError",
                                         "CallError"};
+#endif
 
 static void printNewState(usart_low_level_state State) {
+#if DEBUG_USART_MASTER
 	static usart_low_level_state PreviousState = usart_low_level_state::Uninitialized;
 	printf("usart_master state: %s -> %s\n", UsartLowLevelStateTexts[static_cast<int>(PreviousState)],
 	       UsartLowLevelStateTexts[static_cast<int>(State)]);
 	PreviousState = State;
+#endif
 }
 
 static void printNewTransferState(usart_transfer_state State) {
+#if DEBUG_USART_MASTER
 	static usart_transfer_state PreviousState = usart_transfer_state::Idle;
 	printf("usart_master transfer state: %s -> %s\n", UsartTransferStateTexts[static_cast<int>(PreviousState)],
 	       UsartTransferStateTexts[static_cast<int>(State)]);
 	PreviousState = State;
-}
 #endif
+}
 
 //........................................................................................................

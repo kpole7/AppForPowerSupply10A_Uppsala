@@ -14,7 +14,7 @@ add_executable(AppForPowerSupply10A_Uppsala
   source/multithread_resources.cpp
   source/peripheral_thread.cpp
   source/usart_master.cpp
-#  source/modified_rstl_master.cpp
+  source/modified_rstl_master.cpp
 #  source/settings_file.cpp
 )
 

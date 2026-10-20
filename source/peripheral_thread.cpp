@@ -89,7 +89,7 @@ void peripheralThreadExit() {
 }
 
 /// This function runs the second thread (FLTK is the main thread).
-/// The peripheral thread supports Modbus communication and sends signals to FLTK to refresh graphics.
+/// The peripheral thread supports communication with peripherals and sends signals to FLTK to refresh graphics.
 static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 

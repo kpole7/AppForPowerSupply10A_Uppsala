@@ -3,7 +3,7 @@
 /// Abbreviations:
 ///		uA = micro amperes
 /// 	FSM = finite state machine
-///		PSU = power supply unit (it stands for the multichannel power supply unit used in this application)
+///		PSU = power supply unit (in this application it stands for the multichannel power supply unit)
 
 #include <cassert>
 #include <climits> // for PATH_MAX
@@ -82,7 +82,10 @@ int main(int argc, char **argv) {
 	ApplicationWindow = new window_esc_proof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
 	ApplicationWindow->begin();
 	ApplicationWindow->color(COLOR_BACKGROUND);
+	
 	ApplicationWindow->callback(onMainWindowCloseCallback); // Window close event is handled
+
+	// Set the application window icon
 	const std::string WindowIconPath = ThisApplicationDirectory + "/find-location-symbolic.png";
 	Fl_PNG_Image *WindowIcon = new Fl_PNG_Image(WindowIconPath.c_str());
 	if ((nullptr != WindowIcon) && (nullptr != WindowIcon->data()) && (WindowIcon->w() > 0) && (WindowIcon->h() > 0)) {
@@ -105,6 +108,8 @@ int main(int argc, char **argv) {
 	MenuWidget.setonly(&MenuItems[indexOfMenuItemStatusNormal]);
 	MenuWidget.textsize(12);
 
+	// TODO
+	// Error message widget initialization used in case of initialization failure
 	// initializeFailureMessageWidget();
 
 	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
@@ -117,8 +122,8 @@ int main(int argc, char **argv) {
 	ApplicationWindow->end();
 	ApplicationWindow->show();
 
-	Fl::lock(); // Enable multi-threading support in FLTK; register a callback function for Fl::awake()
-
+	// Multi-threading support in FLTK; register a callback function for Fl::awake()
+	Fl::lock(); 
 	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
 		peripheralThreadStart();
 	}
@@ -239,6 +244,30 @@ static initialization_failure_codes determineVerbosity(int argc, char **argv) {
 	return initialization_failure_codes::NO_FAILURE;
 }
 
+/// The function searches for the directory where the executable file is located
+/// @return code defined in FailureCodes
+static initialization_failure_codes determineApplicationPath(char *Argv0) {
+	char Path[PATH_MAX];
+	ConfigurationFilePathPtr = nullptr;
+
+	if (realpath(Argv0, Path) != nullptr) {
+		ThisApplicationDirectory = dirname(Path);
+		ConfigurationFilePath = ThisApplicationDirectory;
+		ConfigurationFilePathPtr = &ConfigurationFilePath;
+		if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
+#if 0
+        	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
+#endif
+			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n' << " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
+		}
+	}
+	else {
+		std::cerr << "Nie udało się uzyskać ścieżki do programu." << '\n';
+		return initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
+	}
+	return initialization_failure_codes::NO_FAILURE;
+}
+
 static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
 	auto *TemporaryMenu = static_cast<Fl_Menu_Bar *>(WidgetPtr);
 	const Fl_Menu_Item *TemporaryMenuItem = TemporaryMenu->mvalue();
@@ -264,26 +293,3 @@ static void callbackForMenuItemHelp(Fl_Widget *, void *) {
 	}
 }
 
-/// The function searches for the directory where the executable file is located
-/// @return code defined in FailureCodes
-static initialization_failure_codes determineApplicationPath(char *Argv0) {
-	char Path[PATH_MAX];
-	ConfigurationFilePathPtr = nullptr;
-
-	if (realpath(Argv0, Path) != nullptr) {
-		ThisApplicationDirectory = dirname(Path);
-		ConfigurationFilePath = ThisApplicationDirectory;
-		ConfigurationFilePathPtr = &ConfigurationFilePath;
-		if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
-#if 0
-        	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
-#endif
-			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n' << " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
-		}
-	}
-	else {
-		std::cerr << "Nie udało się uzyskać ścieżki do programu." << '\n';
-		return initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH;
-	}
-	return initialization_failure_codes::NO_FAILURE;
-}
