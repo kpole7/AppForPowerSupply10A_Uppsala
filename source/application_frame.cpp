@@ -82,7 +82,7 @@ int main(int argc, char **argv) {
 	ApplicationWindow = new window_esc_proof(MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "Kwadrupole Linia Pionowa");
 	ApplicationWindow->begin();
 	ApplicationWindow->color(COLOR_BACKGROUND);
-	
+
 	ApplicationWindow->callback(onMainWindowCloseCallback); // Window close event is handled
 
 	// Set the application window icon
@@ -123,7 +123,7 @@ int main(int argc, char **argv) {
 	ApplicationWindow->show();
 
 	// Multi-threading support in FLTK; register a callback function for Fl::awake()
-	Fl::lock(); 
+	Fl::lock();
 	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
 		peripheralThreadStart();
 	}
@@ -292,4 +292,3 @@ static void callbackForMenuItemHelp(Fl_Widget *, void *) {
 		fl_alert("Nie udało się otworzyć pliku PDF.");
 	}
 }
-

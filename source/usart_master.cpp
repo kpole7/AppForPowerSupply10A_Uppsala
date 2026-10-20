@@ -42,10 +42,8 @@
 // This function opens and configures a serial port
 static int configureSerialPort(const char *DeviceName);
 
-#if DEBUG_USART_MASTER
 static void printNewState(usart_low_level_state State);
 static void printNewTransferState(usart_transfer_state State);
-#endif
 
 //.................................................................................................
 // Public method definitions
@@ -207,7 +205,7 @@ int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 	printNewTransferState(TransferState);
 	return (int)Length;
 }
- 
+
 //.................................................................................................
 // Private method definitions
 //.................................................................................................
@@ -414,6 +412,8 @@ static void printNewState(usart_low_level_state State) {
 	printf("usart_master state: %s -> %s\n", UsartLowLevelStateTexts[static_cast<int>(PreviousState)],
 	       UsartLowLevelStateTexts[static_cast<int>(State)]);
 	PreviousState = State;
+#else
+	(void)State;
 #endif
 }
 
@@ -423,6 +423,8 @@ static void printNewTransferState(usart_transfer_state State) {
 	printf("usart_master transfer state: %s -> %s\n", UsartTransferStateTexts[static_cast<int>(PreviousState)],
 	       UsartTransferStateTexts[static_cast<int>(State)]);
 	PreviousState = State;
+#else
+	(void)State;
 #endif
 }
 

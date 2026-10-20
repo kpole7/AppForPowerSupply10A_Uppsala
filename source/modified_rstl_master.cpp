@@ -5,14 +5,11 @@
 /// This implementation is driven by the peripheral_thread module. The usart_master module sends and receives
 /// continuous data packets. This module is responsible for syntax and timing of the communication.
 /// This module manages errors reported by the usart_master module. The module's function is to generate commands
-/// that comply with the protocol, and then to receive and interpret the responses. In addition, it ensures proper 
-/// that complies with the protocol, and then to receive and interpret the responses. In addition, it ensures proper 
-/// error handling (for syntax and timing errors). This module covers handling of single commands. Another 
+/// that comply with the protocol, and then to receive and interpret the responses. In addition, it ensures proper
+/// that complies with the protocol, and then to receive and interpret the responses. In addition, it ensures proper
+/// error handling (for syntax and timing errors). This module covers handling of single commands. Another
 /// higher-level module is responsible for creating and managing sequences of commands.
 
 #include "modified_rstl_master.h"
-#include "usart_master.h"
 #include "peripheral_thread.h"
-
-
-
+#include "usart_master.h"
