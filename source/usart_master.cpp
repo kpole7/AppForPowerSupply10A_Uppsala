@@ -428,4 +428,24 @@ static void printNewTransferState(usart_transfer_state State) {
 #endif
 }
 
+#if DEBUG_USART_MASTER
+
+/// @brief Handles a single tick of peripheral operations.
+/// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
+/// @return true if the peripheral operations should continue, false if they can be terminated
+bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
+	if (PressedKey != -1) {
+		std::cout << "New key: " << PressedKey << '\n';
+	}
+	return !TerminationSignal; 
+}
+
+#else
+
+bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) { 
+	(void)PressedKey;
+	return !TerminationSignal; 
+}
+#endif
+
 //........................................................................................................

@@ -14,6 +14,9 @@
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
 
+// Module under test:
+#include "usart_master.h"
+
 //.................................................................................................
 // Classes
 //.................................................................................................
@@ -105,51 +108,76 @@ void debugPeripheralsInitializations() {
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
 /// @return true if the peripheral operations should continue, false if they can be terminated
 bool debuggingPeripheralsTick(bool TerminationSignal) {
-	if (TerminationSignal) {
-		delete ConsoleModePtr;
-		ConsoleModePtr = nullptr;
-		return false;
-	}
-
 	assert(ConsoleModePtr != nullptr);
 	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
-
+	bool KeepMeRunning = true;
+	int JustPressedKey = -1;
 	if ((PreviousKey == -1) && (Key != -1)) {
-		if (Key == 'S') {
-			main_power_state PsuState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
-			switch (PsuState) {
-			case main_power_state::OFF:
-				PsuState = main_power_state::RISING;
-				break;
-			case main_power_state::RISING:
-				PsuState = main_power_state::ON;
-				break;
-			case main_power_state::ON:
-				PsuState = main_power_state::FALLING;
-				break;
-			default:
-				PsuState = main_power_state::OFF;
-				break;
-			}
-			atomic_store_explicit(&SharedMainPowerState, PsuState, std::memory_order_release);
-			AwakeRefreshWholeGui = true;
-			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << static_cast<int>(PsuState) << '\n';
-		}
-		else if (Key == 's') {
-			atomic_store_explicit(&SharedMainPowerState, main_power_state::UNDEFINED, std::memory_order_release);
-			AwakeRefreshWholeGui = true;
-			std::cout << "Key pressed: " << (char)Key << " | SharedMainPowerState changed: " << static_cast<int>(main_power_state::UNDEFINED)
-			          << " (UNDEFINED)" << '\n';
-		}
-		else if ((Key >= (int)' ') && (Key <= (int)'~')) {
-			std::cout << "Key pressed: " << (char)Key << '\n';
-		}
-		else {
-			std::cout << "Key pressed: " << Key << '\n';
-		}
+		JustPressedKey = Key;
 	}
 	PreviousKey = Key;
 
-	return true; // Continue running peripherals by default
+#if 0 // selftest
+	if ((JustPressedKey >= (int)' ') && (JustPressedKey <= (int)'~')) {
+		std::cout << "Key pressed: " << (char)JustPressedKey << '\n';
+	}
+	else {
+		if (JustPressedKey != -1) {
+			std::cout << "Key pressed: " << JustPressedKey << '\n';
+		}
+	}
+	KeepMeRunning = !TerminationSignal; // instantly stop if termination signal is received
+#endif
+
+#if 0 // test of mechanism using the AwakeRefreshWholeGui variable
+	if (JustPressedKey == 'S') {
+		main_power_state PsuState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
+		switch (PsuState) {
+		case main_power_state::OFF:
+			PsuState = main_power_state::RISING;
+			break;
+		case main_power_state::RISING:
+			PsuState = main_power_state::ON;
+			break;
+		case main_power_state::ON:
+			PsuState = main_power_state::FALLING;
+			break;
+		default:
+			PsuState = main_power_state::OFF;
+			break;
+		}
+		atomic_store_explicit(&SharedMainPowerState, PsuState, std::memory_order_release);
+		AwakeRefreshWholeGui = true;
+		std::cout << "Key pressed: " << (char)JustPressedKey << " | SharedMainPowerState changed: " << static_cast<int>(PsuState) << '\n';
+	}
+	else if (JustPressedKey == 's') {
+		atomic_store_explicit(&SharedMainPowerState, main_power_state::UNDEFINED, std::memory_order_release);
+		AwakeRefreshWholeGui = true;
+		std::cout << "Key pressed: " << (char)JustPressedKey << " | SharedMainPowerState changed: " << static_cast<int>(main_power_state::UNDEFINED)
+		          << " (UNDEFINED)" << '\n';
+	}
+	else if ((JustPressedKey >= (int)' ') && (JustPressedKey <= (int)'~')) {
+		std::cout << "Key pressed: " << (char)JustPressedKey << '\n';
+	}
+	else {
+		if (JustPressedKey != -1) {
+			std::cout << "Key pressed: " << JustPressedKey << '\n';
+		}
+	}
+	KeepMeRunning = !TerminationSignal; // instantly stop if termination signal is received
+#endif
+
+#if 1
+	KeepMeRunning = usartMasterDebuggingTick(TerminationSignal, JustPressedKey);
+#endif
+
+	if (!KeepMeRunning) {
+		delete ConsoleModePtr;
+		ConsoleModePtr = nullptr;
+		std::cout << "Terminating debugging peripherals tick properly." << '\n';
+		return false;
+	}
+
+	return KeepMeRunning;
 }

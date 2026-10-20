@@ -37,6 +37,9 @@ bool AwakeRefreshDebugInfoGui = false;
 /// This flag is set when the application is being closed
 static std::atomic<bool> DoClosePeripheralThread;
 
+/// This flag is set when the application is being closed instantly
+static std::atomic<bool> DoHardClosePeripheralThread;
+
 /// This flag is set when the peripheral thread has been stopped
 static std::atomic<bool> PeripheralThreadIsStopped;
 
@@ -62,6 +65,7 @@ static void peripheralThreadHandler();
 /// This function launches a new thread to support peripherals. It should be called in the FLTK thread.
 void peripheralThreadStart() {
 	atomic_store_explicit(&DoClosePeripheralThread, false, std::memory_order_release);
+	atomic_store_explicit(&DoHardClosePeripheralThread, false, std::memory_order_release);
 	atomic_store_explicit(&PeripheralThreadIsStopped, false, std::memory_order_release);
 	peripheralThread = std::thread(peripheralThreadHandler);
 }
@@ -78,7 +82,7 @@ void peripheralThreadExit() {
 	while (!(atomic_load_explicit(&PeripheralThreadIsStopped, std::memory_order_acquire)) || (!peripheralThread.joinable())) {
 		if (0 == TimeoutCounter) {
 			std::cout << "Problem encountered during peripherals closing" << '\n';
-			break;
+			atomic_store_explicit(&DoHardClosePeripheralThread, true, std::memory_order_release);
 		}
 		Fl::wait(0.001 * SHUT_DOWN_LOOP_DELAY); // SHUT_DOWN_LOOP_DELAY in milliseconds
 		TimeoutCounter--;
@@ -100,12 +104,17 @@ static void peripheralThreadHandler() {
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
+
+
 	while (DebugingPeripheralsEnable) {
 		if (AwakeRefreshWholeGui) {
 			Fl::awake(refreshWholeGui, nullptr);
 			AwakeRefreshWholeGui = false;
 		}
 		peripheralThreadTiming();
+		if (atomic_load_explicit(&DoHardClosePeripheralThread, std::memory_order_acquire)) {
+			break;
+		}
 		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
 	} // while (...)
 	// exit
