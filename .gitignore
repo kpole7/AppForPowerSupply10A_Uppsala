@@ -52,4 +52,6 @@
 
 /temporary/
 
+# ignore doxygen output files
+/html/
 

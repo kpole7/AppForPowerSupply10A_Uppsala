@@ -18,9 +18,9 @@
 #include <termios.h>
 #include <unistd.h>
 
-//.................................................................................................
+//=================================================================================================
 // Preprocessor directives
-//.................................................................................................
+//=================================================================================================
 
 #define DEBUG_USART_MASTER 1
 
@@ -35,9 +35,9 @@
 /// If this limit is exceeded, the application will be closed.
 #define RESPONSE_DURATION_ABSOLUTE_LIMIT_MS 500
 
-//.................................................................................................
+//=================================================================================================
 // Local function prototypes
-//.................................................................................................
+//=================================================================================================
 
 // This function opens and configures a serial port
 static int configureSerialPort(const char *DeviceName);
@@ -45,9 +45,9 @@ static int configureSerialPort(const char *DeviceName);
 static void printNewState(usart_low_level_state State);
 static void printNewTransferState(usart_transfer_state State);
 
-//.................................................................................................
+//=================================================================================================
 // Public method definitions
-//.................................................................................................
+//=================================================================================================
 
 low_level_usart::low_level_usart() {
 	State = usart_low_level_state::Uninitialized;
@@ -75,6 +75,8 @@ low_level_usart::~low_level_usart() {
 	}
 }
 
+/// @callgraph
+/// @callergraph
 void low_level_usart::openUsart(const std::string &Name) {
 	if (usart_low_level_state::Uninitialized != State) {
 		ErrorCode = usart_low_level_error::CallError;
@@ -126,12 +128,20 @@ std::string low_level_usart::getName() const {
 	return "";
 }
 
+/// @callgraph
+/// @callergraph
 usart_low_level_state low_level_usart::getState() const { return State; }
 
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::getTransferState() const { return TransferState; }
 
+/// @callgraph
+/// @callergraph
 usart_low_level_error low_level_usart::getErrorCode() const { return ErrorCode; }
 
+/// @callgraph
+/// @callergraph
 void low_level_usart::resetUsartMaster() {
 	State = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
@@ -147,6 +157,8 @@ void low_level_usart::resetUsartMaster() {
 	ResponseDurationLimit = (std::chrono::milliseconds)0;
 }
 
+/// @callgraph
+/// @callergraph
 void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
                                      std::chrono::milliseconds ResponseTimeout) {
 	if (usart_low_level_state::Open != State) {
@@ -177,6 +189,8 @@ void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono
 
 /// @brief Collect input data from the USART until a period of silence is detected.
 /// @return The current transfer state after checking for input or silence.
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 	if (!validateCollectionState()) {
 		return TransferState;
@@ -186,6 +200,8 @@ usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
 	return readAvailableInput(TimeNow);
 }
 
+/// @callgraph
+/// @callergraph
 int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 	if ((usart_transfer_state::Completed != TransferState) || (BufferSize >= MAX_RESPONSE_LENGTH)) {
 		ErrorCode = usart_low_level_error::CallError;
@@ -206,10 +222,12 @@ int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 	return (int)Length;
 }
 
-//.................................................................................................
+//=================================================================================================
 // Private method definitions
-//.................................................................................................
+//=================================================================================================
 
+/// @callgraph
+/// @callergraph
 bool low_level_usart::validateCollectionState() {
 	if (usart_low_level_state::Open != State) {
 		ErrorCode = usart_low_level_error::CallError;
@@ -237,6 +255,8 @@ bool low_level_usart::validateCollectionState() {
 	return true;
 }
 
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::failCollection(usart_transfer_state NewTransferState, int Line) {
 	if (-1 != SerialPortHandler) {
 		close(SerialPortHandler);
@@ -251,6 +271,8 @@ usart_transfer_state low_level_usart::failCollection(usart_transfer_state NewTra
 	return TransferState;
 }
 
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resolution_clock::time_point TimeNow) {
 	fd_set SerialReadFds;
 	FD_ZERO(&SerialReadFds);
@@ -278,6 +300,8 @@ usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resol
 	return processReceivedInput(ReceivedBytes, NumberOfReceived, TimeNow);
 }
 
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
                                                            std::chrono::high_resolution_clock::time_point TimeNow) {
 	if (0 == TotalReceivedBytes) {
@@ -317,6 +341,8 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 	return TransferState;
 }
 
+/// @callgraph
+/// @callergraph
 usart_transfer_state low_level_usart::handleSilence(std::chrono::high_resolution_clock::time_point TimeNow) {
 	if (0 == TotalReceivedBytes) {
 		assert(usart_transfer_state::WaitingForResponse == TransferState);
@@ -349,11 +375,13 @@ usart_transfer_state low_level_usart::handleSilence(std::chrono::high_resolution
 	return TransferState;
 }
 
-//........................................................................................................
+//=================================================================================================.......
 // Local function definitions
-//........................................................................................................
+//=================================================================================================.......
 
 // This function opens and configures a serial port
+/// @callgraph
+/// @callergraph
 static int configureSerialPort(const char *DeviceName) {
 	int FileHandler;
 	struct termios PortSettings;
@@ -389,6 +417,10 @@ static int configureSerialPort(const char *DeviceName) {
 
 	return FileHandler;
 }
+
+//=================================================================================================
+// Code used for debugging and integration testing
+//=================================================================================================
 
 #if DEBUG_USART_MASTER
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
@@ -433,6 +465,8 @@ static void printNewTransferState(usart_transfer_state State) {
 /// @brief Handles a single tick of peripheral operations.
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
 /// @return true if the peripheral operations should continue, false if they can be terminated
+/// @callgraph
+/// @callergraph
 bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	if (PressedKey != -1) {
 		std::cout << "New key: " << PressedKey << '\n';
@@ -448,4 +482,4 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 }
 #endif
 
-//........................................................................................................
+//=================================================================================================.......
