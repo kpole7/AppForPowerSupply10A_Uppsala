@@ -12,31 +12,36 @@ static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 
 #define MAX_RESPONSE_LENGTH 300
 
-enum class usart_low_level_state { Uninitialized, Open, Closed, Error };
+enum class usart_low_level_state { 
+	Uninitialized, 
+	Open, // normal operation
+	Closed, 
+	Error 
+};
 
 enum class usart_low_level_error {
-	None,
+	None, // normal operation
 	UsartDeviceNotFound,
 	OpenFailed,
 	SelectFailed,
 	ReadFailed,
 	WriteFailed,
 	InternalError,
-	SlaveOutOfOrder,
-	CallError,
-	Unknown
+	CallError
 };
 
 enum class usart_transfer_state {
-	Idle, // wait for a new outgoing data to be sent
-	Sending,
-	WaitingForResponse,
-	Receiving,
-	Completed,
-	WaitingLimitExceeded, // the slave did not respond within the expected waiting limit
-	IncorrectlyReceiving, // if the response is too long for a single command but not long enough to be considered a permanent error
-	IncorrectlyCompleted, // ingoing transfer has ended but the response is too long
-	IncorrectlyNoisy,     // fatal error due to excessive noise on the line
+	Idle, // normal operation; wait for a new outgoing data to be sent
+	Sending, // normal operation
+	WaitingForResponse, // normal operation
+	Receiving, // normal operation
+	Completed, // normal operation
+	WaitingLimitExceeded, // non-critical error: the slave did not respond within the expected waiting limit and
+						  // there is no ongoing transfer now
+	IncorrectlyReceiving, // non-critical error: if the response is too long and the transfer is still ongoing
+						  // or waiting time has exceeded but now the transfer is still ongoing
+	IncorrectlyCompleted, // non-critical error: ingoing transfer has ended but the response was too long
+	IncorrectlyNoisy, // non-critical error: if the slave is sending unexpected data and the transfer is still ongoing
 	InternalError,
 	CallError
 };
@@ -45,7 +50,7 @@ class low_level_usart {
   private:
 	usart_low_level_state State;
 	usart_transfer_state TransferState;
-	usart_low_level_error ErrorCode;
+	usart_low_level_error CriticalErrorCode;
 	std::string *NameOfPort;
 	int SerialPortHandler;
 	char TotalResponse[MAX_RESPONSE_LENGTH];
@@ -56,9 +61,9 @@ class low_level_usart {
 	std::chrono::milliseconds WaitingLimit;
 	std::chrono::milliseconds ResponseDurationLimit;
 
-	bool validateCollectionState();
-	usart_transfer_state failCollection(usart_transfer_state NewTransferState, int Line = __LINE__);
-	usart_transfer_state readAvailableInput(std::chrono::high_resolution_clock::time_point TimeNow);
+	bool checkNormalConditions();
+	usart_transfer_state handleCriticalError(usart_transfer_state NewTransferState, int Line = __LINE__);
+	usart_transfer_state operateAssumingNormalConditions(std::chrono::high_resolution_clock::time_point TimeNow);
 	usart_transfer_state processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
 	                                          std::chrono::high_resolution_clock::time_point TimeNow);
 	usart_transfer_state handleSilence(std::chrono::high_resolution_clock::time_point TimeNow);
@@ -71,7 +76,7 @@ class low_level_usart {
 	[[nodiscard]] usart_low_level_state getState() const;
 	[[nodiscard]] usart_transfer_state getTransferState() const;
 	[[nodiscard]] usart_low_level_error getErrorCode() const;
-	void resetUsartMaster();
+	bool resetUsartMaster();
 	usart_low_level_error sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, 
 		std::chrono::milliseconds ResponseTimeout);
 	usart_transfer_state collectInputDataUntilSilence();

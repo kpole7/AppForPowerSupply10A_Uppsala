@@ -53,5 +53,4 @@
 /temporary/
 
 # ignore doxygen output files
-/html/
-
+/dox/html/

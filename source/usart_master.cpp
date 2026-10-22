@@ -31,10 +31,6 @@
 /// It is equal about 3.5 character times at the configured USART speed.
 #define SILENCE_DETECTION_PERIOD_MS 7
 
-/// This constant defines the absolute limit for the response duration (in milliseconds).
-/// If this limit is exceeded, the application will be closed.
-#define RESPONSE_DURATION_ABSOLUTE_LIMIT_MS 500
-
 //=================================================================================================
 // Local function prototypes
 //=================================================================================================
@@ -52,7 +48,7 @@ static void printNewTransferState(usart_transfer_state State);
 low_level_usart::low_level_usart() {
 	State = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
-	ErrorCode = usart_low_level_error::None;
+	CriticalErrorCode = usart_low_level_error::None;
 	NameOfPort = nullptr;
 	SerialPortHandler = -1;
 	memset(TotalResponse, 0, MAX_RESPONSE_LENGTH);
@@ -75,29 +71,32 @@ low_level_usart::~low_level_usart() {
 	}
 }
 
+/// @brief Open and configure the USART port with the specified name.
+/// @param Name The name of the USART port to open
+/// @return The error code indicating the result of the operation
 /// @callgraph
 /// @callergraph
 usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 	if (usart_low_level_state::Uninitialized != State) {
-		ErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::CallError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if (NameOfPort != nullptr) {
 		delete NameOfPort;
 		NameOfPort = nullptr;
-		ErrorCode = usart_low_level_error::InternalError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::InternalError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if (-1 != SerialPortHandler) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
-		ErrorCode = usart_low_level_error::InternalError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::InternalError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
-	if (usart_low_level_error::None != ErrorCode) {
+	if (usart_low_level_error::None != CriticalErrorCode) {
 		State = usart_low_level_state::Error;
 		printNewState(State);
-		return ErrorCode;
+		return CriticalErrorCode;
 	}
 
 	NameOfPort = new std::string(Name);
@@ -105,23 +104,25 @@ usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 	static const char *PortNameCharPtr = NameOfPort->c_str();
 	int Result = access(PortNameCharPtr, F_OK);
 	if (0 != Result) {
-		ErrorCode = usart_low_level_error::UsartDeviceNotFound;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::UsartDeviceNotFound;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 		State = usart_low_level_state::Error;
-		return ErrorCode;
+		return CriticalErrorCode;
 	}
 
 	SerialPortHandler = configureSerialPort(PortNameCharPtr);
 	if (-1 == SerialPortHandler) {
-		ErrorCode = usart_low_level_error::OpenFailed;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::OpenFailed;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 		State = usart_low_level_state::Error;
-		return ErrorCode;
+		return CriticalErrorCode;
 	}
 	State = usart_low_level_state::Open;
-	return ErrorCode;
+	return CriticalErrorCode;
 }
 
+/// @brief Get the name of the USART port.
+/// @return The name of the USART port as a string. If the port is not set, returns an empty string.
 std::string low_level_usart::getName() const {
 	if (NameOfPort != nullptr) {
 		return *NameOfPort;
@@ -129,25 +130,40 @@ std::string low_level_usart::getName() const {
 	return "";
 }
 
+/// @brief Get the current low-level state of the USART master.
 /// @callgraph
 /// @callergraph
 usart_low_level_state low_level_usart::getState() const { return State; }
 
+/// @brief Get the current transfer state of the USART master.
 /// @callgraph
 /// @callergraph
 usart_transfer_state low_level_usart::getTransferState() const { return TransferState; }
 
+/// @brief Get the current error code of the USART master.
 /// @callgraph
 /// @callergraph
-usart_low_level_error low_level_usart::getErrorCode() const { return ErrorCode; }
+usart_low_level_error low_level_usart::getErrorCode() const { return CriticalErrorCode; }
 
+/// @brief Reset the USART master to its normal operational state
+/// @details This function assumes that the USART port is already open, there are no critical 
+/// errors, and no transmission is in progress. It resets the internal state variables to their default values.
+/// @return True if the reset was successful, false otherwise.
 /// @callgraph
 /// @callergraph
-void low_level_usart::resetUsartMaster() {
-	State = usart_low_level_state::Uninitialized;
+bool low_level_usart::resetUsartMaster() {
+	if (State != usart_low_level_state::Open) {
+		return false;
+	}
+	if ((TransferState != usart_transfer_state::WaitingLimitExceeded) &&
+	    (TransferState != usart_transfer_state::IncorrectlyCompleted)) {
+		return false;
+	}
+	if (CriticalErrorCode != usart_low_level_error::None) {
+		return false;
+	}
 	TransferState = usart_transfer_state::Idle;
 	printNewTransferState(TransferState);
-	ErrorCode = usart_low_level_error::None;
 
 	memset(TotalResponse, 0, MAX_RESPONSE_LENGTH);
 	TotalReceivedBytes = 0;
@@ -156,16 +172,25 @@ void low_level_usart::resetUsartMaster() {
 	TimeWhenReceivedLastByte = std::chrono::high_resolution_clock::now();
 	WaitingLimit = (std::chrono::milliseconds)0;
 	ResponseDurationLimit = (std::chrono::milliseconds)0;
+	return true;
 }
 
+/// @brief Send a given packet of data over the USART interface.
+/// @details This function writes the specified data to the USART and sets up the waiting and response timeouts.
+/// @param Buffer The buffer containing the data to send
+/// @param Length The number of bytes to send from the buffer
+/// @param WaitingTimeout The maximum time to wait for a response after sending the data
+/// @param ResponseTimeout The maximum allowed duration for the response
+/// @return The error code indicating the result of the operation
+/// @note The function can consume large operating time depending on the Length parameter.
 /// @callgraph
 /// @callergraph
 usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
                                      std::chrono::milliseconds ResponseTimeout) {
 	if (usart_low_level_state::Open != State) {
-		ErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		return ErrorCode;
+		CriticalErrorCode = usart_low_level_error::CallError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
+		return CriticalErrorCode;
 	}
 
 	WaitingLimit = WaitingTimeout;
@@ -176,17 +201,17 @@ usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Le
 
 	int BytesWritten = (int)write(SerialPortHandler, Buffer, Length);
 	if (BytesWritten != Length) {
-		ErrorCode = usart_low_level_error::WriteFailed;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::WriteFailed;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 		TransferState = usart_transfer_state::InternalError;
 		printNewTransferState(TransferState);
-		return ErrorCode;
+		return CriticalErrorCode;
 	}
 
 	TimeWhenOutgoingDataEnded = std::chrono::high_resolution_clock::now();
 	TransferState = usart_transfer_state::WaitingForResponse;
 	printNewTransferState(TransferState);
-	return ErrorCode;
+	return CriticalErrorCode;
 }
 
 /// @brief Collect input data from the USART until a period of silence is detected.
@@ -194,20 +219,25 @@ usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Le
 /// @callgraph
 /// @callergraph
 usart_transfer_state low_level_usart::collectInputDataUntilSilence() {
-	if (!validateCollectionState()) {
+	if (!checkNormalConditions()) {
 		return TransferState;
 	}
 
 	const auto TimeNow = std::chrono::high_resolution_clock::now();
-	return readAvailableInput(TimeNow);
+	return operateAssumingNormalConditions(TimeNow);
 }
 
+/// @brief Get the input data from the USART buffer assuming the transfer is completed.
+/// @details This function copies the received data into the provided buffer if the transfer is completed.
+/// @param Buffer The buffer to copy the received data into
+/// @param BufferSize The size of the provided buffer
+/// @return The number of bytes copied, or -1 on error
 /// @callgraph
 /// @callergraph
 int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 	if ((usart_transfer_state::Completed != TransferState) || (BufferSize >= MAX_RESPONSE_LENGTH)) {
-		ErrorCode = usart_low_level_error::CallError;
-		failCollection(usart_transfer_state::CallError);
+		CriticalErrorCode = usart_low_level_error::CallError;
+		handleCriticalError(usart_transfer_state::CallError);
 		return -1;
 	}
 
@@ -228,38 +258,45 @@ int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 // Private method definitions
 //=================================================================================================
 
+/// @brief Check if the USART is ready to receive a response and that the module state variables
+/// are consistent with normal operation.
+/// @return True if the USART is in a normal state, false otherwise
 /// @callgraph
 /// @callergraph
-bool low_level_usart::validateCollectionState() {
+bool low_level_usart::checkNormalConditions() {
 	if (usart_low_level_state::Open != State) {
-		ErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::CallError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if ((usart_transfer_state::WaitingForResponse != TransferState) && (usart_transfer_state::Receiving != TransferState) &&
 	    (usart_transfer_state::IncorrectlyReceiving != TransferState)) {
-		ErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::CallError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if ((usart_transfer_state::WaitingForResponse != TransferState) && (0 == TotalReceivedBytes)) {
-		ErrorCode = usart_low_level_error::InternalError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::InternalError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if (-1 == SerialPortHandler) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
-		ErrorCode = usart_low_level_error::InternalError;
-		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
+		CriticalErrorCode = usart_low_level_error::InternalError;
+		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
-	if (usart_low_level_error::None != ErrorCode) {
-		failCollection(usart_transfer_state::InternalError);
+	if (usart_low_level_error::None != CriticalErrorCode) {
+		handleCriticalError(usart_transfer_state::InternalError);
 		return false;
 	}
 	return true;
 }
 
+/// @brief A collection of actions to take in the event of a critical error
+/// @param NewTransferState The new transfer state to set after the failure
+/// @param Line The line number where the failure occurred
+/// @return The updated transfer state
 /// @callgraph
 /// @callergraph
-usart_transfer_state low_level_usart::failCollection(usart_transfer_state NewTransferState, int Line) {
+usart_transfer_state low_level_usart::handleCriticalError(usart_transfer_state NewTransferState, int Line) {
 	if (-1 != SerialPortHandler) {
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
@@ -267,15 +304,20 @@ usart_transfer_state low_level_usart::failCollection(usart_transfer_state NewTra
 	State = usart_low_level_state::Error;
 	delete NameOfPort;
 	NameOfPort = nullptr;
-	printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, Line);
+	printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, Line);
 	TransferState = NewTransferState;
 	printNewTransferState(TransferState);
 	return TransferState;
 }
 
+/// @brief Collect input data from the USART until a period of silence is detected assuming normal conditions.
+/// @details It is assumed that the USART is ready to receive a response and that the module state variables
+/// are consistent with normal operation.
+/// @param TimeNow The current time point used for timeout calculations
+/// @return The updated transfer state
 /// @callgraph
 /// @callergraph
-usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resolution_clock::time_point TimeNow) {
+usart_transfer_state low_level_usart::operateAssumingNormalConditions(std::chrono::high_resolution_clock::time_point TimeNow) {
 	fd_set SerialReadFds;
 	FD_ZERO(&SerialReadFds);
 	FD_SET(SerialPortHandler, &SerialReadFds);
@@ -283,8 +325,8 @@ usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resol
 	int SerialPortState = select(SerialPortHandler + 1, &SerialReadFds, nullptr, nullptr, &SerialTimeout);
 
 	if (SerialPortState == -1) {
-		ErrorCode = usart_low_level_error::SelectFailed;
-		return failCollection(usart_transfer_state::CallError);
+		CriticalErrorCode = usart_low_level_error::SelectFailed;
+		return handleCriticalError(usart_transfer_state::CallError);
 	}
 	if ((SerialPortState <= 0) || !FD_ISSET(SerialPortHandler, &SerialReadFds)) {
 		return handleSilence(TimeNow);
@@ -295,13 +337,20 @@ usart_transfer_state low_level_usart::readAvailableInput(std::chrono::high_resol
 	assert(NumberOfReceived <= (int)sizeof(ReceivedBytes));
 
 	if (NumberOfReceived <= 0) {
-		ErrorCode = usart_low_level_error::ReadFailed;
-		return failCollection(usart_transfer_state::CallError);
+		CriticalErrorCode = usart_low_level_error::ReadFailed;
+		return handleCriticalError(usart_transfer_state::CallError);
 	}
 
 	return processReceivedInput(ReceivedBytes, NumberOfReceived, TimeNow);
 }
 
+// TODO: more advanced response time checking
+/// @brief Process the received input data from the USART.
+/// @details This function handles the received bytes, updates the transfer state, and checks for response duration limits.
+/// @param ReceivedBytes Pointer to the buffer containing the received bytes
+/// @param NumberOfReceived Number of bytes received
+/// @param TimeNow The current time point used for timeout calculations
+/// @return The updated transfer state
 /// @callgraph
 /// @callergraph
 usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
@@ -315,12 +364,6 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 	else {
 		auto ReceivingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenResponseStarted);
 		if (ReceivingDuration.count() > ResponseDurationLimit.count()) {
-			if (ReceivingDuration.count() > RESPONSE_DURATION_ABSOLUTE_LIMIT_MS) {
-				TransferState = usart_transfer_state::IncorrectlyNoisy;
-				printNewTransferState(TransferState);
-				ErrorCode = usart_low_level_error::SlaveOutOfOrder;
-				return TransferState;
-			}
 			TransferState = usart_transfer_state::IncorrectlyReceiving;
 			printNewTransferState(TransferState);
 			return TransferState;
@@ -334,8 +377,8 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 			continue;
 		}
 
-		ErrorCode = usart_low_level_error::InternalError;
-		return failCollection(usart_transfer_state::InternalError);
+		CriticalErrorCode = usart_low_level_error::InternalError;
+		return handleCriticalError(usart_transfer_state::InternalError);
 	}
 
 	TotalResponse[TotalReceivedBytes] = 0;
@@ -343,6 +386,10 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 	return TransferState;
 }
 
+/// @brief Handle silence on the USART line.
+/// @details This function checks for silence duration and updates the transfer state accordingly.
+/// @param TimeNow The current time point used for silence detection
+/// @return The updated transfer state
 /// @callgraph
 /// @callergraph
 usart_transfer_state low_level_usart::handleSilence(std::chrono::high_resolution_clock::time_point TimeNow) {
@@ -381,7 +428,9 @@ usart_transfer_state low_level_usart::handleSilence(std::chrono::high_resolution
 // Local function definitions
 //=================================================================================================.......
 
-// This function opens and configures a serial port
+/// @brief Open and configure a serial port
+/// @param DeviceName The name of the serial port device to open
+/// @return The file handler for the opened serial port, or -1 on failure
 /// @callgraph
 /// @callergraph
 static int configureSerialPort(const char *DeviceName) {
@@ -452,7 +501,7 @@ static void printNewState(usart_low_level_state State) {
 }
 
 static void printNewTransferState(usart_transfer_state State) {
-#if DEBUG_USART_MASTER
+#if 0 // DEBUG_USART_MASTER
 	static usart_transfer_state PreviousState = usart_transfer_state::Idle;
 	printf("usart_master transfer state: %s -> %s\n", UsartTransferStateTexts[static_cast<int>(PreviousState)],
 	       UsartTransferStateTexts[static_cast<int>(State)]);

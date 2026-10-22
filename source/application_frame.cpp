@@ -75,7 +75,7 @@ static initialization_failure_codes determineApplicationPath(char *Argv0);
 int main(int argc, char **argv) {
 	setupCriticalSignalHandler();
 
-	initialization_failure_codes ErrorCode = mainInitializations(argc, argv);
+	initialization_failure_codes InitializationErrorCode = mainInitializations(argc, argv);
 
 	// Main window of the application
 	Fl::scheme("gtk+");
@@ -112,11 +112,11 @@ int main(int argc, char **argv) {
 	// Error message widget initialization used in case of initialization failure
 	// initializeFailureMessageWidget();
 
-	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
+	if (initialization_failure_codes::NO_FAILURE == InitializationErrorCode) {
 		initializeGraphicWidgets();
 	}
 	else {
-		showFailureMessageWidget(ErrorCode);
+		showFailureMessageWidget(InitializationErrorCode);
 	}
 
 	ApplicationWindow->end();
@@ -124,7 +124,7 @@ int main(int argc, char **argv) {
 
 	// Multi-threading support in FLTK; register a callback function for Fl::awake()
 	Fl::lock();
-	if (initialization_failure_codes::NO_FAILURE == ErrorCode) {
+	if (initialization_failure_codes::NO_FAILURE == InitializationErrorCode) {
 		peripheralThreadStart();
 	}
 
