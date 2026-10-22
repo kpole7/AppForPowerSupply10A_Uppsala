@@ -77,7 +77,7 @@ low_level_usart::~low_level_usart() {
 
 /// @callgraph
 /// @callergraph
-void low_level_usart::openUsart(const std::string &Name) {
+usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 	if (usart_low_level_state::Uninitialized != State) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
@@ -97,7 +97,7 @@ void low_level_usart::openUsart(const std::string &Name) {
 	if (usart_low_level_error::None != ErrorCode) {
 		State = usart_low_level_state::Error;
 		printNewState(State);
-		return;
+		return ErrorCode;
 	}
 
 	NameOfPort = new std::string(Name);
@@ -108,7 +108,7 @@ void low_level_usart::openUsart(const std::string &Name) {
 		ErrorCode = usart_low_level_error::UsartDeviceNotFound;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		State = usart_low_level_state::Error;
-		return;
+		return ErrorCode;
 	}
 
 	SerialPortHandler = configureSerialPort(PortNameCharPtr);
@@ -116,9 +116,10 @@ void low_level_usart::openUsart(const std::string &Name) {
 		ErrorCode = usart_low_level_error::OpenFailed;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		State = usart_low_level_state::Error;
-		return;
+		return ErrorCode;
 	}
 	State = usart_low_level_state::Open;
+	return ErrorCode;
 }
 
 std::string low_level_usart::getName() const {
@@ -159,12 +160,12 @@ void low_level_usart::resetUsartMaster() {
 
 /// @callgraph
 /// @callergraph
-void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
+usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
                                      std::chrono::milliseconds ResponseTimeout) {
 	if (usart_low_level_state::Open != State) {
 		ErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
-		return;
+		return ErrorCode;
 	}
 
 	WaitingLimit = WaitingTimeout;
@@ -179,12 +180,13 @@ void low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(ErrorCode), __FILE__, __LINE__);
 		TransferState = usart_transfer_state::InternalError;
 		printNewTransferState(TransferState);
-		return;
+		return ErrorCode;
 	}
 
 	TimeWhenOutgoingDataEnded = std::chrono::high_resolution_clock::now();
 	TransferState = usart_transfer_state::WaitingForResponse;
 	printNewTransferState(TransferState);
+	return ErrorCode;
 }
 
 /// @brief Collect input data from the USART until a period of silence is detected.
@@ -468,10 +470,199 @@ static void printNewTransferState(usart_transfer_state State) {
 /// @callgraph
 /// @callergraph
 bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
-	if (PressedKey != -1) {
-		std::cout << "New key: " << PressedKey << '\n';
+	void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime);
+
+	static const char InquiryPOWER[] = "?POWER\r\n"; // a
+	static const char InquiryZ[] = "?Z\r\n"; // b
+	static const char InquiryPC[] = "?PC\r\n"; // c
+	static const char InquiryST[] = "ST\r\n"; // d
+	static const char SetPOWER1[] = "POWER1\r\n"; // e
+	static const char SetPOWER0[] = "POWER0\r\n"; // f
+	static const char SetZ1[] = "Z1\r\n"; // g
+	static const char SetZ2[] = "Z2\r\n"; // h
+	static const char SetPC0[] = "PC 0\r\n"; // i
+	static const char SetPC1[] = "PC 1\r\n"; // j
+	static const char SetPC2[] = "PC 2\r\n"; // k
+	static const char SetPC01[] = "PC 0.1\r\n"; // l
+	static const char SetPC07[] = "PC 0.7\r\n"; // m
+	static const char SetPC09[] = "PC 0.9\r\n"; // n
+	static const char SetPC11[] = "PC 1.1\r\n"; // o
+	static const char SetPC17[] = "PC 1.7\r\n"; // p
+	static const char SetPC19[] = "PC 1.9\r\n"; // q
+	static const char SetPC_1[] = "PC -1\r\n"; // r
+	static const char SetPC_2[] = "PC -2\r\n"; // s
+	static const char SetPC_01[] = "PC -0.1\r\n"; // t
+	static const char SetPC_07[] = "PC -0.7\r\n"; // u
+	static const char SetPC_09[] = "PC -0.9\r\n"; // v
+	static const char SetPC_11[] = "PC -1.1\r\n"; // w
+	static const char SetPC_17[] = "PC -1.7\r\n"; // x
+	static const char SetPC_19[] = "PC -1.9\r\n"; // y
+	const char* CommandTexts[] = {
+		&InquiryPOWER[0],
+		&InquiryZ[0],
+		&InquiryPC[0],
+		&InquiryST[0],
+		&SetPOWER1[0],
+		&SetPOWER0[0],
+		&SetZ1[0],
+		&SetZ2[0],
+		&SetPC0[0],
+		&SetPC1[0],
+		&SetPC2[0],
+		&SetPC01[0],
+		&SetPC07[0],
+		&SetPC09[0],
+		&SetPC11[0],
+		&SetPC17[0],
+		&SetPC19[0],
+		&SetPC_1[0],
+		&SetPC_2[0],
+		&SetPC_01[0],
+		&SetPC_07[0],
+		&SetPC_09[0],
+		&SetPC_11[0],
+		&SetPC_17[0],
+		&SetPC_19[0]
+	};
+	static low_level_usart *MyUsartPtr = nullptr;
+
+	static uint8_t FsmState = 0;
+
+	char *CommandText = nullptr;
+
+	// Handle termination signal and cleanup if necessary
+	if (TerminationSignal) {
+		if (nullptr != MyUsartPtr) {
+			delete MyUsartPtr;
+			MyUsartPtr = nullptr;
+		}
+		return 0;
 	}
-	return !TerminationSignal; 
+
+	static auto TimeReference = std::chrono::high_resolution_clock::now();
+	
+	if ('T' == PressedKey) {
+		TimeReference = std::chrono::high_resolution_clock::now();
+	}
+
+	usart_low_level_error Error = usart_low_level_error::None;
+
+	// FSM state handling
+	switch (FsmState) {
+	case 0:
+		// Initial state
+		if (nullptr == MyUsartPtr) {
+			MyUsartPtr = new low_level_usart();
+		}
+		if (nullptr == MyUsartPtr) {
+			std::cerr << "Failed to initialize USART\n";
+			FsmState = 101; // Failed to initialize USART
+		}
+		else {
+			FsmState = 1; // Transition to close state
+		}
+		break;
+	case 1:
+		// Close state
+		assert(nullptr != MyUsartPtr);
+		Error = MyUsartPtr->openUsart("/dev/ttyUSB0");
+		if (Error != usart_low_level_error::None) {
+			std::cerr << "Failed to open USART\n";
+			FsmState = 102; // Failed to open USART
+		}
+		else {
+			FsmState = 2; // Transition to idle state
+		}
+		break;
+	case 2:
+		// Idle state = waiting for user input
+
+		if ((PressedKey >= 'a') && (PressedKey <= 'y')) {
+			CommandText = const_cast<char*>(CommandTexts[PressedKey - 'a']);
+			Error = MyUsartPtr->sendOutputData(CommandText, strlen(CommandText), static_cast<std::chrono::milliseconds>(200), 
+				static_cast<std::chrono::milliseconds>(100));
+			if (Error != usart_low_level_error::None) {
+				std::cerr << "Failed to send data\n";
+				FsmState = 103; // Failed to send data
+			}
+			else {
+				FsmState = 3; // Transition to receiving state
+			}
+		}
+
+		break;
+	case 3:
+		// Receiving state
+
+
+		MyUsartPtr->collectInputDataUntilSilence();
+
+
+		if (Error != usart_low_level_error::None) {
+			std::cerr << "Failed to collect input data\n";
+			FsmState = 104; // Failed to collect input data
+		}
+		else {
+			FsmState = 2; // Return to idle state
+		}
+		break;
+
+
+
+
+
+	default:
+		// Handle unexpected states
+		break;
+	}
+
+	printStateChanges(MyUsartPtr, TimeReference);
+
+	return (nullptr != MyUsartPtr); 
+}
+
+/// @callgraph
+/// @callergraph
+void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime) {
+
+	(void)ReferenceTime;
+
+
+	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
+	static usart_transfer_state LastTransferState = usart_transfer_state::Idle;
+	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
+	bool StateChanged = (LastState != UsartPtr->getState());
+	bool TransferStateChanged = (LastTransferState != UsartPtr->getTransferState());
+	bool ErrorChanged = (LastErrorCode != UsartPtr->getErrorCode());
+	bool PrintingStarted = false;
+
+	if (StateChanged) {
+		std::cout << "State " << UsartLowLevelStateTexts[static_cast<int>(LastState)] << 
+			" -> " << UsartLowLevelStateTexts[static_cast<int>(UsartPtr->getState())];
+		PrintingStarted = true;
+	}
+	if (TransferStateChanged) {
+		if (PrintingStarted) {
+			std::cout << "   ";
+		}
+		std::cout << "Transfer state " << UsartTransferStateTexts[static_cast<int>(LastTransferState)] << 
+			" -> " << UsartTransferStateTexts[static_cast<int>(UsartPtr->getTransferState())];
+		PrintingStarted = true;
+	}
+	if (ErrorChanged) {
+		if (PrintingStarted) {
+			std::cout << "   ";
+		}
+		std::cout << "Error " << static_cast<int>(LastErrorCode) << " -> " << static_cast<int>(UsartPtr->getErrorCode());
+		PrintingStarted = true;
+	}
+	if (PrintingStarted) {
+		std::cout << '\n';
+	}
+
+	LastState = UsartPtr->getState();
+	LastTransferState = UsartPtr->getTransferState();
+	LastErrorCode = UsartPtr->getErrorCode();
 }
 
 #else

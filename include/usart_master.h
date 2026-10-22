@@ -66,13 +66,14 @@ class low_level_usart {
   public:
 	low_level_usart();
 	~low_level_usart();
-	void openUsart(const std::string &Name);
+	usart_low_level_error openUsart(const std::string &Name);
 	[[nodiscard]] std::string getName() const;
 	[[nodiscard]] usart_low_level_state getState() const;
 	[[nodiscard]] usart_transfer_state getTransferState() const;
 	[[nodiscard]] usart_low_level_error getErrorCode() const;
 	void resetUsartMaster();
-	void sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, std::chrono::milliseconds ResponseTimeout);
+	usart_low_level_error sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, 
+		std::chrono::milliseconds ResponseTimeout);
 	usart_transfer_state collectInputDataUntilSilence();
 	int getInputData(char *Buffer, int BufferSize);
 };
