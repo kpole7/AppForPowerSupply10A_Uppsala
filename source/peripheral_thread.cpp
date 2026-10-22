@@ -104,8 +104,6 @@ static void peripheralThreadHandler() {
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
-
-
 	while (DebugingPeripheralsEnable) {
 		if (AwakeRefreshWholeGui) {
 			Fl::awake(refreshWholeGui, nullptr);

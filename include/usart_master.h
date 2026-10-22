@@ -12,11 +12,11 @@ static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 
 #define MAX_RESPONSE_LENGTH 300
 
-enum class usart_low_level_state { 
-	Uninitialized, 
+enum class usart_low_level_state {
+	Uninitialized,
 	Open, // normal operation
-	Closed, 
-	Error 
+	Closed,
+	Error
 };
 
 enum class usart_low_level_error {
@@ -31,17 +31,17 @@ enum class usart_low_level_error {
 };
 
 enum class usart_transfer_state {
-	Idle, // normal operation; wait for a new outgoing data to be sent
-	Sending, // normal operation
-	WaitingForResponse, // normal operation
-	Receiving, // normal operation
-	Completed, // normal operation
+	Idle,                 // normal operation; wait for a new outgoing data to be sent
+	Sending,              // normal operation
+	WaitingForResponse,   // normal operation
+	Receiving,            // normal operation
+	Completed,            // normal operation
 	WaitingLimitExceeded, // non-critical error: the slave did not respond within the expected waiting limit and
-						  // there is no ongoing transfer now
+	                      // there is no ongoing transfer now
 	IncorrectlyReceiving, // non-critical error: if the response is too long and the transfer is still ongoing
-						  // or waiting time has exceeded but now the transfer is still ongoing
+	                      // or waiting time has exceeded but now the transfer is still ongoing
 	IncorrectlyCompleted, // non-critical error: ingoing transfer has ended but the response was too long
-	IncorrectlyNoisy, // non-critical error: if the slave is sending unexpected data and the transfer is still ongoing
+	IncorrectlyNoisy,     // non-critical error: if the slave is sending unexpected data and the transfer is still ongoing
 	InternalError,
 	CallError
 };
@@ -77,8 +77,8 @@ class low_level_usart {
 	[[nodiscard]] usart_transfer_state getTransferState() const;
 	[[nodiscard]] usart_low_level_error getErrorCode() const;
 	bool resetUsartMaster();
-	usart_low_level_error sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout, 
-		std::chrono::milliseconds ResponseTimeout);
+	usart_low_level_error sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
+	                                     std::chrono::milliseconds ResponseTimeout);
 	usart_transfer_state collectInputDataUntilSilence();
 	int getInputData(char *Buffer, int BufferSize);
 };
