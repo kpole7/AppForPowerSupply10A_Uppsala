@@ -62,7 +62,7 @@ class low_level_usart {
 	std::chrono::milliseconds ResponseDurationLimit;
 
 	bool checkNormalConditions();
-	usart_transfer_state handleCriticalError(usart_transfer_state NewTransferState, int Line = __LINE__);
+	usart_transfer_state handleCriticalError(usart_transfer_state NewTransferState, int Line);
 	usart_transfer_state operateAssumingNormalConditions(std::chrono::high_resolution_clock::time_point TimeNow);
 	usart_transfer_state processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
 	                                          std::chrono::high_resolution_clock::time_point TimeNow);
