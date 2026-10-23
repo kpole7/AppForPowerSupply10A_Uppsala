@@ -83,6 +83,8 @@ class low_level_usart {
 	int getInputData(char *Buffer, int BufferSize);
 };
 
+typedef low_level_usart *low_level_usart_ptr;
+
 bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey);
 
 #endif // USART_MASTER_H

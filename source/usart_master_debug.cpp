@@ -9,9 +9,9 @@
 #include <string>
 
 #include "debug_tools.h"
+#include "settings_file.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
-#include "settings_file.h"
 
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
 
@@ -27,8 +27,7 @@ char UsartTransferStateTexts[11][21] = {"Idle",
                                         "InternalError",
                                         "CallError"};
 
-char SingleCommandFsmStateTexts[10][21] = {"Uninitialized",       "Closed",    "Idle",         "WaitingForResponse", "Receiving",
-                                           "InitializationError", "OpenError", "SendingError", "ReceivingError"};
+char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
 
 enum class single_command_fsm_state : uint8_t {
 	Uninitialized,
@@ -37,13 +36,34 @@ enum class single_command_fsm_state : uint8_t {
 	WaitingForResponse,
 	Receiving,
 
-	InitializationError,
-	OpenError,
-	SendingError,
-	ReceivingError,
+	CriticalError,
+	NonCriticalError,
+};
+
+enum class single_order_code : uint8_t { InquiryPower, SetPower, InquiryZ, SetZ, InquiryPC, SetPC, InquiryST };
+
+class single_order_package {
+  public:
+	single_order_code Code;
+	bool IsOn;
+	uint8_t Channel;
+	double Value;
 };
 
 static single_command_fsm_state FsmState = single_command_fsm_state::Uninitialized;
+
+// TODO
+static char *CommandTextToBeSent = nullptr;
+
+static void handleFsmUninitialized(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmClosed(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmIdle(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmWaitingForResponse(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmReceiving(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmCriticalError(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+static void handleFsmNonCriticalError(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState);
+
+static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName);
 
 /// @brief Handles a single tick of peripheral operations.
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
@@ -51,7 +71,6 @@ static single_command_fsm_state FsmState = single_command_fsm_state::Uninitializ
 /// @callgraph
 /// @callergraph
 bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
-	void printStateChanges(low_level_usart * UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName);
 	static const char InquiryPOWER[] = "?POWER\r\n"; // a
 	static const char InquiryZ[] = "?Z\r\n";         // b
 	static const char InquiryPC[] = "?PC\r\n";       // c
@@ -83,8 +102,6 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	                              &SetPC_09[0],     &SetPC_11[0], &SetPC_17[0],  &SetPC_19[0]};
 	static low_level_usart *MyUsartPtr = nullptr;
 
-	char *CommandText = nullptr;
-
 	// Handle termination signal and cleanup if necessary
 	if (TerminationSignal) {
 		if (nullptr != MyUsartPtr) {
@@ -101,50 +118,42 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	// FSM state handling
 	switch (FsmState) {
 	case single_command_fsm_state::Uninitialized:
-		// Initial state
-		if (nullptr == MyUsartPtr) {
-			MyUsartPtr = new low_level_usart();
-		}
-		if (nullptr == MyUsartPtr) {
-			std::cerr << "Failed to initialize USART\n";
-			FsmState = single_command_fsm_state::InitializationError; // Failed to initialize USART
-		}
-		else {
-			FsmState = single_command_fsm_state::Closed; // Transition to close state
-		}
+		handleFsmUninitialized(MyUsartPtr, FsmState);
 		break;
 	case single_command_fsm_state::Closed:
-		// Closed state
-		assert(nullptr != MyUsartPtr);
-        assert(0 != SerialPortName.length());
-        Error = MyUsartPtr->openUsart(SerialPortName);
-		if (Error != usart_low_level_error::None) {
-			std::cerr << "Failed to open USART\n";
-			FsmState = single_command_fsm_state::OpenError; // Failed to open USART
-		}
-		else {
-			FsmState = single_command_fsm_state::Idle; // Transition to idle state
-		}
+		handleFsmClosed(MyUsartPtr, FsmState);
 		break;
 	case single_command_fsm_state::Idle:
-		// Idle state = waiting for user input
 
 		if ((PressedKey >= 'a') && (PressedKey <= 'y')) {
-			CommandText = const_cast<char *>(CommandTexts[PressedKey - 'a']);
+			CommandTextToBeSent = const_cast<char *>(CommandTexts[PressedKey - 'a']);
+			static char Buffer[30];
+			snprintf(Buffer, sizeof(Buffer) - 1, "cmd: %s", CommandTextToBeSent);
+			printStateChanges(MyUsartPtr, TimeReference, Buffer);
+		}
+		else {
+			CommandTextToBeSent = nullptr;
+		}
+		handleFsmIdle(MyUsartPtr, FsmState);
+
+#if 0
+		// Idle state = waiting for user input
+		if ((PressedKey >= 'a') && (PressedKey <= 'y')) {
+			CommandTextToBeSent = const_cast<char *>(CommandTexts[PressedKey - 'a']);
 
 			printStateChanges(MyUsartPtr, TimeReference, "Sending output data");
 
-			Error = MyUsartPtr->sendOutputData(CommandText, strlen(CommandText), static_cast<std::chrono::milliseconds>(200),
+			Error = MyUsartPtr->sendOutputData(CommandTextToBeSent, strlen(CommandTextToBeSent), static_cast<std::chrono::milliseconds>(200),
 			                                   static_cast<std::chrono::milliseconds>(100));
 			if (Error != usart_low_level_error::None) {
 				std::cout << "Failed to send data\n";
-				FsmState = single_command_fsm_state::SendingError; // Failed to send data
+				FsmState = single_command_fsm_state::CriticalError; // Failed to send data
 			}
 			else {
 				FsmState = single_command_fsm_state::WaitingForResponse; // Transition to receiving state
 			}
 		}
-
+#endif
 		break;
 	case single_command_fsm_state::WaitingForResponse:
 		// Receiving state
@@ -153,7 +162,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 		if (Error != usart_low_level_error::None) {
 			std::cout << "Failed to collect input data\n";
-			FsmState = single_command_fsm_state::ReceivingError; // Failed to collect input data
+			FsmState = single_command_fsm_state::NonCriticalError; // Failed to collect input data
 		}
 		break;
 
@@ -189,12 +198,75 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	return (nullptr != MyUsartPtr);
 }
 
-/// @callgraph
-/// @callergraph
-void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName) {
-    if (nullptr == UsartPtr) {
+static void handleFsmUninitialized(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr == UsartPtr);
+	assert(single_command_fsm_state::Uninitialized == FsmState);
+	UsartPtr = new low_level_usart();
+	if (nullptr == UsartPtr) {
+		std::cerr << "Failed to create USART instance\n";
+		FsmState = single_command_fsm_state::CriticalError;
+		return;
+	}
+	FsmState = single_command_fsm_state::Closed;
+}
+
+static void handleFsmClosed(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::Closed == FsmState);
+	assert(0 != SerialPortName.length());
+	usart_low_level_error Error = UsartPtr->openUsart(SerialPortName);
+	if (Error != usart_low_level_error::None) {
+		std::cerr << "Failed to open USART\n";
+		FsmState = single_command_fsm_state::NonCriticalError; // Failed to open USART
+		return;
+	}
+	FsmState = single_command_fsm_state::Idle; // Transition to idle state
+}
+
+static void handleFsmIdle(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+
+    if ((nullptr == CommandTextToBeSent) || (0 == strlen(CommandTextToBeSent))) {
         return;
     }
+
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::Idle == FsmState);
+	usart_low_level_error Error = UsartPtr->sendOutputData(CommandTextToBeSent, strlen(CommandTextToBeSent),
+	                                                       static_cast<std::chrono::milliseconds>(200), static_cast<std::chrono::milliseconds>(100));
+	if (Error != usart_low_level_error::None) {
+		std::cout << "Failed to send data\n";
+		FsmState = single_command_fsm_state::CriticalError; // Failed to send data
+		return;
+	}
+	FsmState = single_command_fsm_state::WaitingForResponse; // Transition to receiving state
+}
+
+static void handleFsmWaitingForResponse(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::WaitingForResponse == FsmState);
+}
+
+static void handleFsmReceiving(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::Receiving == FsmState);
+}
+
+static void handleFsmCriticalError(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::CriticalError == FsmState);
+}
+
+static void handleFsmNonCriticalError(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
+	assert(nullptr != UsartPtr);
+	assert(single_command_fsm_state::NonCriticalError == FsmState);
+}
+
+/// @callgraph
+/// @callergraph
+static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName) {
+	if (nullptr == UsartPtr) {
+		return;
+	}
 	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
 	static usart_transfer_state LastTransferState = usart_transfer_state::Idle;
 	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
@@ -248,7 +320,7 @@ void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_c
 		}
 	}
 	if (UserEventOccurred) {
-		std::cout << "  [" << UserEventName << ']';
+		std::cout << "  (" << UserEventName << ')';
 	}
 
 	if (AnyChange) {
