@@ -3,8 +3,10 @@
 
 #include <cassert>
 #include <cerrno>
+#include <iomanip>
 #include <iostream>
 #include <poll.h>
+#include <sstream>
 #include <stdexcept>
 #include <system_error>
 #include <termios.h>
@@ -180,4 +182,14 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 	}
 
 	return KeepMeRunning;
+}
+
+std::string formatElapsedTime(std::chrono::milliseconds::rep TimeSinceReference) {
+	auto Minutes = (TimeSinceReference / 60000) % 100;
+	auto Seconds = (TimeSinceReference / 1000) % 60;
+	auto Milliseconds = TimeSinceReference % 1000;
+
+	std::ostringstream FormattedTime;
+	FormattedTime << std::setfill('0') << std::setw(2) << Minutes << ":" << std::setw(2) << Seconds << ":" << std::setw(3) << Milliseconds;
+	return FormattedTime.str();
 }
