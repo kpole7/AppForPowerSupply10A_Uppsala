@@ -11,6 +11,7 @@
 #include "debug_tools.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
+#include "settings_file.h"
 
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
 
@@ -90,14 +91,10 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 			delete MyUsartPtr;
 			MyUsartPtr = nullptr;
 		}
-		return 0;
+		return false;
 	}
 
 	static auto TimeReference = std::chrono::high_resolution_clock::now();
-
-	if ('T' == PressedKey) {
-		TimeReference = std::chrono::high_resolution_clock::now();
-	}
 
 	usart_low_level_error Error = usart_low_level_error::None;
 
@@ -119,7 +116,8 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	case single_command_fsm_state::Closed:
 		// Closed state
 		assert(nullptr != MyUsartPtr);
-		Error = MyUsartPtr->openUsart("/dev/ttyUSB0");
+        assert(0 != SerialPortName.length());
+        Error = MyUsartPtr->openUsart(SerialPortName);
 		if (Error != usart_low_level_error::None) {
 			std::cerr << "Failed to open USART\n";
 			FsmState = single_command_fsm_state::OpenError; // Failed to open USART
@@ -139,7 +137,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 			Error = MyUsartPtr->sendOutputData(CommandText, strlen(CommandText), static_cast<std::chrono::milliseconds>(200),
 			                                   static_cast<std::chrono::milliseconds>(100));
 			if (Error != usart_low_level_error::None) {
-				std::cerr << "Failed to send data\n";
+				std::cout << "Failed to send data\n";
 				FsmState = single_command_fsm_state::SendingError; // Failed to send data
 			}
 			else {
@@ -154,7 +152,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 		MyUsartPtr->collectInputDataUntilSilence();
 
 		if (Error != usart_low_level_error::None) {
-			std::cerr << "Failed to collect input data\n";
+			std::cout << "Failed to collect input data\n";
 			FsmState = single_command_fsm_state::ReceivingError; // Failed to collect input data
 		}
 		break;
@@ -185,6 +183,9 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 /// @callgraph
 /// @callergraph
 void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName) {
+    if (nullptr == UsartPtr) {
+        return;
+    }
 	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
 	static usart_transfer_state LastTransferState = usart_transfer_state::Idle;
 	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
