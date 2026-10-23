@@ -7,6 +7,9 @@
 #include <chrono>
 #include <stdbool.h>
 #include <string>
+#include <stdint.h>
+
+extern uint16_t LongestTimeTicsBehindSchedule;
 
 //=================================================================================================
 // Function prototypes

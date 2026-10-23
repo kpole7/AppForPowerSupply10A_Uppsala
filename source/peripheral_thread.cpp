@@ -14,7 +14,7 @@
 // Preprocessor directives
 //=================================================================================================
 
-#define PERIPHERAL_THREAD_LOOP_DURATION 50 // milliseconds
+#define PERIPHERAL_THREAD_LOOP_DURATION 20 // milliseconds
 
 #define SHUT_DOWN_TIMEOUT 1000 // milliseconds
 
@@ -29,6 +29,8 @@
 bool AwakeRefreshWholeGui = false;
 
 bool AwakeRefreshDebugInfoGui = false;
+
+uint16_t LongestTimeTicsBehindSchedule = 0;
 
 //=================================================================================================
 // Local variables
@@ -120,11 +122,11 @@ static void peripheralThreadHandler() {
 }
 
 /// @brief Handles the timing for the peripheral thread loop.
-/// @details This function calculates the elapsed time since the start of the peripheral thread loop,
-/// compares it with the expected loop duration, and if the loop is running out of time,
-/// it increments the PeripheralsRunningOutOfTimeCounter atomically, ensuring it does not exceed UINT16_MAX.
+/// @details This function ensures a stable loop frequency in the peripheral thread.
+/// In addition, the function checks to see if task processing is taking too long.
 static void peripheralThreadTiming() {
-	// timing
+	static uint16_t ActualTimeTicsBehindSchedule = 0;
+
 	PeripheralThreadTimeInMilliseconds += PERIPHERAL_THREAD_LOOP_DURATION;
 	TimeNow = std::chrono::high_resolution_clock::now();
 	std::chrono::milliseconds DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
@@ -144,10 +146,14 @@ static void peripheralThreadTiming() {
 		DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
 	}
 	if (ItIsRunningOutOfTime) {
-		// atomic increment of PeripheralsRunningOutOfTimeCounter with saturation at UINT16_MAX
-		auto value = PeripheralsRunningOutOfTimeCounter.load(std::memory_order_relaxed);
-		while (value < UINT16_MAX &&
-		       !PeripheralsRunningOutOfTimeCounter.compare_exchange_weak(value, static_cast<uint16_t>(value + 1), std::memory_order_relaxed)) {
+		if (ActualTimeTicsBehindSchedule < UINT16_MAX) {
+			ActualTimeTicsBehindSchedule++;
 		}
+		if (ActualTimeTicsBehindSchedule > LongestTimeTicsBehindSchedule) {
+			LongestTimeTicsBehindSchedule = ActualTimeTicsBehindSchedule;
+		}
+	}
+	else {
+		ActualTimeTicsBehindSchedule = 0;
 	}
 }

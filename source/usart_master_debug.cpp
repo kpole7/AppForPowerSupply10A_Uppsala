@@ -101,6 +101,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	                              &SetPC11[0],      &SetPC17[0],  &SetPC19[0],   &SetPC_1[0],   &SetPC_2[0],   &SetPC_01[0],  &SetPC_07[0],
 	                              &SetPC_09[0],     &SetPC_11[0], &SetPC_17[0],  &SetPC_19[0]};
 	static low_level_usart *MyUsartPtr = nullptr;
+    static uint16_t UnchangedStateCounter = 0;
 
 	// Handle termination signal and cleanup if necessary
 	if (TerminationSignal) {
@@ -116,6 +117,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	usart_low_level_error Error = usart_low_level_error::None;
 
 	// FSM state handling
+    single_command_fsm_state StartState = FsmState;
 	switch (FsmState) {
 	case single_command_fsm_state::Uninitialized:
 		handleFsmUninitialized(MyUsartPtr, FsmState);
@@ -129,31 +131,21 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 			CommandTextToBeSent = const_cast<char *>(CommandTexts[PressedKey - 'a']);
 			static char Buffer[30];
 			snprintf(Buffer, sizeof(Buffer) - 1, "cmd: %s", CommandTextToBeSent);
+            char *UnprintablePtr = Buffer;
+            while (0 != *UnprintablePtr) {
+                if (!isprint(*UnprintablePtr)) {
+                    *UnprintablePtr = '~';
+                }
+                UnprintablePtr++;
+            }
 			printStateChanges(MyUsartPtr, TimeReference, Buffer);
 		}
 		else {
 			CommandTextToBeSent = nullptr;
 		}
-		handleFsmIdle(MyUsartPtr, FsmState);
 
-#if 0
-		// Idle state = waiting for user input
-		if ((PressedKey >= 'a') && (PressedKey <= 'y')) {
-			CommandTextToBeSent = const_cast<char *>(CommandTexts[PressedKey - 'a']);
+        handleFsmIdle(MyUsartPtr, FsmState);
 
-			printStateChanges(MyUsartPtr, TimeReference, "Sending output data");
-
-			Error = MyUsartPtr->sendOutputData(CommandTextToBeSent, strlen(CommandTextToBeSent), static_cast<std::chrono::milliseconds>(200),
-			                                   static_cast<std::chrono::milliseconds>(100));
-			if (Error != usart_low_level_error::None) {
-				std::cout << "Failed to send data\n";
-				FsmState = single_command_fsm_state::CriticalError; // Failed to send data
-			}
-			else {
-				FsmState = single_command_fsm_state::WaitingForResponse; // Transition to receiving state
-			}
-		}
-#endif
 		break;
 	case single_command_fsm_state::WaitingForResponse:
 		// Receiving state
@@ -171,6 +163,14 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 		break;
 	}
+    if (StartState == FsmState) {
+        if (UnchangedStateCounter < 0xFFFF) {
+            UnchangedStateCounter++;
+        }
+    }
+    else {
+        UnchangedStateCounter = 0;
+    }
 
 	switch (PressedKey) {
 	case 'R':
@@ -188,6 +188,13 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 		break;
 	case 'T':
 		TimeReference = std::chrono::high_resolution_clock::now();
+		break;
+	case 'S':
+        {
+            char Buffer[50];
+            snprintf(Buffer, sizeof(Buffer) - 1, "usr; max=%u", LongestTimeTicsBehindSchedule);
+    		printStateChanges(MyUsartPtr, TimeReference, Buffer);
+        }
 		break;
 	default:
 		break;

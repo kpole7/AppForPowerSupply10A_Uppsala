@@ -34,9 +34,6 @@ extern std::atomic<bool> VerboseMode;
 /// @brief This variable defines amount of information to be displayed in the GUI. It can be used in the FLTK thread only.
 extern std::atomic<uint8_t> StatusLevelForGui;
 
-/// @brief Counter for the number of times peripherals have run out of time.
-extern std::atomic<uint16_t> PeripheralsRunningOutOfTimeCounter;
-
 /// @brief This variable stores the current state of the main power visible for the user.
 /// @details This variable can be read from the FLTK thread and updated from the peripheral thread.
 extern std::atomic<main_power_state> SharedMainPowerState;
