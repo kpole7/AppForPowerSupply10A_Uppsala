@@ -1,5 +1,8 @@
-#ifndef SOURCE_DEBUG_H_
-#define SOURCE_DEBUG_H_
+/// @file debug_tools.h
+/// @brief Header file for universal debugging tools
+
+#ifndef DEBUG_TOOLS_H_
+#define DEBUG_TOOLS_H_
 
 #include <stdbool.h>
 
@@ -11,4 +14,4 @@ void debugPeripheralsInitializations();
 
 bool debuggingPeripheralsTick(bool TerminationSignal);
 
-#endif // SOURCE_DEBUG_H_
+#endif // DEBUG_TOOLS_H_

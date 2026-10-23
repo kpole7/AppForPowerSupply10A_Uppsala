@@ -293,7 +293,8 @@ bool low_level_usart::checkNormalConditions() {
 	if ((usart_transfer_state::WaitingForResponse != TransferState) && (usart_transfer_state::Receiving != TransferState) &&
 	    (usart_transfer_state::IncorrectlyReceiving != TransferState)) {
 		CriticalErrorCode = usart_low_level_error::CallError;
-		printf("USART Error %d in %s at line %d; TransferState [%d].\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__, static_cast<int>(TransferState));
+		printf("USART Error %d in %s at line %d; TransferState [%d].\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__,
+		       static_cast<int>(TransferState));
 	}
 	if ((usart_transfer_state::WaitingForResponse != TransferState) && (0 == TotalReceivedBytes)) {
 		CriticalErrorCode = usart_low_level_error::InternalError;
@@ -670,7 +671,6 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 	default:
 		// Handle unexpected states
-
 
 		break;
 	}

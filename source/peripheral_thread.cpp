@@ -6,7 +6,7 @@
 #include <iostream>
 #include <thread>
 
-#include "debug.h"
+#include "debug_tools.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
 

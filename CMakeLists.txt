@@ -9,7 +9,7 @@ endif()
 
 add_executable(AppForPowerSupply10A_Uppsala
   source/application_frame.cpp
-  source/debug.cpp
+  source/debug_tools.cpp
   source/gui_widgets.cpp
   source/multithread_resources.cpp
   source/peripheral_thread.cpp

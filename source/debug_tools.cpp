@@ -1,4 +1,4 @@
-/// @file debug.cpp
+/// @file debug_tools.cpp
 /// @brief Provides non-blocking console input functionality.
 
 #include <cassert>
@@ -10,7 +10,7 @@
 #include <termios.h>
 #include <unistd.h>
 
-#include "debug.h"
+#include "debug_tools.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
 
