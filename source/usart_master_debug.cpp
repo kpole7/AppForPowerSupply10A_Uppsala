@@ -163,16 +163,25 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 		break;
 	}
 
-	if ('R' == PressedKey) {
+	switch (PressedKey) {
+	case 'R':
 		printStateChanges(MyUsartPtr, TimeReference, "Attempt to reset");
-		bool ResetSuccess = MyUsartPtr->resetUsartMaster();
-		if (!ResetSuccess) {
-			std::cerr << "Failed to reset USART master\n";
+		{
+			bool ResetSuccess = MyUsartPtr->resetUsartMaster();
+			if (!ResetSuccess) {
+				std::cout << "Failed to reset USART master\n";
+			}
+			else {
+				FsmState = single_command_fsm_state::Idle;
+				std::cout << "USART master reset successfully\n";
+			}
 		}
-		else {
-			FsmState = single_command_fsm_state::Idle;
-			std::cout << "USART master reset successfully\n";
-		}
+		break;
+	case 'T':
+		TimeReference = std::chrono::high_resolution_clock::now();
+		break;
+	default:
+		break;
 	}
 
 	printStateChanges(MyUsartPtr, TimeReference, nullptr);
