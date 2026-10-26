@@ -549,7 +549,7 @@
     <properties>
         <property name="saveddate-us" show="1">2026-10-26</property>
         <property name="savedfilename" show="1">usart_transfer_state_diagram</property>
-        <property name="savedtime" show="1">15:55</property>
+        <property name="savedtime" show="1">17:05</property>
         <property name="saveddate" show="1">10/26/26</property>
         <property name="saveddate-eu" show="1">26-10-2026</property>
         <property name="savedfilepath" show="1">/home/krzysztof/work/AppForPowerSupply10A_Uppsala/doc/usart_transfer_state_diagram.qet</property>
@@ -571,7 +571,7 @@
     <diagram version="0.90" cols="12" folio="%id/%total" author="" height="1460" rows="18" plant="" displayAt="bottom" displayrows="true" locmach="" rowsize="80" displaycols="true" freezeNewElement="false" freezeNewConductor="false" auto_page_num="Create an auto folio numbering" title="Rozkład kubków i elektrod" indexrev="" colsize="60" titleblocktemplate="single-logo" date="null" titleblocktemplateCollection="embedded" order="1" filename="">
         <defaultconductor color2="#000000" vertirotatetext="270" num=" " dash-size="2" onetextperfolio="0" conductor_color="" cable="" displaytext="1" type="multi" horizrotatetext="0" numsize="7" function="" bus="" formula="" tension_protocol="" condsize="1" bicolor="false" text_color="#000000" vertical-alignment="AlignRight" horizontal-alignment="AlignBottom" conductor_section=""/>
         <elements>
-            <element x="850" y="400" uuid="{5502bf31-7a8a-4913-99b9-f9ba2a45978f}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="150" y="460" uuid="{5553a1f3-84b6-44b8-878a-fa2948bbd64b}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -583,7 +583,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="150" y="410" uuid="{5553a1f3-84b6-44b8-878a-fa2948bbd64b}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="470" y="1000" uuid="{7eba0933-3820-41ac-9dc0-b4753f71e482}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -595,7 +595,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="300" y="710" uuid="{1e4a9441-8810-4e8b-8241-a95fc41a0941}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="300" y="770" uuid="{1e4a9441-8810-4e8b-8241-a95fc41a0941}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -607,7 +607,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="160" y="330" uuid="{f88387e9-e5d5-4714-b5e8-a1275c3282f7}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="350" y="960" uuid="{c31e19e7-c543-4ef3-b7f0-04ee9a649826}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -619,7 +619,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="460" y="740" uuid="{a848cafc-7978-4b53-8c51-31b297372385}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="240" y="1000" uuid="{1cd59c71-74ef-4af3-a750-14a79b8654cb}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -631,7 +631,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="80" y="450" uuid="{220775a0-a2f3-430a-aaf5-5383ee20d355}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="470" y="770" uuid="{1580eb40-d527-4fab-9c61-bd36d5bfd661}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -643,7 +643,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="70" y="200" uuid="{159cf7f7-f3f8-406f-91bc-e769be4706c5}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="160" y="380" uuid="{f88387e9-e5d5-4714-b5e8-a1275c3282f7}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -655,7 +655,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="390" y="190" uuid="{278a7335-af69-4c51-b337-c0fce91f8df5}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="460" y="810" uuid="{a848cafc-7978-4b53-8c51-31b297372385}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -667,7 +667,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="220" y="450" uuid="{4e0b9253-12c9-43ca-afc0-df2d72ba6e73}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="80" y="500" uuid="{220775a0-a2f3-430a-aaf5-5383ee20d355}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -679,7 +679,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="150" y="350" uuid="{f40b5e7a-3ea0-4538-aeee-d13bb26dd7ee}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="550" y="930" uuid="{06ac9448-f599-4378-be11-f7bb109a9e40}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -691,7 +691,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="390" y="640" uuid="{6cf4af6f-b6a0-4070-87af-9ed4c7083d02}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="70" y="250" uuid="{159cf7f7-f3f8-406f-91bc-e769be4706c5}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -703,7 +703,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="950" y="560" uuid="{70c932e7-3deb-49d2-bd94-370738c9f6ac}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="390" y="240" uuid="{278a7335-af69-4c51-b337-c0fce91f8df5}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -715,7 +715,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="450" y="520" uuid="{30fe2e16-30a6-4293-b66e-988fad209fd3}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="560" y="960" uuid="{8e7ed5ca-2942-40b1-a8c8-82c6a9a90da8}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -727,7 +727,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="370" y="190" uuid="{15c26ac1-3fa6-476a-9851-6ff7cf04ec99}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="220" y="500" uuid="{4e0b9253-12c9-43ca-afc0-df2d72ba6e73}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="-2" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -739,7 +739,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="380" y="230" uuid="{f61e3103-fb9a-4713-8ad2-90207bee484c}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="680" y="1180" uuid="{8ffec7fc-c980-4415-82c4-aae7456a95fa}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -751,7 +751,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="870" y="410" uuid="{f569a162-72f2-4f07-9df3-b293dbfe5da7}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="460" y="890" uuid="{20addb70-93e4-418c-a46b-157b3787634d}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -763,7 +763,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="950" y="640" uuid="{1ca37067-d1c6-4a05-943a-b306ebb0e4bb}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="150" y="400" uuid="{f40b5e7a-3ea0-4538-aeee-d13bb26dd7ee}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -775,7 +775,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="830" y="410" uuid="{6b695337-c1d3-472e-927c-8153c319258d}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="350" y="1060" uuid="{dc9f7f1d-9043-4ce2-b1e3-6e4b2e230ec7}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -787,7 +787,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="240" y="330" uuid="{0aca6b3d-0d4c-494b-8c2a-1d394181fc39}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="390" y="700" uuid="{6cf4af6f-b6a0-4070-87af-9ed4c7083d02}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -799,7 +799,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="690" y="200" uuid="{4ac932f5-0d54-4c22-92ea-6a517b332c29}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="450" y="570" uuid="{30fe2e16-30a6-4293-b66e-988fad209fd3}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -811,7 +811,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="630" y="190" uuid="{3d0a148e-0245-475b-9baf-114a4b3b4970}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="370" y="240" uuid="{15c26ac1-3fa6-476a-9851-6ff7cf04ec99}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -823,7 +823,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="290" y="530" uuid="{06cf1538-07ce-4887-91c6-c24eefc2b395}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="530" y="380" uuid="{7d1ecd65-7506-42e7-ae96-02a9e9e5a9e8}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -835,7 +835,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="450" y="710" uuid="{65f34962-7c7d-468a-81d9-fd4621cac354}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="380" y="280" uuid="{f61e3103-fb9a-4713-8ad2-90207bee484c}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -847,7 +847,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="460" y="540" uuid="{a3bbf2e6-2216-4d67-af41-802c3694394a}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="360" y="930" uuid="{24efc86b-ee40-40f1-9230-8fc869d0a1ae}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -859,7 +859,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="380" y="290" uuid="{721f259e-e496-4d50-8482-89a221dd2d04}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="240" y="380" uuid="{0aca6b3d-0d4c-494b-8c2a-1d394181fc39}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -871,7 +871,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="380" y="670" uuid="{f877931a-f745-4df9-9aab-986555469ab1}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="690" y="250" uuid="{4ac932f5-0d54-4c22-92ea-6a517b332c29}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -883,7 +883,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="680" y="640" uuid="{c20ea2b3-02cb-4405-bf36-0357553323fb}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="80" y="1070" uuid="{e4f0886d-1735-4877-a48f-c57d612a7d46}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -895,7 +895,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="810" y="640" uuid="{df589579-94fc-4d45-bf47-3d02acb0d2d5}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="640" y="780" uuid="{1a46b5c3-c91a-485a-9a52-d6decd8be631}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -907,7 +907,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="230" y="340" uuid="{e029a0ee-a2fb-4273-b2f5-f1d54bd43303}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="290" y="580" uuid="{06cf1538-07ce-4887-91c6-c24eefc2b395}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -919,16 +919,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="540" y="370" uuid="{0e5960ab-3eae-4fc2-b98e-77d2bf0102b3}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
-                <terminals/>
-                <inputs/>
-                <elementInformations>
-                    <elementInformation name="formula" show="1"></elementInformation>
-                </elementInformations>
-                <dynamic_texts/>
-                <texts_groups/>
-            </element>
-            <element x="620" y="200" uuid="{95ef581a-3969-4d0d-aa41-1ec6cb9992f2}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+            <element x="450" y="770" uuid="{65f34962-7c7d-468a-81d9-fd4621cac354}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="-3" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -940,7 +931,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="850" y="420" uuid="{9cd42673-089e-4442-9009-e50cf9f66d7d}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="460" y="590" uuid="{a3bbf2e6-2216-4d67-af41-802c3694394a}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -952,7 +943,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="460" y="440" uuid="{7be13d5e-5d8b-4870-9255-863b2a698a60}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="380" y="340" uuid="{721f259e-e496-4d50-8482-89a221dd2d04}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -964,7 +955,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="810" y="560" uuid="{0187d56e-c5bb-46ad-9697-715fd21f6cb9}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="380" y="730" uuid="{f877931a-f745-4df9-9aab-986555469ab1}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -976,7 +967,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="470" y="410" uuid="{c3dcd02e-b424-40fc-9e20-da4701bc3f21}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+            <element x="680" y="700" uuid="{c20ea2b3-02cb-4405-bf36-0357553323fb}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -988,7 +979,7 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="610" y="410" uuid="{23154fad-5d3e-427b-a2c1-8812c545f127}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+            <element x="460" y="1170" uuid="{cc37b79a-b89e-4871-9ffb-25f96bde89ed}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -1000,7 +991,88 @@
                 <dynamic_texts/>
                 <texts_groups/>
             </element>
-            <element x="460" y="600" uuid="{c0f5e988-ee3f-4785-9aa5-aadd10886e3c}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+            <element x="230" y="390" uuid="{e029a0ee-a2fb-4273-b2f5-f1d54bd43303}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="3">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="540" y="420" uuid="{0e5960ab-3eae-4fc2-b98e-77d2bf0102b3}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="460" y="490" uuid="{7be13d5e-5d8b-4870-9255-863b2a698a60}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="470" y="460" uuid="{c3dcd02e-b424-40fc-9e20-da4701bc3f21}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="2">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="680" y="460" uuid="{23154fad-5d3e-427b-a2c1-8812c545f127}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="630" y="1000" uuid="{fea98e03-ccfa-476a-9eaf-541ec6329c8b}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="0">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="460" y="660" uuid="{c0f5e988-ee3f-4785-9aa5-aadd10886e3c}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
+                <terminals/>
+                <inputs/>
+                <elementInformations>
+                    <elementInformation name="comment" show="1"></elementInformation>
+                    <elementInformation name="location" show="1"></elementInformation>
+                    <elementInformation name="formula" show="1"></elementInformation>
+                    <elementInformation name="label" show="1"></elementInformation>
+                </elementInformations>
+                <dynamic_texts/>
+                <texts_groups/>
+            </element>
+            <element x="460" y="1090" uuid="{3868e8cf-12db-4e14-b9de-45bc5ad26998}" prefix="" type="embed://import/primitives/arrow_10px.elmt" freezeLabel="false" z="10" orientation="1">
                 <terminals/>
                 <inputs/>
                 <elementInformations>
@@ -1014,46 +1086,136 @@
             </element>
         </elements>
         <inputs>
-            <input x="120.69" rotation="0" y="436.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="76.7688" rotation="0" y="426.742" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="350.69" rotation="0" y="316.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="854.514" rotation="0" y="546.985" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Order?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="414.112" rotation="0" y="548.116" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>     Waiting&lt;/span>&lt;/p>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>for response&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="300" rotation="0" y="690" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="927.054" rotation="0" y="615.632" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="427.749" rotation="0" y="308.984" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="359.997" rotation="0" y="109.339" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Start&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="109.897" rotation="0" y="358" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Incorrectly&lt;/span>&lt;/p>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>     Noisy&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="426" rotation="0" y="619" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;> Timeout&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="588.605" rotation="0" y="386.574" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="514.514" rotation="0" y="396.985" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Order?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="854.514" rotation="0" y="626.985" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Order?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="808.493" rotation="0" y="617.054" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="389.105" rotation="0" y="617.351" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="300.339" rotation="0" y="307.351" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="464.952" rotation="0" y="385.267" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="350.69" rotation="0" y="696.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="429.897" rotation="0" y="458" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Sending&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="807.084" rotation="0" y="533.846" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="511.358" rotation="0" y="617.711" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="428.748" rotation="0" y="684.991" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="194.991" rotation="0" y="427.495" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="426" rotation="0" y="633" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>exceeded&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="928.579" rotation="0" y="534.211" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="362.897" rotation="0" y="249" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Idle&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="190" rotation="0" y="40" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:20pt;&quot;>USART transfer state diagram&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
-            <input x="839.897" rotation="0" y="458" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Sending&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="120.69" rotation="0" y="486.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="76.7688" rotation="0" y="476.742" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="350.69" rotation="0" y="366.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="414.112" rotation="0" y="598.116" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>     Waiting&lt;/span>&lt;/p>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>for response&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="300" rotation="0" y="750" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="387.054" rotation="0" y="905.632" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="608.493" rotation="0" y="976.054" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="427.749" rotation="0" y="358.984" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="530.69" rotation="0" y="986.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="359.997" rotation="0" y="159.339" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Start&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="115.897" rotation="0" y="408" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Incorrect&lt;/span>&lt;/p>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>   Noise&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="426" rotation="0" y="922" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>exceeded&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="426" rotation="0" y="679" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;> Timeout&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="424.436" rotation="0" y="1106.82" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Executing&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="588.605" rotation="0" y="436.574" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="514.514" rotation="0" y="446.985" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Order?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="150.339" rotation="0" y="97.351" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>This state diagram shows the rules for determining the next state&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="426" rotation="0" y="908" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;> Timeout&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="389.105" rotation="0" y="677.351" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="505.703" rotation="0" y="906.116" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="300.339" rotation="0" y="357.351" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="464.952" rotation="0" y="435.267" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="350.69" rotation="0" y="756.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="429.897" rotation="0" y="508" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Sending&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="278.493" rotation="0" y="977.054" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="323" rotation="0" y="1026" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="320.69" rotation="0" y="986.552" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Silence?&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="511.358" rotation="0" y="677.711" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="487.054" rotation="0" y="975.632" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>Yes&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="428.748" rotation="0" y="744.991" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="194.991" rotation="0" y="477.495" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:400;&quot;>No&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="426" rotation="0" y="693" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>exceeded&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="362.897" rotation="0" y="299" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Idle&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="100" rotation="0" y="40" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:20pt;&quot;>Low-level USART FSM (Finite State Machine)&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
+            <input x="424.897" rotation="0" y="828" text="&lt;!DOCTYPE HTML PUBLIC &quot;-//W3C//DTD HTML 4.0//EN&quot; &quot;http://www.w3.org/TR/REC-html40/strict.dtd&quot;>&#xa;&lt;html>&lt;head>&lt;meta name=&quot;qrichtext&quot; content=&quot;1&quot; />&lt;style type=&quot;text/css&quot;>&#xa;p, li { white-space: pre-wrap; }&#xa;&lt;/style>&lt;/head>&lt;body style=&quot; font-family:'Sans Serif'; font-size:9pt; font-weight:0; font-style:normal;&quot;>&#xa;&lt;p style=&quot; margin-top:0px; margin-bottom:0px; margin-left:0px; margin-right:0px; -qt-block-indent:0; text-indent:0px;&quot;>&lt;span style=&quot; font-size:10pt; font-weight:600;&quot;>Receiving&lt;/span>&lt;/p>&lt;/body>&lt;/html>" font="Sans Serif,9,-1,5,0,0,0,0,0,0,normal"/>
         </inputs>
         <shapes>
-            <shape x1="110" x2="190" closed="0" y1="360" y2="400" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
+            <shape x1="110" x2="190" closed="0" y1="410" y2="450" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#ffff00"/>
+            </shape>
+            <shape x1="340" x2="420" closed="0" y1="290" y2="330" type="Rectangle" rx="0" is_movable="1" z="-4" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#00ff00"/>
+            </shape>
+            <shape x1="200" x2="230" closed="0" y1="500" y2="500" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
-            <shape x1="200" x2="230" closed="0" y1="450" y2="450" type="Line" is_movable="1" z="0">
+            <shape x1="290" x2="290" closed="0" y1="770" y2="580" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
-            <shape x1="290" x2="290" closed="0" y1="710" y2="520" type="Line" is_movable="1" z="0">
+            <shape x1="460" x2="460" closed="0" y1="670" y2="640" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="460" closed="0" y1="460" y2="500" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="540" x2="540" closed="0" y1="380" y2="430" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="510" closed="0" y1="1000" y2="1000" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="330" x2="150" closed="0" y1="380" y2="380" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="690" x2="380" closed="0" y1="240" y2="240" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="70" x2="70" closed="0" y1="1070" y2="240" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="420" x2="500" closed="0" y1="500" y2="540" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#00ff00"/>
+            </shape>
+            <shape x1="350" x2="350" closed="0" y1="1030" y2="1070" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="560" x2="560" closed="0" y1="930" y2="970" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="510" x2="560" closed="0" y1="930" y2="930" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="380" x2="380" closed="0" y1="700" y2="740" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="640" x2="640" closed="0" y1="770" y2="1000" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="380" x2="380" closed="0" y1="190" y2="290" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="350" x2="410" closed="0" y1="930" y2="930" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="590" x2="690" closed="0" y1="460" y2="460" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="460" closed="0" y1="1140" y2="1180" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="150" x2="150" closed="0" y1="410" y2="380" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="70" x2="380" closed="0" y1="240" y2="240" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="690" x2="690" closed="0" y1="1180" y2="240" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
@@ -1061,173 +1223,97 @@
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
                 <points>
-                    <point x="880" y="610"/>
-                    <point x="930" y="640"/>
-                    <point x="880" y="670"/>
-                    <point x="830" y="640"/>
+                    <point x="380" y="350"/>
+                    <point x="430" y="380"/>
+                    <point x="380" y="410"/>
+                    <point x="330" y="380"/>
                 </points>
             </shape>
-            <shape x1="800" x2="830" closed="0" y1="560" y2="560" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="460" x2="460" closed="0" y1="610" y2="590" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="460" x2="460" closed="0" y1="410" y2="450" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="540" x2="540" closed="0" y1="330" y2="380" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="330" x2="150" closed="0" y1="330" y2="330" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="690" x2="380" closed="0" y1="190" y2="190" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="340" x2="420" closed="0" y1="240" y2="280" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="70" x2="70" closed="0" y1="450" y2="190" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="420" x2="500" closed="0" y1="450" y2="490" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="930" x2="930" closed="0" y1="340" y2="380" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="380" x2="380" closed="0" y1="640" y2="680" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="930" x2="950" closed="0" y1="560" y2="560" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="930" x2="950" closed="0" y1="640" y2="640" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="380" x2="380" closed="0" y1="140" y2="240" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="590" x2="620" closed="0" y1="410" y2="410" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="830" x2="910" closed="0" y1="450" y2="490" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="150" x2="150" closed="0" y1="360" y2="330" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="70" x2="380" closed="0" y1="190" y2="190" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="690" x2="690" closed="0" y1="640" y2="190" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
             <shape closed="1" type="Polygon" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
                 <points>
-                    <point x="380" y="300"/>
-                    <point x="430" y="330"/>
-                    <point x="380" y="360"/>
-                    <point x="330" y="330"/>
+                    <point x="540" y="430"/>
+                    <point x="590" y="460"/>
+                    <point x="540" y="490"/>
+                    <point x="490" y="460"/>
                 </points>
             </shape>
+            <shape x1="460" x2="690" closed="0" y1="1180" y2="1180" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="410" x2="380" closed="0" y1="700" y2="700" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="340" x2="420" closed="0" y1="150" y2="190" type="Ellipse" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="460" closed="0" y1="1000" y2="1100" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="230" x2="300" closed="0" y1="1000" y2="1000" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="460" closed="0" y1="770" y2="820" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="420" x2="500" closed="0" y1="820" y2="860" type="Rectangle" rx="0" is_movable="1" z="-4" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#00ff00"/>
+            </shape>
+            <shape x1="380" x2="380" closed="0" y1="350" y2="330" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="460" x2="490" closed="0" y1="460" y2="460" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="410" x2="510" closed="0" y1="600" y2="640" type="Rectangle" rx="0" is_movable="1" z="-4" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#00ff00"/>
+            </shape>
+            <shape x1="100" x2="70" closed="0" y1="500" y2="500" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="430" x2="640" closed="0" y1="770" y2="770" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="350" x2="350" closed="0" y1="930" y2="970" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="330" x2="290" closed="0" y1="770" y2="770" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="420" x2="500" closed="0" y1="1100" y2="1140" type="Rectangle" rx="0" is_movable="1" z="-4" ry="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="SolidPattern" color="#00ff00"/>
+            </shape>
             <shape closed="1" type="Polygon" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
                 <points>
-                    <point x="540" y="380"/>
-                    <point x="590" y="410"/>
-                    <point x="540" y="440"/>
-                    <point x="490" y="410"/>
-                </points>
-            </shape>
-            <shape x1="800" x2="830" closed="0" y1="640" y2="640" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="850" x2="900" closed="0" y1="360" y2="360" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="410" x2="380" closed="0" y1="640" y2="640" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="340" x2="420" closed="0" y1="100" y2="140" type="Ellipse" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="460" x2="460" closed="0" y1="710" y2="750" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="380" x2="380" closed="0" y1="300" y2="280" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="460" x2="490" closed="0" y1="410" y2="410" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="100" x2="70" closed="0" y1="450" y2="450" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="430" x2="460" closed="0" y1="710" y2="710" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape closed="1" type="Polygon" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-                <points>
-                    <point x="880" y="530"/>
-                    <point x="930" y="560"/>
-                    <point x="880" y="590"/>
-                    <point x="830" y="560"/>
-                </points>
-            </shape>
-            <shape x1="330" x2="290" closed="0" y1="710" y2="710" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape closed="1" type="Polygon" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-                <points>
-                    <point x="380" y="680"/>
-                    <point x="430" y="710"/>
                     <point x="380" y="740"/>
-                    <point x="330" y="710"/>
+                    <point x="430" y="770"/>
+                    <point x="380" y="800"/>
+                    <point x="330" y="770"/>
                 </points>
             </shape>
-            <shape x1="460" x2="460" closed="0" y1="550" y2="490" type="Line" is_movable="1" z="0">
+            <shape x1="460" x2="460" closed="0" y1="600" y2="540" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
-            <shape x1="430" x2="540" closed="0" y1="330" y2="330" type="Line" is_movable="1" z="0">
+            <shape x1="430" x2="540" closed="0" y1="380" y2="380" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
@@ -1235,29 +1321,21 @@
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
                 <points>
-                    <point x="150" y="420"/>
-                    <point x="200" y="450"/>
-                    <point x="150" y="480"/>
-                    <point x="100" y="450"/>
+                    <point x="150" y="470"/>
+                    <point x="200" y="500"/>
+                    <point x="150" y="530"/>
+                    <point x="100" y="500"/>
                 </points>
             </shape>
-            <shape x1="290" x2="460" closed="0" y1="520" y2="520" type="Line" is_movable="1" z="0">
+            <shape x1="290" x2="460" closed="0" y1="570" y2="570" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
-            <shape x1="620" x2="620" closed="0" y1="410" y2="190" type="Line" is_movable="1" z="0">
+            <shape x1="610" x2="640" closed="0" y1="1000" y2="1000" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
-            <shape x1="510" x2="690" closed="0" y1="640" y2="640" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="230" x2="230" closed="0" y1="450" y2="330" type="Line" is_movable="1" z="0">
-                <pen style="SolidLine" widthF="1" color="#000000"/>
-                <brush style="NoBrush" color="#000000"/>
-            </shape>
-            <shape x1="150" x2="150" closed="0" y1="420" y2="400" type="Line" is_movable="1" z="0">
+            <shape x1="70" x2="350" closed="0" y1="1070" y2="1070" type="Line" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
             </shape>
@@ -1265,15 +1343,57 @@
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
                 <points>
-                    <point x="460" y="610"/>
-                    <point x="510" y="640"/>
+                    <point x="350" y="970"/>
+                    <point x="400" y="1000"/>
+                    <point x="350" y="1030"/>
+                    <point x="300" y="1000"/>
+                </points>
+            </shape>
+            <shape x1="510" x2="690" closed="0" y1="700" y2="700" type="Line" is_movable="1" z="-1">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="230" x2="230" closed="0" y1="1000" y2="390" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape x1="150" x2="150" closed="0" y1="470" y2="450" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape closed="1" type="Polygon" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+                <points>
                     <point x="460" y="670"/>
-                    <point x="410" y="640"/>
+                    <point x="510" y="700"/>
+                    <point x="460" y="730"/>
+                    <point x="410" y="700"/>
                 </points>
             </shape>
-            <shape x1="410" x2="510" closed="0" y1="550" y2="590" type="Rectangle" rx="0" is_movable="1" z="0" ry="0">
+            <shape closed="1" type="Polygon" is_movable="1" z="0">
                 <pen style="SolidLine" widthF="1" color="#000000"/>
                 <brush style="NoBrush" color="#000000"/>
+                <points>
+                    <point x="560" y="970"/>
+                    <point x="610" y="1000"/>
+                    <point x="560" y="1030"/>
+                    <point x="510" y="1000"/>
+                </points>
+            </shape>
+            <shape x1="460" x2="460" closed="0" y1="860" y2="900" type="Line" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+            </shape>
+            <shape closed="1" type="Polygon" is_movable="1" z="0">
+                <pen style="SolidLine" widthF="1" color="#000000"/>
+                <brush style="NoBrush" color="#000000"/>
+                <points>
+                    <point x="460" y="900"/>
+                    <point x="510" y="930"/>
+                    <point x="460" y="960"/>
+                    <point x="410" y="930"/>
+                </points>
             </shape>
         </shapes>
     </diagram>
