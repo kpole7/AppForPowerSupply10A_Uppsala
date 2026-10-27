@@ -1,14 +1,13 @@
 /// @file usart_master.cpp
-/// @brief Implementation of communication with the slave device based on RP2040 microcontroller.
+/// @brief Implementation of communication with a slave device based on the RP2040 microcontroller — 
+/// lowest level.
 ///
-/// @details This file contains low-level layer for communication between the master and the slave device using USART.
-/// This application runs on the master device (PC) and communicates with the slave device (RP2040 microcontroller).
-/// The master device sends commands to the slave device and receives responses.
-/// At this low-level layer, the communication is organized in such a way that the master sends a continuous packet of bytes
-/// and waits for the response from the slave device. The response is also a continuous packet of bytes.
-/// Then the master detects a period of silence to determine the end of the response from the slave device.
-/// At this layer, time of waiting for the response is checked but not enforced. Similarly, the response time is measured
-/// but not enforced. These responsibilities are handled at a higher layer of the application.
+/// @details This module provides USART support for sending and receiving data blocks (without
+/// interpretation). The module acts as the master in relation to an external device that acts as the slave.
+/// The module includes tools for detecting incoming data, including extracting incoming data blocks, 
+/// detecting silence, and testing timeouts. The module determines the current status of the data block
+/// exchange process and buffers the response from the slave. The module contains resources used by the 
+/// higher-level FSM (shown in the diagram “Low-level USART FSM”).
 
 #include <cassert>
 #include <cstring>
@@ -46,7 +45,7 @@ static int configureSerialPort(const char *DeviceName);
 //=================================================================================================
 
 low_level_usart::low_level_usart() {
-	State = usart_low_level_state::Uninitialized;
+	LowLevelState = usart_low_level_state::Uninitialized;
 	TransferState = usart_transfer_state::Idle;
 	CriticalErrorCode = usart_low_level_error::None;
 	NameOfPort = nullptr;
@@ -77,7 +76,7 @@ low_level_usart::~low_level_usart() {
 /// @callgraph
 /// @callergraph
 usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
-	if (usart_low_level_state::Uninitialized != State) {
+	if (usart_low_level_state::Uninitialized != LowLevelState) {
 		CriticalErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
@@ -94,7 +93,7 @@ usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
 	if (usart_low_level_error::None != CriticalErrorCode) {
-		State = usart_low_level_state::Error;
+		LowLevelState = usart_low_level_state::Error;
 		return CriticalErrorCode;
 	}
 
@@ -105,7 +104,7 @@ usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 	if (0 != Result) {
 		CriticalErrorCode = usart_low_level_error::UsartDeviceNotFound;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
-		State = usart_low_level_state::Error;
+		LowLevelState = usart_low_level_state::Error;
 		return CriticalErrorCode;
 	}
 
@@ -113,10 +112,10 @@ usart_low_level_error low_level_usart::openUsart(const std::string &Name) {
 	if (-1 == SerialPortHandler) {
 		CriticalErrorCode = usart_low_level_error::OpenFailed;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
-		State = usart_low_level_state::Error;
+		LowLevelState = usart_low_level_state::Error;
 		return CriticalErrorCode;
 	}
-	State = usart_low_level_state::Open;
+	LowLevelState = usart_low_level_state::Open;
 	return CriticalErrorCode;
 }
 
@@ -132,7 +131,7 @@ std::string low_level_usart::getName() const {
 /// @brief Get the current low-level state of the USART master.
 /// @callgraph
 /// @callergraph
-usart_low_level_state low_level_usart::getState() const { return State; }
+usart_low_level_state low_level_usart::getState() const { return LowLevelState; }
 
 /// @brief Get the current transfer state of the USART master.
 /// @callgraph
@@ -194,7 +193,7 @@ bool low_level_usart::resetUsartMaster() {
 /// @callergraph
 usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
                                                       std::chrono::milliseconds ResponseTimeout) {
-	if (usart_low_level_state::Open != State) {
+	if (usart_low_level_state::Open != LowLevelState) {
 		CriticalErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 		return CriticalErrorCode;
@@ -219,6 +218,11 @@ usart_low_level_error low_level_usart::sendOutputData(const char *Buffer, int Le
 }
 
 /// @brief Collect input data from the USART until a period of silence is detected.
+/// @details The function updates the TransferState member variable. The TransferState private member 
+/// variable may remain in the WaitingForResponse or Receiving state. It may also transition to the following
+/// states: Receiving, IncorrectlyReceiving, WaitingLimitExceeded, Completed, IncorrectlyCompleted,
+/// InternalError, CallError. Other private member variables that may be updated are CriticalErrorCode and 
+/// LowLevelState.
 /// @return The current transfer state after checking for input or silence.
 /// @callgraph
 /// @callergraph
@@ -267,7 +271,7 @@ int low_level_usart::getInputData(char *Buffer, int BufferSize) {
 /// @callgraph
 /// @callergraph
 bool low_level_usart::checkNormalConditions() {
-	if (usart_low_level_state::Open != State) {
+	if (usart_low_level_state::Open != LowLevelState) {
 		CriticalErrorCode = usart_low_level_error::CallError;
 		printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, __LINE__);
 	}
@@ -305,7 +309,7 @@ usart_transfer_state low_level_usart::handleCriticalError(usart_transfer_state N
 		close(SerialPortHandler);
 		SerialPortHandler = -1;
 	}
-	State = usart_low_level_state::Error;
+	LowLevelState = usart_low_level_state::Error;
 	delete NameOfPort;
 	NameOfPort = nullptr;
 	printf("USART Error %d in %s at line %d.\n", static_cast<int>(CriticalErrorCode), __FILE__, Line);
@@ -315,7 +319,10 @@ usart_transfer_state low_level_usart::handleCriticalError(usart_transfer_state N
 
 /// @brief Collect input data from the USART until a period of silence is detected assuming normal conditions.
 /// @details It is assumed that the USART is ready to receive a response and that the module state variables
-/// are consistent with normal operation.
+/// are consistent with normal operation. The function updates the TransferState member variable accordingly. 
+/// The TransferState private member variable may remain in the WaitingForResponse or Receiving state. It may
+/// also transition to the following states: Receiving, IncorrectlyReceiving, WaitingLimitExceeded, Completed, 
+/// IncorrectlyCompleted, InternalError, CallError.
 /// @param TimeNow The current time point used for timeout calculations
 /// @return The updated transfer state
 /// @callgraph
@@ -349,7 +356,10 @@ usart_transfer_state low_level_usart::operateAssumingNormalConditions(std::chron
 
 // TODO: more advanced response time checking
 /// @brief Process the received input data from the USART.
-/// @details This function handles the received bytes, updates the transfer state, and checks for response duration limits.
+/// @details This function handles the received bytes, updates the transfer state, and checks for response 
+/// duration limits. The function updates the TransferState member variable. The TransferState private member
+/// variable may remain in the WaitingForResponse or Receiving state. It may also transition to the following
+/// states: Receiving, IncorrectlyReceiving, InternalError.
 /// @param ReceivedBytes Pointer to the buffer containing the received bytes
 /// @param NumberOfReceived Number of bytes received
 /// @param TimeNow The current time point used for timeout calculations
@@ -364,6 +374,7 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 		TransferState = usart_transfer_state::Receiving;
 	}
 	else {
+		assert(usart_transfer_state::Receiving == TransferState);
 		auto ReceivingDuration = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenResponseStarted);
 		if (ReceivingDuration.count() > ResponseDurationLimit.count()) {
 			TransferState = usart_transfer_state::IncorrectlyReceiving;
@@ -387,8 +398,11 @@ usart_transfer_state low_level_usart::processReceivedInput(const char *ReceivedB
 	return TransferState;
 }
 
+// TODO: improve limit calculation while bytes are being received
 /// @brief Handle silence on the USART line.
-/// @details This function checks for silence duration and updates the transfer state accordingly.
+/// @details This function checks for silence duration and updates the TransferState member variable 
+/// accordingly. The TransferState private member variable may remain in the WaitingForResponse state or 
+/// transition to the following states: WaitingLimitExceeded, Completed, IncorrectlyCompleted, InternalError.
 /// @param TimeNow The current time point used for silence detection
 /// @return The updated transfer state
 /// @callgraph

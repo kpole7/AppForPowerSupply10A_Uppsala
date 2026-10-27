@@ -48,7 +48,7 @@ enum class usart_transfer_state {
 
 class low_level_usart {
   private:
-	usart_low_level_state State;
+	usart_low_level_state LowLevelState;
 	usart_transfer_state TransferState;
 	usart_low_level_error CriticalErrorCode;
 	std::string *NameOfPort;

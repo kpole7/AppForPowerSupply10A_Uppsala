@@ -114,8 +114,6 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 	static auto TimeReference = std::chrono::high_resolution_clock::now();
 
-	usart_low_level_error Error = usart_low_level_error::None;
-
 	// FSM state handling
     single_command_fsm_state StartState = FsmState;
 	switch (FsmState) {
@@ -148,16 +146,18 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 		break;
 	case single_command_fsm_state::WaitingForResponse:
-		// Receiving state
-
-		MyUsartPtr->collectInputDataUntilSilence();
-
-		if (Error != usart_low_level_error::None) {
-			std::cout << "Failed to collect input data\n";
-			FsmState = single_command_fsm_state::NonCriticalError; // Failed to collect input data
-		}
+		handleFsmWaitingForResponse(MyUsartPtr, FsmState);
+		break;
+	case single_command_fsm_state::Receiving:
+		handleFsmReceiving(MyUsartPtr, FsmState);
 		break;
 
+	case single_command_fsm_state::CriticalError:
+		handleFsmCriticalError(MyUsartPtr, FsmState);
+		break;
+	case single_command_fsm_state::NonCriticalError:
+		handleFsmNonCriticalError(MyUsartPtr, FsmState);
+		break;
 	default:
 		// Handle unexpected states
 
@@ -251,6 +251,9 @@ static void handleFsmIdle(low_level_usart_ptr &UsartPtr, single_command_fsm_stat
 static void handleFsmWaitingForResponse(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
 	assert(nullptr != UsartPtr);
 	assert(single_command_fsm_state::WaitingForResponse == FsmState);
+	UsartPtr->collectInputDataUntilSilence();
+	
+
 }
 
 static void handleFsmReceiving(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
@@ -292,12 +295,12 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 	}
 
 	if (StateChanged) {
-		std::cout << "State [" << UsartLowLevelStateTexts[static_cast<int>(LastState)] << "] -> ["
+		std::cout << "L-L State [" << UsartLowLevelStateTexts[static_cast<int>(LastState)] << "] -> ["
 		          << UsartLowLevelStateTexts[static_cast<int>(UsartPtr->getState())] << "]  ";
 	}
 	else {
 		if (AnyChange) {
-			std::cout << "State [[" << UsartLowLevelStateTexts[static_cast<int>(LastState)] << "]]  ";
+			std::cout << "L-L State [[" << UsartLowLevelStateTexts[static_cast<int>(LastState)] << "]]  ";
 		}
 	}
 	if (TransferStateChanged) {
