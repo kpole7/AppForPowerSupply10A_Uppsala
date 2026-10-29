@@ -5,12 +5,15 @@
 
 #include <cassert>
 #include <chrono>
-#include <inttypes.h>
+#include <cinttypes>
 #include <string>
 
-static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
+#include "config.h"
 
-#define MAX_RESPONSE_LENGTH 300
+#define USART_BUFFER_SIZE 300
+
+#define LIMIT_ADDITION_COMPONENT (PERIPHERAL_THREAD_LOOP_DURATION + 5) // ms
+#define LIMIT_MULTIPLIER_PER_BYTE 2100 // for 4800 baud; LIMIT_MULTIPLIER_PER_BYTE = 2.1 ms per byte = 2100 us per byte
 
 enum class usart_low_level_state {
 	Uninitialized,
@@ -19,68 +22,45 @@ enum class usart_low_level_state {
 	Error
 };
 
-enum class usart_low_level_error {
-	None, // normal operation
-	UsartDeviceNotFound,
-	OpenFailed,
-	SelectFailed,
-	ReadFailed,
-	WriteFailed,
-	InternalError,
-	CallError
-};
-
-enum class usart_transfer_state {
-	Idle,                 // normal operation; wait for a new outgoing data to be sent
-	Sending,              // normal operation
-	WaitingForResponse,   // normal operation
-	Receiving,            // normal operation
-	Completed,            // normal operation
-	WaitingLimitExceeded, // non-critical error: the slave did not respond within the expected waiting limit and
-	                      // there is no ongoing transfer now
-	IncorrectlyReceiving, // non-critical error: if the response is too long and the transfer is still ongoing
-	                      // or waiting time has exceeded but now the transfer is still ongoing
-	IncorrectlyCompleted, // non-critical error: ingoing transfer has ended but the response was too long
-	IncorrectlyNoisy,     // non-critical error: if the slave is sending unexpected data and the transfer is still ongoing
-	InternalError,
-	CallError
-};
+enum class usart_low_level_error { None, UsartDeviceNotFound, OpenFailed, SelectFailed, ReadFailed, WriteFailed, InternalError, CallError };
 
 class low_level_usart {
   private:
-	usart_low_level_state LowLevelState;
-	usart_transfer_state TransferState;
-	usart_low_level_error CriticalErrorCode;
+	usart_low_level_state UsartState;
+	usart_low_level_error UsartErrorCode;
 	std::string *NameOfPort;
 	int SerialPortHandler;
-	char TotalResponse[MAX_RESPONSE_LENGTH];
+	char UsartBuffer[USART_BUFFER_SIZE];
+	uint16_t TotalCommandBytes;
 	uint16_t TotalReceivedBytes;
-	std::chrono::high_resolution_clock::time_point TimeWhenOutgoingDataEnded;
+	uint16_t ReceivedBytesLimit;
+	std::chrono::milliseconds WaitingLimit; // from the moment transmission begins until the first byte of the response is received
+	std::chrono::high_resolution_clock::time_point TimeWhenOutgoingDataStarted;
 	std::chrono::high_resolution_clock::time_point TimeWhenResponseStarted;
-	std::chrono::high_resolution_clock::time_point TimeWhenReceivedLastByte;
-	std::chrono::milliseconds WaitingLimit;
-	std::chrono::milliseconds ResponseDurationLimit;
 
-	bool checkNormalConditions();
-	usart_transfer_state handleCriticalError(usart_transfer_state NewTransferState, int Line);
-	usart_transfer_state operateAssumingNormalConditions(std::chrono::high_resolution_clock::time_point TimeNow);
-	usart_transfer_state processReceivedInput(const char *ReceivedBytes, int NumberOfReceived,
-	                                          std::chrono::high_resolution_clock::time_point TimeNow);
-	usart_transfer_state handleSilence(std::chrono::high_resolution_clock::time_point TimeNow);
+	void handleCriticalError(int Line);
+	void checkSilence(bool *IsSilencePtr);
+	void flushBuffer();
+
+	void doIdle(bool *IsSilencePtr, const char *CommandText, uint16_t ResponseLimit);
+	void doSending();
+	void doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr);
+	void doReceiveFirstData(bool *IsOverLimitsPtr);
 
   public:
 	low_level_usart();
 	~low_level_usart();
-	usart_low_level_error openUsart(const std::string &Name);
+	usart_low_level_error startModule(const std::string &Name);
+	void terminateModule();
 	[[nodiscard]] std::string getName() const;
 	[[nodiscard]] usart_low_level_state getState() const;
-	[[nodiscard]] usart_transfer_state getTransferState() const;
 	[[nodiscard]] usart_low_level_error getErrorCode() const;
-	bool resetUsartMaster();
-	usart_low_level_error sendOutputData(const char *Buffer, int Length, std::chrono::milliseconds WaitingTimeout,
-	                                     std::chrono::milliseconds ResponseTimeout);
-	usart_transfer_state collectInputDataUntilSilence();
-	int getInputData(char *Buffer, int BufferSize);
+	[[nodiscard]] usart_low_level_error getInputData(int *ReceivedBytes, char *Buffer, int BufferSize);
+
+	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const char *CommandTextPtr, uint16_t ResponseLimit);
+	[[nodiscard]] usart_low_level_error handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr, bool *IsOverLimitsPtr);
+	[[nodiscard]] usart_low_level_error handleReceiveState(bool *IsSilencePtr, bool *IsOverLimitsPtr);
+	[[nodiscard]] usart_low_level_error handleNoiseState(bool *IsSilencePtr);
 };
 
 typedef low_level_usart *low_level_usart_ptr;

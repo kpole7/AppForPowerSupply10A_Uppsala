@@ -6,6 +6,7 @@
 #include <iostream>
 #include <thread>
 
+#include "config.h"
 #include "debug_tools.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
@@ -13,8 +14,6 @@
 //=================================================================================================
 // Preprocessor directives
 //=================================================================================================
-
-#define PERIPHERAL_THREAD_LOOP_DURATION 20 // milliseconds
 
 #define SHUT_DOWN_TIMEOUT 1000 // milliseconds
 
@@ -140,7 +139,7 @@ static void peripheralThreadTiming() {
 		}
 
 		// delay so as not to overload the processor core
-		std::this_thread::sleep_for(std::chrono::milliseconds(2));
+		std::this_thread::sleep_for(std::chrono::milliseconds(1));
 
 		TimeNow = std::chrono::high_resolution_clock::now();
 		DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);

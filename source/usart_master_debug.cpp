@@ -19,7 +19,7 @@ char UsartTransferStateTexts[11][21] = {"Idle",
                                         "Sending",
                                         "WaitingForResponse",
                                         "Receiving",
-                                        "Completed",
+                                        "Executing",
                                         "WaitingLimitExceeded",
                                         "IncorrectlyReceiving",
                                         "IncorrectlyCompleted",
@@ -101,7 +101,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	                              &SetPC11[0],      &SetPC17[0],  &SetPC19[0],   &SetPC_1[0],   &SetPC_2[0],   &SetPC_01[0],  &SetPC_07[0],
 	                              &SetPC_09[0],     &SetPC_11[0], &SetPC_17[0],  &SetPC_19[0]};
 	static low_level_usart *MyUsartPtr = nullptr;
-    static uint16_t UnchangedStateCounter = 0;
+	static uint16_t UnchangedStateCounter = 0;
 
 	// Handle termination signal and cleanup if necessary
 	if (TerminationSignal) {
@@ -115,7 +115,7 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 	static auto TimeReference = std::chrono::high_resolution_clock::now();
 
 	// FSM state handling
-    single_command_fsm_state StartState = FsmState;
+	single_command_fsm_state StartState = FsmState;
 	switch (FsmState) {
 	case single_command_fsm_state::Uninitialized:
 		handleFsmUninitialized(MyUsartPtr, FsmState);
@@ -129,20 +129,20 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 			CommandTextToBeSent = const_cast<char *>(CommandTexts[PressedKey - 'a']);
 			static char Buffer[30];
 			snprintf(Buffer, sizeof(Buffer) - 1, "cmd: %s", CommandTextToBeSent);
-            char *UnprintablePtr = Buffer;
-            while (0 != *UnprintablePtr) {
-                if (!isprint(*UnprintablePtr)) {
-                    *UnprintablePtr = '~';
-                }
-                UnprintablePtr++;
-            }
+			char *UnprintablePtr = Buffer;
+			while (0 != *UnprintablePtr) {
+				if (!isprint(*UnprintablePtr)) {
+					*UnprintablePtr = '~';
+				}
+				UnprintablePtr++;
+			}
 			printStateChanges(MyUsartPtr, TimeReference, Buffer);
 		}
 		else {
 			CommandTextToBeSent = nullptr;
 		}
 
-        handleFsmIdle(MyUsartPtr, FsmState);
+		handleFsmIdle(MyUsartPtr, FsmState);
 
 		break;
 	case single_command_fsm_state::WaitingForResponse:
@@ -163,39 +163,24 @@ bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
 
 		break;
 	}
-    if (StartState == FsmState) {
-        if (UnchangedStateCounter < 0xFFFF) {
-            UnchangedStateCounter++;
-        }
-    }
-    else {
-        UnchangedStateCounter = 0;
-    }
+	if (StartState == FsmState) {
+		if (UnchangedStateCounter < 0xFFFF) {
+			UnchangedStateCounter++;
+		}
+	}
+	else {
+		UnchangedStateCounter = 0;
+	}
 
 	switch (PressedKey) {
-	case 'R':
-		printStateChanges(MyUsartPtr, TimeReference, "Attempt to reset");
-		{
-			bool ResetSuccess = MyUsartPtr->resetUsartMaster();
-			if (!ResetSuccess) {
-				std::cout << "Failed to reset USART master\n";
-			}
-			else {
-				FsmState = single_command_fsm_state::Idle;
-				std::cout << "USART master reset successfully\n";
-			}
-		}
-		break;
 	case 'T':
 		TimeReference = std::chrono::high_resolution_clock::now();
 		break;
-	case 'S':
-        {
-            char Buffer[50];
-            snprintf(Buffer, sizeof(Buffer) - 1, "usr; max=%u", LongestTimeTicsBehindSchedule);
-    		printStateChanges(MyUsartPtr, TimeReference, Buffer);
-        }
-		break;
+	case 'S': {
+		char Buffer[50];
+		snprintf(Buffer, sizeof(Buffer) - 1, "usr; max=%u", LongestTimeTicsBehindSchedule);
+		printStateChanges(MyUsartPtr, TimeReference, Buffer);
+	} break;
 	default:
 		break;
 	}
@@ -221,7 +206,7 @@ static void handleFsmClosed(low_level_usart_ptr &UsartPtr, single_command_fsm_st
 	assert(nullptr != UsartPtr);
 	assert(single_command_fsm_state::Closed == FsmState);
 	assert(0 != SerialPortName.length());
-	usart_low_level_error Error = UsartPtr->openUsart(SerialPortName);
+	usart_low_level_error Error = UsartPtr->startModule(SerialPortName);
 	if (Error != usart_low_level_error::None) {
 		std::cerr << "Failed to open USART\n";
 		FsmState = single_command_fsm_state::NonCriticalError; // Failed to open USART
@@ -232,28 +217,17 @@ static void handleFsmClosed(low_level_usart_ptr &UsartPtr, single_command_fsm_st
 
 static void handleFsmIdle(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
 
-    if ((nullptr == CommandTextToBeSent) || (0 == strlen(CommandTextToBeSent))) {
-        return;
-    }
+	if ((nullptr == CommandTextToBeSent) || (0 == strlen(CommandTextToBeSent))) {
+		return;
+	}
 
 	assert(nullptr != UsartPtr);
 	assert(single_command_fsm_state::Idle == FsmState);
-	usart_low_level_error Error = UsartPtr->sendOutputData(CommandTextToBeSent, strlen(CommandTextToBeSent),
-	                                                       static_cast<std::chrono::milliseconds>(200), static_cast<std::chrono::milliseconds>(100));
-	if (Error != usart_low_level_error::None) {
-		std::cout << "Failed to send data\n";
-		FsmState = single_command_fsm_state::CriticalError; // Failed to send data
-		return;
-	}
-	FsmState = single_command_fsm_state::WaitingForResponse; // Transition to receiving state
 }
 
 static void handleFsmWaitingForResponse(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
 	assert(nullptr != UsartPtr);
 	assert(single_command_fsm_state::WaitingForResponse == FsmState);
-	UsartPtr->collectInputDataUntilSilence();
-	
-
 }
 
 static void handleFsmReceiving(low_level_usart_ptr &UsartPtr, single_command_fsm_state &FsmState) {
@@ -278,15 +252,13 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 		return;
 	}
 	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
-	static usart_transfer_state LastTransferState = usart_transfer_state::Idle;
 	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
 	static single_command_fsm_state LastFsmState = single_command_fsm_state::Uninitialized;
 	bool StateChanged = (LastState != UsartPtr->getState());
-	bool TransferStateChanged = (LastTransferState != UsartPtr->getTransferState());
 	bool ErrorChanged = (LastErrorCode != UsartPtr->getErrorCode());
 	bool FsmStateChanged = (LastFsmState != FsmState);
 	bool UserEventOccurred = (nullptr != UserEventName);
-	bool AnyChange = (StateChanged || TransferStateChanged || ErrorChanged || FsmStateChanged || UserEventOccurred);
+	bool AnyChange = (StateChanged || ErrorChanged || FsmStateChanged || UserEventOccurred);
 
 	if (AnyChange) {
 		auto TimeNow = std::chrono::high_resolution_clock::now();
@@ -301,15 +273,6 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 	else {
 		if (AnyChange) {
 			std::cout << "L-L State [[" << UsartLowLevelStateTexts[static_cast<int>(LastState)] << "]]  ";
-		}
-	}
-	if (TransferStateChanged) {
-		std::cout << "Transfer state [" << UsartTransferStateTexts[static_cast<int>(LastTransferState)] << "] -> ["
-		          << UsartTransferStateTexts[static_cast<int>(UsartPtr->getTransferState())] << "]  ";
-	}
-	else {
-		if (AnyChange) {
-			std::cout << "Transfer state [[" << UsartTransferStateTexts[static_cast<int>(LastTransferState)] << "]]  ";
 		}
 	}
 	if (ErrorChanged) {
@@ -338,7 +301,6 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 	}
 
 	LastState = UsartPtr->getState();
-	LastTransferState = UsartPtr->getTransferState();
 	LastErrorCode = UsartPtr->getErrorCode();
 	LastFsmState = FsmState;
 }
