@@ -10,6 +10,8 @@
 #include "debug_tools.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
+#include "modified_rstl_master.h"
+#include "usart_master.h"
 
 //=================================================================================================
 // Preprocessor directives
@@ -45,8 +47,6 @@ static std::atomic<bool> DoHardClosePeripheralThread;
 static std::atomic<bool> PeripheralThreadIsStopped;
 
 static std::thread peripheralThread;
-
-static bool DebugingPeripheralsEnable;
 
 static std::chrono::high_resolution_clock::time_point PeripheralThreadLoopStart;
 static std::chrono::high_resolution_clock::time_point TimeNow;
@@ -96,16 +96,18 @@ void peripheralThreadExit() {
 /// This function runs the second thread (FLTK is the main thread).
 /// The peripheral thread supports communication with peripherals and sends signals to FLTK to refresh graphics.
 static void peripheralThreadHandler() {
+	static bool ContinuePeripheralsLoop;
+
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 	debugPeripheralsInitializations();
-
-	DebugingPeripheralsEnable = true;
+	usart_low_level_error Error = initializeRstlMaster();
 
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
 
-	while (DebugingPeripheralsEnable) {
+	ContinuePeripheralsLoop = true; // start the peripheral loop
+	while (ContinuePeripheralsLoop) {
 		if (AwakeRefreshWholeGui) {
 			Fl::awake(refreshWholeGui, nullptr);
 			AwakeRefreshWholeGui = false;
@@ -114,7 +116,15 @@ static void peripheralThreadHandler() {
 		if (atomic_load_explicit(&DoHardClosePeripheralThread, std::memory_order_acquire)) {
 			break;
 		}
-		DebugingPeripheralsEnable = debuggingPeripheralsTick(atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire));
+		bool TerminationSignal = atomic_load_explicit(&DoClosePeripheralThread, std::memory_order_acquire);
+		ContinuePeripheralsLoop = !TerminationSignal; // initially set based on termination signal
+
+		// Tasks to be executed in the peripheral loop
+
+		ContinuePeripheralsLoop |= debuggingToolsTick(TerminationSignal);
+
+		ContinuePeripheralsLoop |= rstlMasterTick(TerminationSignal);
+
 	} // while (...)
 	// exit
 	atomic_store_explicit(&PeripheralThreadIsStopped, true, std::memory_order_release);

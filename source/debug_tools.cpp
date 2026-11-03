@@ -109,11 +109,15 @@ void debugPeripheralsInitializations() {
 /// @brief Handles a single tick of peripheral operations.
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
 /// @return true if the peripheral operations should continue, false if they can be terminated
-bool debuggingPeripheralsTick(bool TerminationSignal) {
+bool debuggingToolsTick(bool TerminationSignal) {
+	static bool KeepMeRunning = true;
+	if (!KeepMeRunning) {
+		return false;
+	}
+
 	assert(ConsoleModePtr != nullptr);
 	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
-	bool KeepMeRunning = true;
 	int JustPressedKey = -1;
 	if ((PreviousKey == -1) && (Key != -1)) {
 		JustPressedKey = Key;
@@ -129,7 +133,6 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 			std::cout << "Key pressed: " << JustPressedKey << '\n';
 		}
 	}
-	KeepMeRunning = !TerminationSignal; // instantly stop if termination signal is received
 #endif
 
 #if 0 // test of mechanism using the AwakeRefreshWholeGui variable
@@ -167,21 +170,18 @@ bool debuggingPeripheralsTick(bool TerminationSignal) {
 			std::cout << "Key pressed: " << JustPressedKey << '\n';
 		}
 	}
-	KeepMeRunning = !TerminationSignal; // instantly stop if termination signal is received
 #endif
 
-#if 1
-	KeepMeRunning = usartMasterDebuggingTick(TerminationSignal, JustPressedKey);
-#endif
-
+	if (TerminationSignal) {
+		KeepMeRunning = false; // instantly stop if termination signal is received
+	}
 	if (!KeepMeRunning) {
 		delete ConsoleModePtr;
-		ConsoleModePtr = nullptr;
 		std::cout << "Terminating debugging peripherals tick properly." << '\n';
 		return false;
 	}
 
-	return KeepMeRunning;
+	return true;
 }
 
 std::string formatElapsedTime(std::chrono::milliseconds::rep TimeSinceReference) {

@@ -17,7 +17,7 @@ extern uint16_t LongestTimeTicsBehindSchedule;
 
 void debugPeripheralsInitializations();
 
-bool debuggingPeripheralsTick(bool TerminationSignal);
+bool debuggingToolsTick(bool TerminationSignal);
 
 std::string formatElapsedTime(std::chrono::milliseconds::rep TimeSinceReference);
 

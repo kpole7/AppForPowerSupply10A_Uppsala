@@ -23,7 +23,11 @@
 // Preprocessor directives
 //=================================================================================================
 
-#define DEBUG_USART_MASTER 1
+/// @brief Additional component for calculating time limits
+#define LIMIT_ADDITION_COMPONENT (PERIPHERAL_THREAD_LOOP_DURATION + 5) // ms
+
+/// @brief Multiplier for calculating time limits based on the number of transmitted bytes
+#define LIMIT_MULTIPLIER_PER_BYTE 2100 // us; for 4800 baud: LIMIT_MULTIPLIER_PER_BYTE = 2100 us per byte
 
 /// This constant determines USART speed; it is defined in termios.h
 #define USART_HARDWARE_SPEED B4800
@@ -32,6 +36,7 @@
 /// It is equal about 3.5 character times at the configured USART speed.
 #define SILENCE_DETECTION_PERIOD_MS 7
 
+/// @brief Compile-time check to ensure the silence detection period is shorter than the peripheral thread loop duration
 static_assert(SILENCE_DETECTION_PERIOD_MS < 1 * PERIPHERAL_THREAD_LOOP_DURATION,
               "A single period of the peripheral thread is not sufficient for silence detection");
 
