@@ -5,11 +5,11 @@
 #define DEBUG_TOOLS_H_
 
 #include <chrono>
-#include <stdbool.h>
-#include <stdint.h>
-#include <string>
+#include <cstdint>
 
-extern uint16_t LongestTimeTicsBehindSchedule;
+#include "usart_master_debug.h"
+
+extern std::uint16_t LongestTimeTicsBehindSchedule;
 
 //=================================================================================================
 // Function prototypes

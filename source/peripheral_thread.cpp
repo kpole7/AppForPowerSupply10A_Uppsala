@@ -101,7 +101,7 @@ static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 	debugPeripheralsInitializations();
-	usart_low_level_error Error = initializeRstlMaster();
+	initializeRstlMaster();
 
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();

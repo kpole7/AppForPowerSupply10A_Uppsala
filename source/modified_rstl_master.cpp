@@ -10,9 +10,11 @@
 /// error handling (for syntax and timing errors). This module covers handling of single commands. Another
 /// higher-level module is responsible for creating and managing sequences of commands.
 
+#include <cassert>
+
 #include "modified_rstl_master.h"
 #include "usart_master.h"
-
+#include "usart_master_debug.h"
 
 
 static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
@@ -77,8 +79,6 @@ uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 		}
 	}
 	return static_cast<uint8_t>(((TotalResponseCount - FailureCount) * 100 + TotalResponseCount / 2) / TotalResponseCount);
-
-
 }
 
 uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
@@ -99,7 +99,34 @@ uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
 /// @return true if the peripheral operations should continue, false if they can be terminated
 bool modified_rstl_master::fsmTick(bool TerminationSignal) {
+	assert(LowLevelUsartPtr != nullptr);
 
+	switch (CurrentState) {
+		case rstl_master_fsm_state::Uninitialized:
+			{
+				assert(usart_low_level_state::Uninitialized == LowLevelUsartPtr->getState());
+				bool *IsSilencePtr = nullptr;
+				LowLevelUsartPtr->handleIdleAndSendState(IsSilencePtr, CurrentCommandTextPtr, CurrentCommandTextLength);
+
+
+			}
+			break;
+		case rstl_master_fsm_state::IdleAndSend:
+			// Handle idle and send state
+			break;
+		case rstl_master_fsm_state::WaitForResponse:
+			// Handle wait for response state
+			break;
+		case rstl_master_fsm_state::Receive:
+			// Handle receive state
+			break;
+		case rstl_master_fsm_state::Noise:
+			// Handle noise state
+			break;
+		case rstl_master_fsm_state::CriticalError:
+			// Handle critical error state
+			break;
+	}
 
 
 

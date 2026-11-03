@@ -181,6 +181,8 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		return false;
 	}
 
+	usartMasterDebuggingTick(TerminationSignal, JustPressedKey);
+
 	return true;
 }
 
