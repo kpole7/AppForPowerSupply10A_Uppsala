@@ -135,7 +135,7 @@ void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uin
 		// there is a new command to send
 		TotalCommandBytes = strlen(CommandTextPtr);
 		assert(TotalCommandBytes < USART_BUFFER_SIZE);
-		strcpy(UsartBuffer, CommandTextPtr);
+		strcpy(SendingBuffer, CommandTextPtr);
 	}
 	else {
 		// no new command to send
@@ -149,7 +149,7 @@ void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uin
 void low_level_usart::doSending() {
 	assert(usart_low_level_state::Open == UsartState);
 
-	int BytesWritten = (int)write(SerialPortHandler, UsartBuffer, TotalCommandBytes);
+	int BytesWritten = (int)write(SerialPortHandler, SendingBuffer, TotalCommandBytes);
 	if (BytesWritten != TotalCommandBytes) {
 		UsartErrorCode = usart_low_level_error::WriteFailed;
 		UsartState = usart_low_level_state::Error;
@@ -218,13 +218,12 @@ void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 
 	// Copy the received bytes into the USART buffer
 	for (int J = 0; J < NumberOfReceived; J++) {
-		UsartBuffer[TotalReceivedBytes] = ReceivedBytes[J];
+		ReceivingBuffer[TotalReceivedBytes] = ReceivedBytes[J];
 		TotalReceivedBytes++;
 	}
-	UsartBuffer[TotalReceivedBytes] = 0;
+	ReceivingBuffer[TotalReceivedBytes] = 0;
 
 	TimeWhenResponseStarted = std::chrono::high_resolution_clock::now();
-	return;
 }
 
 //=================================================================================================
@@ -237,7 +236,9 @@ low_level_usart::low_level_usart() {
 	UsartErrorCode = usart_low_level_error::None;
 	NameOfPort = nullptr;
 	SerialPortHandler = -1;
-	memset(UsartBuffer, 0, USART_BUFFER_SIZE);
+	memset(SendingBuffer, 0, USART_BUFFER_SIZE);
+	memset(ReceivingBuffer, 0, USART_BUFFER_SIZE);
+	TotalCommandBytes = 0;
 	TotalReceivedBytes = 0;
 	TimeWhenOutgoingDataStarted = std::chrono::high_resolution_clock::now();
 	TimeWhenResponseStarted = std::chrono::high_resolution_clock::now();
@@ -309,34 +310,9 @@ usart_low_level_state low_level_usart::getState() const { return UsartState; }
 /// @callergraph
 usart_low_level_error low_level_usart::getErrorCode() const { return UsartErrorCode; }
 
-/// @brief Get the input data from the USART buffer assuming the transfer is completed.
-/// @details This function copies the received data into the provided buffer if the transfer is completed.
-/// @param HigherLevelBuffer The buffer to copy the received data into
-/// @param BufferSize The size of the provided buffer
-/// @return The number of bytes copied, or -1 on error
-/// @callgraph
-/// @callergraph
-usart_low_level_error low_level_usart::getInputData(int *ReceivedBytes, char *HigherLevelBuffer, int BufferSize) {
-	if (BufferSize >= USART_BUFFER_SIZE) {
-		UsartErrorCode = usart_low_level_error::CallError;
-		handleCriticalError(__LINE__);
-		return UsartErrorCode;
-	}
+const char *low_level_usart::getSendingBuffer() const { return SendingBuffer; }
 
-	size_t Length = strlen(UsartBuffer);
-	if (Length >= (size_t)BufferSize) {
-
-		// TODO: review
-		*ReceivedBytes = 0;
-		UsartErrorCode = usart_low_level_error::CallError;
-		handleCriticalError(__LINE__);
-		return UsartErrorCode;
-	}
-
-	strncpy(HigherLevelBuffer, UsartBuffer, BufferSize);
-	*ReceivedBytes = (int)Length;
-	return UsartErrorCode;
-}
+const char *low_level_usart::getReceivingBuffer() const { return ReceivingBuffer; }
 
 /// @brief Handle the IdleAndSend state of the Low-level USART FSM.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
@@ -437,10 +413,10 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 
 	// Copy the received bytes into the internal buffer
 	for (int J = 0; J < NumberOfReceived; J++) {
-		UsartBuffer[TotalReceivedBytes] = ReceivedBytes[J];
+		ReceivingBuffer[TotalReceivedBytes] = ReceivedBytes[J];
 		TotalReceivedBytes++;
 	}
-	UsartBuffer[TotalReceivedBytes] = 0;
+	ReceivingBuffer[TotalReceivedBytes] = 0;
 
 	return UsartErrorCode;
 }
@@ -456,8 +432,8 @@ usart_low_level_error low_level_usart::handleNoiseState(bool *IsSilencePtr) {
 	if (usart_low_level_error::None != UsartErrorCode) {
 		return UsartErrorCode;
 	}
-	if (*IsSilencePtr) {
-		return UsartErrorCode;
+	if (!(*IsSilencePtr)) {
+		flushBuffer();
 	}
 
 	return UsartErrorCode;

@@ -8,9 +8,9 @@
 
 #include "config.h"
 #include "debug_tools.h"
+#include "modified_rstl_master.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
-#include "modified_rstl_master.h"
 #include "usart_master.h"
 
 //=================================================================================================

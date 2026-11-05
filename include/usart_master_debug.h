@@ -4,14 +4,17 @@
 #ifndef USART_MASTER_DEBUG_H_
 #define USART_MASTER_DEBUG_H_
 
+#include "modified_rstl_master.h"
 #include <cstdint>
 
-extern char* CurrentCommandTextPtr;
+extern const char *CurrentCommandTextPtr;
 
-extern std::uint16_t CurrentCommandTextLength;
+extern uint16_t ExpectedResponseLimit;
 
-extern uint16_t CurrentCommandTextLength;
+void usartMasterDebuggingInitialize();
 
-bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey);
+void usartMasterDebuggingTick(int PressedKey);
+
+void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState, const char *UserEventName);
 
 #endif // USART_MASTER_DEBUG_H_

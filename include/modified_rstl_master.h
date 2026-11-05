@@ -50,22 +50,28 @@ class modified_rstl_master {
 	uint32_t TotalResponseCount;
 	uint32_t TotalFailedResponseCount;
 
-	void updateCommunicationQuality(bool ResponseFailed); // Updates the communication quality metrics based on the latest response
+	void fsmTickUninitialized();
+	void fsmTickIdleAndSend();
+	void fsmTickWaitForResponse();
+	void fsmTickReceive();
+	void fsmTickNoise();
+
+	void updateCommunicationQuality(bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
 
   public:
 	modified_rstl_master();
 	~modified_rstl_master();
 	usart_low_level_error initialize();
-	rstl_master_fsm_state getCurrentState() const;
-	usart_low_level_error getUsartErrorCode() const;
+	[[nodiscard]] rstl_master_fsm_state getCurrentState() const;
+	[[nodiscard]] usart_low_level_error getUsartErrorCode() const;
 	bool fsmTick(bool TerminationSignal);
 
-	order_processing_state getOrderProcessingState() const;
-	order_with_arguments getCurrentOrder() const;
+	[[nodiscard]] order_processing_state getOrderProcessingState() const;
+	[[nodiscard]] order_with_arguments getCurrentOrder() const;
 	void placeOrder(const order_with_arguments &NewOrder);
-	std::string getResponse() const;
-	uint8_t getCurrentCommunicationQuality() const;
-	uint8_t getTotalCommunicationQuality() const;
+	[[nodiscard]] std::string getResponse() const;
+	[[nodiscard]] uint8_t getCurrentCommunicationQuality() const;
+	[[nodiscard]] uint8_t getTotalCommunicationQuality() const;
 };
 
 typedef modified_rstl_master *modified_rstl_master_ptr;
@@ -73,5 +79,9 @@ typedef modified_rstl_master *modified_rstl_master_ptr;
 usart_low_level_error initializeRstlMaster();
 
 bool rstlMasterTick(bool TerminationSignal);
+
+typedef void (*rstl_callback_function)(const char *CommandPtr, const char *ResponsePtr);
+
+void registerRstlCallback(rstl_callback_function Callback);
 
 #endif // MODIFIED_RSTL_MASTER_H

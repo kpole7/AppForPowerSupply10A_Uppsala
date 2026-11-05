@@ -9,16 +9,16 @@
 #include <string>
 
 #include "debug_tools.h"
+#include "modified_rstl_master.h"
 #include "settings_file.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
 
+const char *CurrentCommandTextPtr;
 
-char* CurrentCommandTextPtr;
+uint16_t ExpectedResponseLimit;
 
-std::uint16_t CurrentCommandTextLength;
-
-
+static auto TimeReference = std::chrono::high_resolution_clock::now();
 
 static const char InquiryPOWER[] = "?POWER\r\n"; // a
 static const char InquiryZ[] = "?Z\r\n";         // b
@@ -46,121 +46,86 @@ static const char SetPC_11[] = "PC -1.1\r\n";    // w
 static const char SetPC_17[] = "PC -1.7\r\n";    // x
 static const char SetPC_19[] = "PC -1.9\r\n";    // y
 const char *CommandTexts[] = {&InquiryPOWER[0], &InquiryZ[0], &InquiryPC[0], &InquiryST[0], &SetPOWER1[0], &SetPOWER0[0], &SetZ1[0],
-								&SetZ2[0],        &SetPC0[0],   &SetPC1[0],    &SetPC2[0],    &SetPC01[0],   &SetPC07[0],   &SetPC09[0],
-								&SetPC11[0],      &SetPC17[0],  &SetPC19[0],   &SetPC_1[0],   &SetPC_2[0],   &SetPC_01[0],  &SetPC_07[0],
-								&SetPC_09[0],     &SetPC_11[0], &SetPC_17[0],  &SetPC_19[0]};
+                              &SetZ2[0],        &SetPC0[0],   &SetPC1[0],    &SetPC2[0],    &SetPC01[0],   &SetPC07[0],   &SetPC09[0],
+                              &SetPC11[0],      &SetPC17[0],  &SetPC19[0],   &SetPC_1[0],   &SetPC_2[0],   &SetPC_01[0],  &SetPC_07[0],
+                              &SetPC_09[0],     &SetPC_11[0], &SetPC_17[0],  &SetPC_19[0]};
 
-
-void usartMasterDebuggingInitialize() {
-	CurrentCommandTextPtr = nullptr;
-	CurrentCommandTextLength = 0;
-
-	
+void printResults(const char *ResultText1, const char *ResultText2) {
+	static char MyBuffer1[300];
+	static char MyBuffer2[300];
+	strncpy(MyBuffer1, ResultText1, sizeof(MyBuffer1) - 1);
+	MyBuffer1[sizeof(MyBuffer1) - 1] = '\0';
+	strncpy(MyBuffer2, ResultText2, sizeof(MyBuffer2) - 1);
+	MyBuffer2[sizeof(MyBuffer2) - 1] = '\0';
+	int Length1 = static_cast<int>(strlen(MyBuffer1));
+	int Length2 = static_cast<int>(strlen(MyBuffer2));
+	if (Length1 > 2) {
+		for (int J = 0; J < Length1; ++J) {
+			if (MyBuffer1[J] < ' ') {
+				MyBuffer1[J] = '~';
+			}
+		}
+	}
+	if (Length2 > 2) {
+		for (int J = 0; J < Length2; ++J) {
+			if (MyBuffer2[J] < ' ') {
+				MyBuffer2[J] = '~';
+			}
+		}
+	}
+	std::cout << "Command:  [" << MyBuffer1 << "]\n";
+	std::cout << "Response: [" << MyBuffer2 << "]\n";
 }
 
 
 
+void usartMasterDebuggingInitialize() {
+	CurrentCommandTextPtr = nullptr;
+	ExpectedResponseLimit = 0;
+	registerRstlCallback(printResults);
+}
 
+char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Error"};
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Closed", "Error"};
-
-char UsartTransferStateTexts[11][21] = {"Idle",
-                                        "Sending",
-                                        "WaitingForResponse",
-                                        "Receiving",
-                                        "Executing",
-                                        "WaitingLimitExceeded",
-                                        "IncorrectlyReceiving",
-                                        "IncorrectlyCompleted",
-                                        "IncorrectlyNoisy",
-                                        "InternalError",
-                                        "CallError"};
+char RstlMasterFsmStateTexts[6][16] = {"Uninitialized", "IdleAndSend", "WaitForResponse", "Receive", "Noise", "CriticalError"};
 
 char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
 
-enum class single_command_fsm_state : uint8_t {
-	Uninitialized,
-	Closed,
-	Idle,
-	WaitingForResponse,
-	Receiving,
-
-	CriticalError,
-	NonCriticalError,
-};
-
-enum class single_order_code : uint8_t { InquiryPower, SetPower, InquiryZ, SetZ, InquiryPC, SetPC, InquiryST };
-
-class single_order_package {
-  public:
-	single_order_code Code;
-	bool IsOn;
-	uint8_t Channel;
-	double Value;
-};
-
-static single_command_fsm_state FsmState = single_command_fsm_state::Uninitialized;
-
-static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName);
-
 /// @brief Handles a single tick of peripheral operations.
-/// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
-/// @return true if the peripheral operations should continue, false if they can be terminated
+/// @param PressedKey the key that was pressed by the user
 /// @callgraph
 /// @callergraph
-bool usartMasterDebuggingTick(bool TerminationSignal, int PressedKey) {
-	if (TerminationSignal) {
-		return false;
+void usartMasterDebuggingTick(int PressedKey) {
+	if ((PressedKey >= 'a') && (PressedKey <= 'y')) {
+		int Index = static_cast<int>(PressedKey - 'a');
+		CurrentCommandTextPtr = CommandTexts[Index];
+		ExpectedResponseLimit = 100; // Set the expected response limit as needed
 	}
 
-	static auto TimeReference = std::chrono::high_resolution_clock::now();
 
 	switch (PressedKey) {
 	case 'T':
 		TimeReference = std::chrono::high_resolution_clock::now();
 		break;
-	case 'S': {
-		char Buffer[50];
-		snprintf(Buffer, sizeof(Buffer) - 1, "usr; max=%u", LongestTimeTicsBehindSchedule);
-		// printStateChanges(MyUsartPtr, TimeReference, Buffer);
-	} break;
+
+	case 'S':
+		std::cout << "LongestTimeTicsBehindSchedule=" << LongestTimeTicsBehindSchedule << '\n';
+		break;
+
 	default:
 		break;
 	}
-
-	// printStateChanges(MyUsartPtr, TimeReference, nullptr);
-
-	return true;
 }
 
 /// @callgraph
 /// @callergraph
-static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resolution_clock::time_point ReferenceTime, const char *UserEventName) {
+void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState, const char *UserEventName) {
 	if (nullptr == UsartPtr) {
 		return;
 	}
 	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
 	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
-	static single_command_fsm_state LastFsmState = single_command_fsm_state::Uninitialized;
+	static rstl_master_fsm_state LastFsmState = rstl_master_fsm_state::Uninitialized;
 	bool StateChanged = (LastState != UsartPtr->getState());
 	bool ErrorChanged = (LastErrorCode != UsartPtr->getErrorCode());
 	bool FsmStateChanged = (LastFsmState != FsmState);
@@ -169,7 +134,7 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 
 	if (AnyChange) {
 		auto TimeNow = std::chrono::high_resolution_clock::now();
-		auto TimeSinceReference = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - ReferenceTime).count();
+		auto TimeSinceReference = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeReference).count();
 		std::cout << formatElapsedTime(TimeSinceReference) << " ";
 	}
 
@@ -191,8 +156,8 @@ static void printStateChanges(low_level_usart *UsartPtr, std::chrono::high_resol
 		}
 	}
 	if (FsmStateChanged) {
-		std::cout << "FSM state [" << SingleCommandFsmStateTexts[static_cast<int>(LastFsmState)] << "] -> ["
-		          << SingleCommandFsmStateTexts[static_cast<int>(FsmState)] << "]";
+		std::cout << "FSM state [" << RstlMasterFsmStateTexts[static_cast<int>(LastFsmState)] << "] -> ["
+		          << RstlMasterFsmStateTexts[static_cast<int>(FsmState)] << "]";
 	}
 	else {
 		if (AnyChange) {

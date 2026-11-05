@@ -13,12 +13,25 @@
 #include <cassert>
 
 #include "modified_rstl_master.h"
+#include "settings_file.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
 
+#define SUCCESSFUL_COMMUNICATION true
+#define FAILED_COMMUNICATION false
+
+rstl_callback_function RstlCallback = nullptr;
+
+/// @brief Registers a callback function for handling RSTL commands.
+/// @param Callback The callback function to be registered.
+/// @note This function can be called only once to register the callback.
+void registerRstlCallback(rstl_callback_function Callback) {
+	assert(nullptr == RstlCallback);
+	assert(nullptr != Callback);
+	RstlCallback = Callback;
+}
 
 static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
-
 
 modified_rstl_master::modified_rstl_master() {
 	CurrentState = rstl_master_fsm_state::Uninitialized;
@@ -29,9 +42,7 @@ modified_rstl_master::modified_rstl_master() {
 	TotalFailedResponseCount = 0;
 }
 
-modified_rstl_master::~modified_rstl_master() { 
-	delete LowLevelUsartPtr;
-}
+modified_rstl_master::~modified_rstl_master() { delete LowLevelUsartPtr; }
 
 usart_low_level_error modified_rstl_master::initialize() {
 	std::string PortName = "/dev/ttyUSB0";
@@ -43,30 +54,20 @@ usart_low_level_error modified_rstl_master::initialize() {
 	return Error;
 }
 
-rstl_master_fsm_state modified_rstl_master::getCurrentState() const {
-	return CurrentState;
-}
+rstl_master_fsm_state modified_rstl_master::getCurrentState() const { return CurrentState; }
 
-usart_low_level_error modified_rstl_master::getUsartErrorCode() const {
-	return LowLevelUsartPtr->getErrorCode();
-}
+usart_low_level_error modified_rstl_master::getUsartErrorCode() const { return LowLevelUsartPtr->getErrorCode(); }
 
-order_processing_state modified_rstl_master::getOrderProcessingState() const {
-	return OrderProcessingState;
-}
+order_processing_state modified_rstl_master::getOrderProcessingState() const { return OrderProcessingState; }
 
-order_with_arguments modified_rstl_master::getCurrentOrder() const {
-	return CurrentOrder;
-}
+order_with_arguments modified_rstl_master::getCurrentOrder() const { return CurrentOrder; }
 
 void modified_rstl_master::placeOrder(const order_with_arguments &NewOrder) {
 	CurrentOrder = NewOrder;
 	OrderProcessingState = order_processing_state::InProgress;
 }
 
-std::string modified_rstl_master::getResponse() const {
-	return ResponseBuffer;
-}
+std::string modified_rstl_master::getResponse() const { return ResponseBuffer; }
 
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 	if (TotalResponseCount == 0) {
@@ -87,7 +88,7 @@ uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
 	}
 	uint32_t LocalTotalCount = TotalResponseCount;
 	uint32_t LocalFailedCount = TotalFailedResponseCount;
-	if (TotalResponseCount > (uint32_t)0xFFFFFFU) { 
+	if (TotalResponseCount > (uint32_t)0xFFFFFFU) {
 		// Prevent overflow by scaling down the counts
 		LocalTotalCount /= 2;
 		LocalFailedCount /= 2;
@@ -99,43 +100,162 @@ uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
 /// @return true if the peripheral operations should continue, false if they can be terminated
 bool modified_rstl_master::fsmTick(bool TerminationSignal) {
+	if (TerminationSignal) {
+		if (nullptr == RstlMasterInstancePtr) {
+			return false; // Indicate that the peripheral operations should not continue
+		}
+		delete RstlMasterInstancePtr;
+		return false; // Indicate that the peripheral operations should not continue
+	}
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	assert(LowLevelUsartPtr != nullptr);
 
 	switch (CurrentState) {
-		case rstl_master_fsm_state::Uninitialized:
-			{
-				assert(usart_low_level_state::Uninitialized == LowLevelUsartPtr->getState());
-				bool *IsSilencePtr = nullptr;
-				LowLevelUsartPtr->handleIdleAndSendState(IsSilencePtr, CurrentCommandTextPtr, CurrentCommandTextLength);
-
-
-			}
-			break;
-		case rstl_master_fsm_state::IdleAndSend:
-			// Handle idle and send state
-			break;
-		case rstl_master_fsm_state::WaitForResponse:
-			// Handle wait for response state
-			break;
-		case rstl_master_fsm_state::Receive:
-			// Handle receive state
-			break;
-		case rstl_master_fsm_state::Noise:
-			// Handle noise state
-			break;
-		case rstl_master_fsm_state::CriticalError:
-			// Handle critical error state
-			break;
+	case rstl_master_fsm_state::Uninitialized:
+		fsmTickUninitialized();
+		break;
+	case rstl_master_fsm_state::IdleAndSend:
+		fsmTickIdleAndSend();
+		break;
+	case rstl_master_fsm_state::WaitForResponse:
+		fsmTickWaitForResponse();
+		break;
+	case rstl_master_fsm_state::Receive:
+		fsmTickReceive();
+		break;
+	case rstl_master_fsm_state::Noise:
+		fsmTickNoise();
+		break;
+	default:
+		assert(usart_low_level_error::None != LowLevelUsartPtr->getErrorCode());
+		assert(usart_low_level_state::Error == LowLevelUsartPtr->getState());
+		assert(CurrentState == rstl_master_fsm_state::CriticalError);
+		// Wait for termination
+		break;
 	}
 
-
+	printStateChanges(LowLevelUsartPtr, CurrentState, nullptr);
 
 	return true;
 }
 
-void modified_rstl_master::updateCommunicationQuality(bool ResponseFailed) {
+void modified_rstl_master::fsmTickUninitialized() {
+	assert(usart_low_level_state::Error != LowLevelUsartPtr->getState());
+	if (!SerialPortName.empty()) {
+		if (usart_low_level_state::Uninitialized == LowLevelUsartPtr->getState()) {
+			usart_low_level_error Error = LowLevelUsartPtr->startModule(SerialPortName);
+			if (Error != usart_low_level_error::None) {
+				CurrentState = rstl_master_fsm_state::CriticalError;
+				return;
+			}
+		}
+		assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
+		if (RstlCallback != nullptr) {
+			// The FSM can operate normally because the USART port is open and the callback is set
+			CurrentState = rstl_master_fsm_state::IdleAndSend;
+		}
+	}
+}
+
+void modified_rstl_master::fsmTickIdleAndSend() {
+	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
+	bool Silence = false;
+	assert(((CurrentCommandTextPtr != nullptr) && (ExpectedResponseLimit > 0)) || (CurrentCommandTextPtr == nullptr && ExpectedResponseLimit == 0));
+	usart_low_level_error Error = LowLevelUsartPtr->handleIdleAndSendState(&Silence, CurrentCommandTextPtr, ExpectedResponseLimit);
+	if (Error != usart_low_level_error::None) {
+		CurrentState = rstl_master_fsm_state::CriticalError;
+		return;
+	}
+	if (Silence) {
+		if (CurrentCommandTextPtr != nullptr) {
+			// The current command has been copied and is now being sent
+			CurrentCommandTextPtr = nullptr; // Clear the current command pointer
+			ExpectedResponseLimit = 0;
+			CurrentState = rstl_master_fsm_state::WaitForResponse;
+			return;
+		}
+		// No current command to send, remain in IdleAndSend state
+		return;
+	}
+	// Unexpected input while expecting silence
+	CurrentState = rstl_master_fsm_state::Noise;
+}
+
+void modified_rstl_master::fsmTickWaitForResponse() {
+	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
+	bool TimeoutExceeded = false;
+	bool Silence = false;
+	bool LimitsExceeded = false;
+	usart_low_level_error Error = LowLevelUsartPtr->handleWaitForResponseState(&TimeoutExceeded, &Silence, &LimitsExceeded);
+	if (Error != usart_low_level_error::None) {
+		CurrentState = rstl_master_fsm_state::CriticalError;
+		return;
+	}
+	if (TimeoutExceeded) {
+		// The silence lasted longer than expected
+		CurrentState = rstl_master_fsm_state::IdleAndSend;
+		updateCommunicationQuality(FAILED_COMMUNICATION);
+		return;
+	}
+	if (Silence) {
+		// Remain in the WaitForResponse state until silence is detected
+		return;
+	}
+	if (LimitsExceeded) {
+		CurrentState = rstl_master_fsm_state::Noise;
+		updateCommunicationQuality(FAILED_COMMUNICATION);
+		return;
+	}
+	// Receive incoming transmission until silence is detected
+	CurrentState = rstl_master_fsm_state::Receive;
+}
+
+void modified_rstl_master::fsmTickReceive() {
+	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
+	bool Silence = false;
+	bool LimitsExceeded = false;
+	usart_low_level_error Error = LowLevelUsartPtr->handleReceiveState(&Silence, &LimitsExceeded);
+	if (Error != usart_low_level_error::None) {
+		CurrentState = rstl_master_fsm_state::CriticalError;
+		return;
+	}
+	if (Silence) {
+		// Silence detected, indicating the end of the incoming transmission
+		// Call the registered callback function
+		(*RstlCallback)(LowLevelUsartPtr->getSendingBuffer(), LowLevelUsartPtr->getReceivingBuffer());
+		CurrentState = rstl_master_fsm_state::IdleAndSend; // the command-response cycle successfully completed
+		updateCommunicationQuality(SUCCESSFUL_COMMUNICATION);
+		return;
+	}
+	if (LimitsExceeded) {
+		CurrentState = rstl_master_fsm_state::Noise;
+		updateCommunicationQuality(FAILED_COMMUNICATION);
+		return;
+	}
+
+	// Remain in the Receive state until either silence is detected or limits are exceeded
+}
+
+void modified_rstl_master::fsmTickNoise() {
+	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
+	bool Silence = false;
+	usart_low_level_error Error = LowLevelUsartPtr->handleNoiseState(&Silence);
+	if (Error != usart_low_level_error::None) {
+		CurrentState = rstl_master_fsm_state::CriticalError;
+		return;
+	}
+	if (Silence) {
+		// Silence detected, try getting back to IdleAndSend state
+		CurrentState = rstl_master_fsm_state::IdleAndSend;
+		return;
+	}
+
+	// Remain in the Noise state
+}
+
+void modified_rstl_master::updateCommunicationQuality(bool SuccessfulCommunication) {
 	ResponseFailureHistory <<= 1;
-	if (ResponseFailed) {
+	if (!SuccessfulCommunication) {
 		ResponseFailureHistory |= 1;
 		TotalFailedResponseCount++;
 	}
@@ -149,14 +269,6 @@ usart_low_level_error initializeRstlMaster() {
 }
 
 bool rstlMasterTick(bool TerminationSignal) {
-	if (TerminationSignal) {
-		if (nullptr == RstlMasterInstancePtr) {
-			return false; // Indicate that the peripheral operations should not continue
-		}
-		delete RstlMasterInstancePtr;
-		return false; // Indicate that the peripheral operations should not continue
-	}
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
-	RstlMasterInstancePtr->fsmTick(false);
-	return true;
+	return RstlMasterInstancePtr->fsmTick(TerminationSignal);
 }

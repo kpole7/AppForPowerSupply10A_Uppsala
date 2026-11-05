@@ -104,6 +104,7 @@ void debugPeripheralsInitializations() {
 	if (ConsoleModePtr == nullptr) {
 		ConsoleModePtr = new console_mode();
 	}
+	usartMasterDebuggingInitialize();
 }
 
 /// @brief Handles a single tick of peripheral operations.
@@ -181,7 +182,7 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		return false;
 	}
 
-	usartMasterDebuggingTick(TerminationSignal, JustPressedKey);
+	usartMasterDebuggingTick(JustPressedKey);
 
 	return true;
 }

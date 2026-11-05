@@ -36,7 +36,8 @@ class low_level_usart {
 	usart_low_level_error UsartErrorCode;
 	std::string *NameOfPort;
 	int SerialPortHandler;
-	char UsartBuffer[USART_BUFFER_SIZE];
+	char SendingBuffer[USART_BUFFER_SIZE];
+	char ReceivingBuffer[USART_BUFFER_SIZE];
 	uint16_t TotalCommandBytes;
 	uint16_t TotalReceivedBytes;
 	uint16_t ReceivedBytesLimit;
@@ -61,7 +62,8 @@ class low_level_usart {
 	[[nodiscard]] std::string getName() const;
 	[[nodiscard]] usart_low_level_state getState() const;
 	[[nodiscard]] usart_low_level_error getErrorCode() const;
-	[[nodiscard]] usart_low_level_error getInputData(int *ReceivedBytes, char *Buffer, int BufferSize);
+	[[nodiscard]] const char *getSendingBuffer() const;
+	[[nodiscard]] const char *getReceivingBuffer() const;
 
 	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const char *CommandTextPtr, uint16_t ResponseLimit);
 	[[nodiscard]] usart_low_level_error handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr, bool *IsOverLimitsPtr);
