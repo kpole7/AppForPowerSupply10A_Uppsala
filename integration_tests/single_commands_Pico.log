@@ -1,0 +1,129 @@
+Hello guys
+simulation mode
+cmd ?pw	E=0	ch=1	power off
+cmd ?Z	E=0	ch=1
+cmd ?PC	E=0	ch=1	0x0800
+cmd st E=0
+cmd ver	E=0	ch=1	ver. Oct  8 2026, 15:04:13
+cmd re E=0
+cmd Z	E=0	ch=2
+    42.924	PC	2	E=6	20174	0x56CE	2
+    48.991	PC	2	E=6	20174	0x56CE	5
+cmd pow 0	E=6
+cmd pow 1	E=0
+    76.780	state 0 -> 1
+    76.795	state 1 -> 2
+    77.968	state 2 -> 3
+    77.984	state 3 -> 4
+    79.156	state 4 -> 5
+    79.172	state 5 -> 6
+Sig2LastReadings: LH LH LH LH
+    81.488	main contactor switched on
+    81.488	state 6 -> 7
+cmd ?pw	E=0	ch=2	power on
+cmd ?Z	E=0	ch=2
+cmd ?PC	E=0	ch=2	0x0800
+cmd st E=0
+cmd ver	E=0	ch=2	ver. Oct  8 2026, 15:04:13
+cmd re E=0
+cmd pow 1	E=6
+   178.265	PC	2	E=0	0	0x0800	2
+   182.445	PC	2	E=0	205	0x08CD	2
+   185.895	PC	2	E=0	410	0x099A	2
+   187.059	PC	2	E=0	20	0x0814	4
+   191.909	PC	2	E=0	143	0x088F	4
+   193.232	PC	2	E=0	121	0x0879	5
+   195.289	PC	2	E=0	348	0x095C	4
+   218.912	PC	2	E=0	2047	0x0FFF	5
+   223.254	PC	2	E=0	2047	0x0FFF	6
+   226.227	PC	2	E=0	-205	0x0733	3
+   235.658	PC	2	E=0	-410	0x0666	3
+   239.512	PC	2	E=0	-20	0x07EC	5
+   243.242	PC	2	E=0	-143	0x0771	5
+   246.193	PC	2	E=0	-121	0x0787	6
+   251.001	PC	2	E=0	-348	0x06A4	5
+   253.635	PC	2	E=0	-2048	0x0000	7
+cmd pow 0	E=0
+   818.553	state 7 -> 8
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+   825.825	state 8 -> 9
+   828.141	main contactor switched off
+   828.141	state 9 -> 0
+cmd pow 1	E=0
+   958.313	state 0 -> 1
+   958.329	state 1 -> 2
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+   959.502	state 2 -> 3
+   959.517	state 3 -> 4
+   960.690	state 4 -> 5
+   960.705	state 5 -> 6
+Sig2LastReadings: LH LH LH LH
+   963.021	main contactor switched on
+   963.021	state 6 -> 7
+cmd st E=0
+cmd st E=0
+cmd st E=0
+  1003.810	PC	2	E=0	-2048	0x0000	7
+cmd Z	E=0	ch=1
+  1024.518	PC	1	E=0	2047	0x0FFF	6
+cmd pow 0	E=0
+  1046.225	state 7 -> 8
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+  1053.577	state 8 -> 9
+  1055.893	main contactor switched off
+  1055.893	state 9 -> 0
+cmd pow 1	E=0
+  1071.865	state 0 -> 1
+  1071.881	state 1 -> 2
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+  1073.053	state 2 -> 3
+  1073.069	state 3 -> 4
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+  1074.242	state 4 -> 5
+  1074.257	state 5 -> 6
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+Sig2LastReadings: LH LH LH LH
+  1076.573	main contactor switched on
+  1076.573	state 6 -> 7
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+cmd st E=0
+
+

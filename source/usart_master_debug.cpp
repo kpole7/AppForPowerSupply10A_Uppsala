@@ -35,17 +35,17 @@ static const char CommandL[] = "PC 1\r\n";     // l
 static const char CommandM[] = "PC 2\r\n";     // m
 static const char CommandN[] = "PC 0.1\r\n";   // n
 static const char CommandO[] = "PC 0.7\r\n";   // o
-static const char CommandP[] = "PC 0.9\r\n";   // p
-static const char CommandQ[] = "PC 1.1\r\n";   // q
-static const char CommandR[] = "PC 1.7\r\n";   // r
-static const char CommandS[] = "PC 10.0\r\n";  // s
+static const char CommandP[] = "PC 0.59\r\n";  // p
+static const char CommandQ[] = "PC 1.7\r\n";   // q
+static const char CommandR[] = "PC 10.0\r\n";  // r
+static const char CommandS[] = "PC 10.00\r\n"; // s
 static const char CommandT[] = "PC -1\r\n";    // t
 static const char CommandU[] = "PC -2\r\n";    // u
 static const char CommandV[] = "PC -0.1\r\n";  // v
 static const char CommandW[] = "PC -0.7\r\n";  // w
-static const char CommandX[] = "PC -0.9\r\n";  // x
+static const char CommandX[] = "PC -0.59\r\n"; // x
 static const char CommandY[] = "PC -1.7\r\n";  // y
-static const char CommandZ[] = "PC -10.0\r\n"; // z
+static const char CommandZ[] = "PC -10.00\r\n";// z
 const char *CommandTexts[] = {&CommandA[0], &CommandB[0], &CommandC[0], &CommandD[0], &CommandE[0], &CommandF[0], &CommandG[0],
                               &CommandH[0], &CommandI[0], &CommandJ[0], &CommandK[0], &CommandL[0], &CommandM[0], &CommandN[0],
                               &CommandO[0], &CommandP[0], &CommandQ[0], &CommandR[0], &CommandS[0], &CommandT[0], &CommandU[0],
