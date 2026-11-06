@@ -107,7 +107,7 @@ void low_level_usart::flushBuffer() {
 	return;
 }
 
-/// @brief Check for silence on the USART line and prepare a new command for transmission if CommandTextPtr is not nullptr.
+/// @brief Check for silence on the USART line and prepare a new command for transmission if CommandTextPtr is not empty.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if the line is silent, false otherwise
 /// @param CommandTextPtr The command text to be sent over the USART line or nullptr if no new command is to be sent
 /// @param ResponseLimit The maximum number of bytes expected in the response
@@ -316,12 +316,12 @@ const char *low_level_usart::getReceivingBuffer() const { return ReceivingBuffer
 
 /// @brief Handle the IdleAndSend state of the Low-level USART FSM.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
-/// @param CommandTextPtr Pointer to the command text to be sent or nullptr if no command is to be sent
+/// @param CommandString Reference to the command text to be sent or an empty string if no command is to be sent
 /// @param ResponseLimit The maximum number of response bytes expected if a command is to be sent; should be 0 if no command is to be sent
 /// @return The error code indicating the result of the operation
-usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr, const char *CommandTextPtr, uint16_t ResponseLimit) {
+usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString, uint16_t ResponseLimit) {
 	bool IsSilence = false;
-	doIdle(&IsSilence, CommandTextPtr, ResponseLimit);
+	doIdle(&IsSilence, CommandString.c_str(), ResponseLimit);
 	if (usart_low_level_error::None != UsartErrorCode) {
 		return UsartErrorCode;
 	}
@@ -330,8 +330,8 @@ usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr
 		return UsartErrorCode;
 	}
 
-	if (nullptr == CommandTextPtr) {
-		assert(0 == ResponseLimit);
+	if (CommandString.empty()) {
+		// assert(0 == ResponseLimit); // TODO
 		return UsartErrorCode;
 	}
 	assert(0 != ResponseLimit);

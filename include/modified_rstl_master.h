@@ -30,13 +30,13 @@ enum class single_order_code : uint8_t {
 	ResetErrors     // RE
 };
 
-enum class order_processing_state { Ready, InProgress, Completed, Failed };
+enum class order_processing_state { NotReady, Ready, Placed, InProgress };
 
-class order_with_arguments {
-	single_order_code OrderCode;
-	bool IsOn;
-	uint8_t Channel;
-	double Value;
+class order_with_argument {
+  public:
+	single_order_code OrderCode = single_order_code::None;
+	int16_t Argument = 0;
+	order_with_argument() = default;
 };
 
 class modified_rstl_master {
@@ -44,8 +44,8 @@ class modified_rstl_master {
 	rstl_master_fsm_state CurrentState;
 	low_level_usart_ptr LowLevelUsartPtr;
 	order_processing_state OrderProcessingState;
-	order_with_arguments CurrentOrder;
-	std::string ResponseBuffer;
+	order_with_argument CurrentOrder;
+	std::string CommandInTextFormat;
 	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success); LSB = the most recent response
 	uint32_t TotalResponseCount;
 	uint32_t TotalFailedResponseCount;
@@ -67,9 +67,7 @@ class modified_rstl_master {
 	bool fsmTick(bool TerminationSignal);
 
 	[[nodiscard]] order_processing_state getOrderProcessingState() const;
-	[[nodiscard]] order_with_arguments getCurrentOrder() const;
-	void placeOrder(const order_with_arguments &NewOrder);
-	[[nodiscard]] std::string getResponse() const;
+	bool placeOrder(const order_with_argument &NewOrder);
 	[[nodiscard]] uint8_t getCurrentCommunicationQuality() const;
 	[[nodiscard]] uint8_t getTotalCommunicationQuality() const;
 };

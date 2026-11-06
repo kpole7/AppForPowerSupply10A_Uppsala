@@ -36,7 +36,7 @@ static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
 modified_rstl_master::modified_rstl_master() {
 	CurrentState = rstl_master_fsm_state::Uninitialized;
 	LowLevelUsartPtr = new low_level_usart();
-	OrderProcessingState = order_processing_state::Ready;
+	OrderProcessingState = order_processing_state::NotReady;
 	ResponseFailureHistory = 0;
 	TotalResponseCount = 0;
 	TotalFailedResponseCount = 0;
@@ -60,14 +60,76 @@ usart_low_level_error modified_rstl_master::getUsartErrorCode() const { return L
 
 order_processing_state modified_rstl_master::getOrderProcessingState() const { return OrderProcessingState; }
 
-order_with_arguments modified_rstl_master::getCurrentOrder() const { return CurrentOrder; }
-
-void modified_rstl_master::placeOrder(const order_with_arguments &NewOrder) {
+bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
+	if (OrderProcessingState != order_processing_state::Ready) {
+		return false;
+	}
 	CurrentOrder = NewOrder;
-	OrderProcessingState = order_processing_state::InProgress;
-}
+	OrderProcessingState = order_processing_state::Placed;
 
-std::string modified_rstl_master::getResponse() const { return ResponseBuffer; }
+	// Formulate the command based on the current order
+	switch (CurrentOrder.OrderCode) {
+	case single_order_code::InquiryPower:
+		CommandInTextFormat = "?POWER\r\n";
+		break;
+	case single_order_code::SetPower:
+		if (0 == CurrentOrder.Argument) {
+			CommandInTextFormat = "POWER0\r\n";
+		}
+		else {
+			assert(CurrentOrder.Argument == 1); // Ensure the argument is valid for SetPower
+			CommandInTextFormat = "POWER1\r\n";
+		}
+		break;
+	case single_order_code::InquiryZ:
+		CommandInTextFormat = "?Z\r\n";
+		break;
+	case single_order_code::SetZ:
+		assert(CurrentOrder.Argument >= 1);
+		assert(CurrentOrder.Argument <= PSU_NUMBER_OF_CHANNELS);
+		CommandInTextFormat = "Z" + std::to_string(CurrentOrder.Argument) + "\r\n";
+		break;
+	case single_order_code::InquiryPC:
+		CommandInTextFormat = "?PC\r\n";
+		break;
+	case single_order_code::SetPC: {
+		assert(CurrentOrder.Argument >= -1000); // TODO correct magic numbers
+		assert(CurrentOrder.Argument <= 1000);
+		bool IsNegative;
+		int16_t AbsoluteValue;
+		if (CurrentOrder.Argument >= 0) {
+			IsNegative = false;
+			AbsoluteValue = CurrentOrder.Argument;
+		}
+		else {
+			IsNegative = true;
+			AbsoluteValue = -CurrentOrder.Argument;
+		}
+		int16_t BeforePoint = AbsoluteValue / 100;
+		int16_t AfterPoint = AbsoluteValue % 100;
+		if (IsNegative) {
+			CommandInTextFormat = "PC -" + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+		}
+		else {
+			CommandInTextFormat = "PC " + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+		}
+	} break;
+	case single_order_code::InquiryST:
+		CommandInTextFormat = "ST\r\n";
+		break;
+	case single_order_code::InquiryVersion:
+		CommandInTextFormat = "VERSION\r\n";
+		break;
+	case single_order_code::ResetErrors:
+		CommandInTextFormat = "RE\r\n";
+		break;
+	default:
+		// Unsupported order code
+		return false;
+	}
+
+	return true;
+}
 
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 	if (TotalResponseCount == 0) {
@@ -160,16 +222,15 @@ void modified_rstl_master::fsmTickUninitialized() {
 void modified_rstl_master::fsmTickIdleAndSend() {
 	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
 	bool Silence = false;
-	assert(((CurrentCommandTextPtr != nullptr) && (ExpectedResponseLimit > 0)) || (CurrentCommandTextPtr == nullptr && ExpectedResponseLimit == 0));
-	usart_low_level_error Error = LowLevelUsartPtr->handleIdleAndSendState(&Silence, CurrentCommandTextPtr, ExpectedResponseLimit);
+	usart_low_level_error Error = LowLevelUsartPtr->handleIdleAndSendState(&Silence, CommandInTextFormat, ExpectedResponseLimit);
 	if (Error != usart_low_level_error::None) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
 	}
 	if (Silence) {
-		if (CurrentCommandTextPtr != nullptr) {
+		if (!CommandInTextFormat.empty()) {
 			// The current command has been copied and is now being sent
-			CurrentCommandTextPtr = nullptr; // Clear the current command pointer
+			CommandInTextFormat.clear(); // Clear the current command pointer
 			ExpectedResponseLimit = 0;
 			CurrentState = rstl_master_fsm_state::WaitForResponse;
 			return;

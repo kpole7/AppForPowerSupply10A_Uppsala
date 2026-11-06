@@ -65,7 +65,7 @@ class low_level_usart {
 	[[nodiscard]] const char *getSendingBuffer() const;
 	[[nodiscard]] const char *getReceivingBuffer() const;
 
-	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const char *CommandTextPtr, uint16_t ResponseLimit);
+	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString, uint16_t ResponseLimit);
 	[[nodiscard]] usart_low_level_error handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr, bool *IsOverLimitsPtr);
 	[[nodiscard]] usart_low_level_error handleReceiveState(bool *IsSilencePtr, bool *IsOverLimitsPtr);
 	[[nodiscard]] usart_low_level_error handleNoiseState(bool *IsSilencePtr);

@@ -14,42 +14,40 @@
 #include "usart_master.h"
 #include "usart_master_debug.h"
 
-const char *CurrentCommandTextPtr;
+order_with_argument CurrentOrderForDebugging;
 
 uint16_t ExpectedResponseLimit;
 
 static auto TimeReference = std::chrono::high_resolution_clock::now();
 
-static const char CommandA[] = "?POWER\r\n";   // a
-static const char CommandB[] = "?Z\r\n";       // b
-static const char CommandC[] = "?PC\r\n";      // c
-static const char CommandD[] = "ST\r\n";       // d
-static const char CommandE[] = "VERSION\r\n";  // e
-static const char CommandF[] = "RE\r\n";       // f
-static const char CommandG[] = "POWER1\r\n";   // g
-static const char CommandH[] = "POWER0\r\n";   // h
-static const char CommandI[] = "Z1\r\n";       // i
-static const char CommandJ[] = "Z2\r\n";       // j
-static const char CommandK[] = "PC 0\r\n";     // k
-static const char CommandL[] = "PC 1\r\n";     // l
-static const char CommandM[] = "PC 2\r\n";     // m
-static const char CommandN[] = "PC 0.1\r\n";   // n
-static const char CommandO[] = "PC 0.7\r\n";   // o
-static const char CommandP[] = "PC 0.59\r\n";  // p
-static const char CommandQ[] = "PC 1.7\r\n";   // q
-static const char CommandR[] = "PC 10.0\r\n";  // r
-static const char CommandS[] = "PC 10.00\r\n"; // s
-static const char CommandT[] = "PC -1\r\n";    // t
-static const char CommandU[] = "PC -2\r\n";    // u
-static const char CommandV[] = "PC -0.1\r\n";  // v
-static const char CommandW[] = "PC -0.7\r\n";  // w
-static const char CommandX[] = "PC -0.59\r\n"; // x
-static const char CommandY[] = "PC -1.7\r\n";  // y
-static const char CommandZ[] = "PC -10.00\r\n";// z
-const char *CommandTexts[] = {&CommandA[0], &CommandB[0], &CommandC[0], &CommandD[0], &CommandE[0], &CommandF[0], &CommandG[0],
-                              &CommandH[0], &CommandI[0], &CommandJ[0], &CommandK[0], &CommandL[0], &CommandM[0], &CommandN[0],
-                              &CommandO[0], &CommandP[0], &CommandQ[0], &CommandR[0], &CommandS[0], &CommandT[0], &CommandU[0],
-                              &CommandV[0], &CommandW[0], &CommandX[0], &CommandY[0], &CommandZ[0]};
+static const order_with_argument MyOrders[26] = {
+    {single_order_code::InquiryPower, 0},   // a
+    {single_order_code::InquiryZ, 0},       // b
+    {single_order_code::InquiryPC, 0},      // c
+    {single_order_code::InquiryST, 0},      // d
+    {single_order_code::InquiryVersion, 0}, // e
+    {single_order_code::ResetErrors, 0},    // f
+    {single_order_code::SetPower, 1},       // g
+    {single_order_code::SetPower, 0},       // h
+    {single_order_code::SetZ, 1},           // i
+    {single_order_code::SetZ, 2},           // j
+    {single_order_code::SetPC, 0},          // k
+    {single_order_code::SetPC, 100},        // l
+    {single_order_code::SetPC, 200},        // m
+    {single_order_code::SetPC, 10},         // n
+    {single_order_code::SetPC, 70},         // o
+    {single_order_code::SetPC, 59},         // p
+    {single_order_code::SetPC, 170},        // q
+    {single_order_code::SetPC, 999},        // r
+    {single_order_code::SetPC, 1000},       // s
+    {single_order_code::SetPC, -100},       // t
+    {single_order_code::SetPC, -200},       // u
+    {single_order_code::SetPC, -10},        // v
+    {single_order_code::SetPC, -70},        // w
+    {single_order_code::SetPC, -59},        // x
+    {single_order_code::SetPC, -170},       // y
+    {single_order_code::SetPC, -1000}       // z
+};
 
 void printResults(const char *ResultText1, const char *ResultText2) {
 	static char MyBuffer1[300];
@@ -79,7 +77,6 @@ void printResults(const char *ResultText1, const char *ResultText2) {
 }
 
 void usartMasterDebuggingInitialize() {
-	CurrentCommandTextPtr = nullptr;
 	ExpectedResponseLimit = 0;
 	registerRstlCallback(printResults);
 }
@@ -97,7 +94,7 @@ char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "W
 void usartMasterDebuggingTick(int PressedKey) {
 	if ((PressedKey >= 'a') && (PressedKey <= 'z')) {
 		int Index = static_cast<int>(PressedKey - 'a');
-		CurrentCommandTextPtr = CommandTexts[Index];
+		CurrentOrderForDebugging = MyOrders[Index];
 		ExpectedResponseLimit = 100; // Set the expected response limit as needed
 	}
 

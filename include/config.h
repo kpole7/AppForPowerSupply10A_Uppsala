@@ -13,7 +13,7 @@ static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 
 #define CONFIGURATION_FILE_NAME "KwadrupoleWLiniiPionowej.cfg"
 
-#define PSU_NUMBER 2
+#define PSU_NUMBER_OF_CHANNELS 2
 
 #define PERIPHERAL_THREAD_LOOP_DURATION 10 // milliseconds
 
