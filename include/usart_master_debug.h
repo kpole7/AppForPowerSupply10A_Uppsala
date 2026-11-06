@@ -9,6 +9,7 @@
 
 extern const char *CurrentCommandTextPtr;
 
+/// @brief The maximum number of bytes expected in the response from the USART slave device
 extern uint16_t ExpectedResponseLimit;
 
 void usartMasterDebuggingInitialize();
