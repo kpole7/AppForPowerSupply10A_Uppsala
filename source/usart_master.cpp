@@ -211,11 +211,13 @@ void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 		return;
 	}
 
-	if (NumberOfReceived > ReceivedBytesLimit) {
+	std::cout << "Number of received bytes: " << TotalReceivedBytes + NumberOfReceived << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__ << " in file " << __FILE__ << "\n";
+#if 0
+	if (NumberOfReceived + TotalReceivedBytes > ReceivedBytesLimit) {
 		*IsOverLimitsPtr = true;
 		return;
 	}
-
+#endif
 	// Copy the received bytes into the USART buffer
 	for (int J = 0; J < NumberOfReceived; J++) {
 		ReceivingBuffer[TotalReceivedBytes] = ReceivedBytes[J];
@@ -393,10 +395,14 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 	}
 
 	// Check if adding the new received bytes would exceed the limit given by the higher layer for the particular command
-	if (TotalReceivedBytes + NumberOfReceived >= ReceivedBytesLimit) {
+
+	std::cout << "Number of received bytes: " << NumberOfReceived + TotalReceivedBytes << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__ << " in file " << __FILE__ << "\n";
+#if 0
+	if (TotalReceivedBytes + NumberOfReceived > ReceivedBytesLimit) {
 		*IsOverLimitsPtr = true;
 		return UsartErrorCode;
 	}
+#endif
 
 	// a rough check of transmission continuity
 	auto ResponseDuration =

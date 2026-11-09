@@ -14,10 +14,6 @@
 #include "usart_master.h"
 #include "usart_master_debug.h"
 
-order_with_argument CurrentOrderForDebugging;
-
-uint16_t ExpectedResponseLimit;
-
 static auto TimeReference = std::chrono::high_resolution_clock::now();
 
 static const order_with_argument MyOrders[26] = {
@@ -77,7 +73,6 @@ void printResults(const char *ResultText1, const char *ResultText2) {
 }
 
 void usartMasterDebuggingInitialize() {
-	ExpectedResponseLimit = 0;
 	registerRstlCallback(printResults);
 }
 
@@ -94,8 +89,8 @@ char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "W
 void usartMasterDebuggingTick(int PressedKey) {
 	if ((PressedKey >= 'a') && (PressedKey <= 'z')) {
 		int Index = static_cast<int>(PressedKey - 'a');
-		CurrentOrderForDebugging = MyOrders[Index];
-		ExpectedResponseLimit = 100; // Set the expected response limit as needed
+		bool Success = placeRstlOrder(MyOrders[Index]);
+		std::cout << "Order placement success: " << (Success ? "Yes" : "No") << '\n';
 	}
 
 	switch (PressedKey) {

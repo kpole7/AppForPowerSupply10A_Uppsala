@@ -7,11 +7,6 @@
 #include "modified_rstl_master.h"
 #include <cstdint>
 
-extern order_with_argument CurrentOrderForDebugging;
-
-/// @brief The maximum number of bytes expected in the response from the USART slave device
-extern uint16_t ExpectedResponseLimit;
-
 void usartMasterDebuggingInitialize();
 
 void usartMasterDebuggingTick(int PressedKey);

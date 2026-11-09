@@ -18,16 +18,16 @@ enum class rstl_master_fsm_state {
 };
 
 enum class single_order_code : uint8_t {
-	None,
-	InquiryPower,   // ?POWER
-	SetPower,       // POWER0, POWER1
-	InquiryZ,       // ?Z
-	SetZ,           // Z0, Z1
-	InquiryPC,      // ?PC
-	SetPC,          // PC 0, PC 1, PC -1, PC 3.2, PC -4.5
-	InquiryST,      // ST
-	InquiryVersion, // VERSION
-	ResetErrors     // RE
+	None = 0,
+	InquiryPower = 1,   // ?POWER
+	SetPower = 2,       // POWER0, POWER1
+	InquiryZ = 3,       // ?Z
+	SetZ = 4,           // Z0, Z1
+	InquiryPC = 5,      // ?PC
+	SetPC = 6,          // PC 0, PC 1, PC -1, PC 3.2, PC -4.5
+	InquiryST = 7,      // ST
+	InquiryVersion = 8, // VERSION
+	ResetErrors = 9     // RE
 };
 
 enum class order_processing_state { NotReady, Ready, Placed, InProgress };
@@ -81,5 +81,7 @@ bool rstlMasterTick(bool TerminationSignal);
 typedef void (*rstl_callback_function)(const char *CommandPtr, const char *ResponsePtr);
 
 void registerRstlCallback(rstl_callback_function Callback);
+
+bool placeRstlOrder(const order_with_argument &NewOrder);
 
 #endif // MODIFIED_RSTL_MASTER_H

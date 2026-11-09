@@ -11,6 +11,7 @@
 /// higher-level module is responsible for creating and managing sequences of commands.
 
 #include <cassert>
+#include <iostream>
 
 #include "modified_rstl_master.h"
 #include "settings_file.h"
@@ -19,6 +20,21 @@
 
 #define SUCCESSFUL_COMMUNICATION true
 #define FAILED_COMMUNICATION false
+
+/// @brief Response length limits for each single order code.
+/// @note The index corresponds to the single_order_code enum value.
+static const uint8_t ResponseLengthLimits[] = {
+	0,  // Placeholder for index 0
+    12,  // InquiryPower
+    9,  // SetPower
+    10,  // InquiryZ
+    5,  // SetZ
+    12,  // InquiryPC
+    12,  // SetPC
+    44, // InquiryST
+    38, // InquiryVersion
+    23, // ResetErrors
+};
 
 rstl_callback_function RstlCallback = nullptr;
 
@@ -62,22 +78,21 @@ order_processing_state modified_rstl_master::getOrderProcessingState() const { r
 
 bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 	if (OrderProcessingState != order_processing_state::Ready) {
+		std::cout << "Order is not ready for placement (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return false;
 	}
-	CurrentOrder = NewOrder;
-	OrderProcessingState = order_processing_state::Placed;
 
 	// Formulate the command based on the current order
-	switch (CurrentOrder.OrderCode) {
+	switch (NewOrder.OrderCode) {
 	case single_order_code::InquiryPower:
 		CommandInTextFormat = "?POWER\r\n";
 		break;
 	case single_order_code::SetPower:
-		if (0 == CurrentOrder.Argument) {
+		if (0 == NewOrder.Argument) {
 			CommandInTextFormat = "POWER0\r\n";
 		}
 		else {
-			assert(CurrentOrder.Argument == 1); // Ensure the argument is valid for SetPower
+			assert(NewOrder.Argument == 1); // Ensure the argument is valid for SetPower
 			CommandInTextFormat = "POWER1\r\n";
 		}
 		break;
@@ -85,25 +100,25 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 		CommandInTextFormat = "?Z\r\n";
 		break;
 	case single_order_code::SetZ:
-		assert(CurrentOrder.Argument >= 1);
-		assert(CurrentOrder.Argument <= PSU_NUMBER_OF_CHANNELS);
-		CommandInTextFormat = "Z" + std::to_string(CurrentOrder.Argument) + "\r\n";
+		assert(NewOrder.Argument >= 1);
+		assert(NewOrder.Argument <= PSU_NUMBER_OF_CHANNELS);
+		CommandInTextFormat = "Z" + std::to_string(NewOrder.Argument) + "\r\n";
 		break;
 	case single_order_code::InquiryPC:
 		CommandInTextFormat = "?PC\r\n";
 		break;
 	case single_order_code::SetPC: {
-		assert(CurrentOrder.Argument >= -1000); // TODO correct magic numbers
-		assert(CurrentOrder.Argument <= 1000);
+		assert(NewOrder.Argument >= -1000); // TODO correct magic numbers
+		assert(NewOrder.Argument <= 1000);
 		bool IsNegative;
 		int16_t AbsoluteValue;
-		if (CurrentOrder.Argument >= 0) {
+		if (NewOrder.Argument >= 0) {
 			IsNegative = false;
-			AbsoluteValue = CurrentOrder.Argument;
+			AbsoluteValue = NewOrder.Argument;
 		}
 		else {
 			IsNegative = true;
-			AbsoluteValue = -CurrentOrder.Argument;
+			AbsoluteValue = -NewOrder.Argument;
 		}
 		int16_t BeforePoint = AbsoluteValue / 100;
 		int16_t AfterPoint = AbsoluteValue % 100;
@@ -125,8 +140,13 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 		break;
 	default:
 		// Unsupported order code
+		std::cout << "Unsupported order code #" << static_cast<int>(NewOrder.OrderCode) << 
+		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return false;
 	}
+
+	CurrentOrder = NewOrder;
+	OrderProcessingState = order_processing_state::Placed;
 
 	return true;
 }
@@ -198,6 +218,23 @@ bool modified_rstl_master::fsmTick(bool TerminationSignal) {
 
 	printStateChanges(LowLevelUsartPtr, CurrentState, nullptr);
 
+	switch (CurrentState) {
+	case rstl_master_fsm_state::IdleAndSend:
+	case rstl_master_fsm_state::Noise:
+		if (order_processing_state::Placed != OrderProcessingState) {
+			OrderProcessingState = order_processing_state::Ready;
+		}
+		break;
+
+	case rstl_master_fsm_state::WaitForResponse:
+	case rstl_master_fsm_state::Receive:
+		OrderProcessingState = order_processing_state::InProgress;
+		break;
+
+	default:
+		break;
+	}
+
 	return true;
 }
 
@@ -222,6 +259,8 @@ void modified_rstl_master::fsmTickUninitialized() {
 void modified_rstl_master::fsmTickIdleAndSend() {
 	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
 	bool Silence = false;
+	assert(static_cast<uint8_t>(CurrentOrder.OrderCode) < sizeof(ResponseLengthLimits) / sizeof(ResponseLengthLimits[0]));
+	uint8_t ExpectedResponseLimit = ResponseLengthLimits[static_cast<uint8_t>(CurrentOrder.OrderCode)]; // TODO
 	usart_low_level_error Error = LowLevelUsartPtr->handleIdleAndSendState(&Silence, CommandInTextFormat, ExpectedResponseLimit);
 	if (Error != usart_low_level_error::None) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
@@ -231,7 +270,6 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 		if (!CommandInTextFormat.empty()) {
 			// The current command has been copied and is now being sent
 			CommandInTextFormat.clear(); // Clear the current command pointer
-			ExpectedResponseLimit = 0;
 			CurrentState = rstl_master_fsm_state::WaitForResponse;
 			return;
 		}
@@ -240,6 +278,8 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 	}
 	// Unexpected input while expecting silence
 	CurrentState = rstl_master_fsm_state::Noise;
+	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
+	" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 }
 
 void modified_rstl_master::fsmTickWaitForResponse() {
@@ -265,6 +305,8 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
+		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
+		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return;
 	}
 	// Receive incoming transmission until silence is detected
@@ -291,6 +333,8 @@ void modified_rstl_master::fsmTickReceive() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
+		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
+		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return;
 	}
 
@@ -332,4 +376,9 @@ usart_low_level_error initializeRstlMaster() {
 bool rstlMasterTick(bool TerminationSignal) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->fsmTick(TerminationSignal);
+}
+
+bool placeRstlOrder(const order_with_argument &NewOrder) {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	return RstlMasterInstancePtr->placeOrder(NewOrder);
 }
