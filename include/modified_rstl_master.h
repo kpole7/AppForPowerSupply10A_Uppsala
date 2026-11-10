@@ -57,8 +57,8 @@ class modified_rstl_master {
 	void fsmTickNoise();
 
 	void updateCommunicationQuality(bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
-
 	void placeOrderSetPC(const order_with_argument &NewOrder);
+	bool parseResponse(uint16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const;
 
   public:
 	modified_rstl_master();
@@ -80,7 +80,8 @@ usart_low_level_error initializeRstlMaster();
 
 bool rstlMasterTick(bool TerminationSignal);
 
-typedef void (*rstl_callback_function)(const char *CommandPtr, const char *ResponsePtr);
+typedef void (*rstl_callback_function)(bool IsResponseSuccessful, uint16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
+                                       uint8_t EssentialResponseLength);
 
 void registerRstlCallback(rstl_callback_function Callback);
 

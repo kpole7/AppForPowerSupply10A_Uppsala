@@ -45,6 +45,7 @@ static const order_with_argument MyOrders[26] = {
     {single_order_code::SetPC, -1000}       // z
 };
 
+#if 0
 void printResults(const char *ResultText1, const char *ResultText2) {
 	static char MyBuffer1[300];
 	static char MyBuffer2[300];
@@ -70,6 +71,11 @@ void printResults(const char *ResultText1, const char *ResultText2) {
 	}
 	std::cout << "Command:  [" << MyBuffer1 << "]\n";
 	std::cout << "Response: [" << MyBuffer2 << "]\n";
+}
+#endif
+
+void printResults(bool IsResponseSuccessful, uint16_t ValueReturnedInResponse, const char *EssentialResponsePtr, uint8_t EssentialResponseLength) {
+	// TODO
 }
 
 void usartMasterDebuggingInitialize() { registerRstlCallback(printResults); }

@@ -41,7 +41,7 @@ static const uint8_t ResponseLengthLimits[] = {
     10, // InquiryZ
     5,  // SetZ
     14, // InquiryPC
-    12, // SetPC
+    13, // SetPC
     44, // InquiryST
     38, // InquiryVersion
     23, // ResetErrors
@@ -50,6 +50,12 @@ static const uint8_t ResponseLengthLimits[] = {
 static rstl_callback_function RstlCallback = nullptr;
 
 static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
+
+//=================================================================================================
+// Local function declarations
+//=================================================================================================
+
+static void printAllCharacters(const char *Buffer);
 
 //=================================================================================================
 // Public method definitions
@@ -312,8 +318,18 @@ void modified_rstl_master::fsmTickReceive() {
 	}
 	if (Silence) {
 		// Silence detected, indicating the end of the incoming transmission
+
+		bool IsResponseSyntaxCorrect;
+		uint16_t ValueReturned;
+		uint8_t EssentialStart, EssentialLength;
+		IsResponseSyntaxCorrect = parseResponse(ValueReturned, EssentialStart, EssentialLength);
+		const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
+		assert(ReceivingBuffer != nullptr);
+		ReceivingBuffer += EssentialStart;
+#if 0
 		// Call the registered callback function
-		(*RstlCallback)(LowLevelUsartPtr->getSendingBuffer(), LowLevelUsartPtr->getReceivingBuffer());
+		(*RstlCallback)(IsResponseSyntaxCorrect, ValueReturned, ReceivingBuffer, EssentialLength);
+#endif
 		CurrentState = rstl_master_fsm_state::IdleAndSend; // the command-response cycle successfully completed
 		updateCommunicationQuality(SUCCESSFUL_COMMUNICATION);
 		return;
@@ -377,6 +393,21 @@ void modified_rstl_master::placeOrderSetPC(const order_with_argument &NewOrder) 
 	}
 }
 
+bool modified_rstl_master::parseResponse(uint16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const {
+	const char *SendingBuffer = LowLevelUsartPtr->getSendingBuffer();
+	assert(SendingBuffer != nullptr);
+	const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
+	assert(ReceivingBuffer != nullptr);
+
+	std::cout << "  SendingBuffer: ";
+	printAllCharacters(SendingBuffer);
+	std::cout << "ReceivingBuffer: ";
+	printAllCharacters(ReceivingBuffer);
+	std::cout << '\n';
+
+	return false;
+}
+
 //=================================================================================================
 // Definitions of public functions
 //=================================================================================================
@@ -404,4 +435,25 @@ bool rstlMasterTick(bool TerminationSignal) {
 bool placeRstlOrder(const order_with_argument &NewOrder) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->placeOrder(NewOrder);
+}
+
+//=================================================================================================
+// Definitions of local functions
+//=================================================================================================
+
+static void printAllCharacters(const char *Buffer) {
+	assert(Buffer != nullptr);
+	for (size_t i = 0; Buffer[i] != '\0'; ++i) {
+		if (Buffer[i] == '\r') {
+			std::cout << "\\r";
+		} else if (Buffer[i] == '\n') {
+			std::cout << "\\n";
+		} else 
+		if ((Buffer[i] < (char)32) || ((uint8_t)Buffer[i] > 127)) {
+			std::cout << "\\x" << std::hex << static_cast<int>(static_cast<unsigned char>(Buffer[i])) << std::dec;
+		} else {
+			std::cout << Buffer[i];
+		}
+	}
+	std::cout << '\n';
 }
