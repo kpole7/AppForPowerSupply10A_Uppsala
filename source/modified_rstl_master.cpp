@@ -40,7 +40,7 @@ static const uint8_t ResponseLengthLimits[] = {
     9,  // SetPower
     10, // InquiryZ
     5,  // SetZ
-    12, // InquiryPC
+    14, // InquiryPC
     12, // SetPC
     44, // InquiryST
     38, // InquiryVersion
