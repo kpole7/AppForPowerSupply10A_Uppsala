@@ -58,6 +58,8 @@ class modified_rstl_master {
 
 	void updateCommunicationQuality(bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
 
+	void placeOrderSetPC(const order_with_argument &NewOrder);
+
   public:
 	modified_rstl_master();
 	~modified_rstl_master();

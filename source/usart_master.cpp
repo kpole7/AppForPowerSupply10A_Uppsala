@@ -104,7 +104,6 @@ void low_level_usart::flushBuffer() {
 		UsartErrorCode = usart_low_level_error::ReadFailed;
 		handleCriticalError(__LINE__);
 	}
-	return;
 }
 
 /// @brief Check for silence on the USART line and prepare a new command for transmission if CommandTextPtr is not empty.
@@ -135,7 +134,8 @@ void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uin
 		// there is a new command to send
 		TotalCommandBytes = strlen(CommandTextPtr);
 		assert(TotalCommandBytes < USART_BUFFER_SIZE);
-		strcpy(SendingBuffer, CommandTextPtr);
+		strncpy(SendingBuffer, CommandTextPtr, USART_BUFFER_SIZE - 1);
+		SendingBuffer[USART_BUFFER_SIZE - 1] = '\0';
 	}
 	else {
 		// no new command to send
@@ -158,7 +158,6 @@ void low_level_usart::doSending() {
 
 	TimeWhenOutgoingDataStarted = std::chrono::high_resolution_clock::now();
 	TotalReceivedBytes = 0;
-	return;
 }
 
 /// @brief Wait for a response from the USART interface.
@@ -187,7 +186,6 @@ void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) 
 		}
 		return;
 	}
-	return;
 }
 
 /// @brief Receive the data from the USART interface assuming there is incoming data available
@@ -211,7 +209,8 @@ void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 		return;
 	}
 
-	std::cout << "Number of received bytes: " << TotalReceivedBytes + NumberOfReceived << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__ << " in file " << __FILE__ << "\n";
+	std::cout << "Number of received bytes: " << TotalReceivedBytes + NumberOfReceived << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__
+	          << " in file " << __FILE__ << "\n";
 #if 0
 	if (NumberOfReceived + TotalReceivedBytes > ReceivedBytesLimit) {
 		*IsOverLimitsPtr = true;
@@ -295,7 +294,7 @@ usart_low_level_error low_level_usart::startModule(const std::string &Name) {
 /// @brief Get the name of the USART port.
 /// @return The name of the USART port as a string. If the port is not set, returns an empty string.
 std::string low_level_usart::getName() const {
-	const std::string EmptyString = "";
+	std::string EmptyString; // equals an empty string "" by default constructor
 	if (NameOfPort != nullptr) {
 		return *NameOfPort;
 	}
@@ -396,7 +395,8 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 
 	// Check if adding the new received bytes would exceed the limit given by the higher layer for the particular command
 
-	std::cout << "Number of received bytes: " << NumberOfReceived + TotalReceivedBytes << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__ << " in file " << __FILE__ << "\n";
+	std::cout << "Number of received bytes: " << NumberOfReceived + TotalReceivedBytes << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__
+	          << " in file " << __FILE__ << "\n";
 #if 0
 	if (TotalReceivedBytes + NumberOfReceived > ReceivedBytesLimit) {
 		*IsOverLimitsPtr = true;
@@ -411,7 +411,7 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 	if (ResponseDurationMs > LIMIT_ADDITION_COMPONENT) {
 		ResponseDurationMs -= LIMIT_ADDITION_COMPONENT;
 		int64_t ResponseDurationUs = ResponseDurationMs * 1000; // change the unit from milliseconds to microseconds
-		if (ResponseDurationUs > LIMIT_MULTIPLIER_PER_BYTE * (TotalReceivedBytes + NumberOfReceived)) {
+		if (ResponseDurationUs > static_cast<int64_t>(LIMIT_MULTIPLIER_PER_BYTE) * static_cast<int64_t>(TotalReceivedBytes + NumberOfReceived)) {
 			*IsOverLimitsPtr = true;
 			return UsartErrorCode;
 		}

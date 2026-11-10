@@ -18,36 +18,42 @@
 #include "usart_master.h"
 #include "usart_master_debug.h"
 
+//=================================================================================================
+// Preprocessor directives
+//=================================================================================================
+
 #define SUCCESSFUL_COMMUNICATION true
 #define FAILED_COMMUNICATION false
+
+#define ABSOLUTE_MINIMUM_SETTING (-1000) // in hundredths of an ampere
+#define ABSOLUTE_MAXIMUM_SETTING 1000    // in hundredths of an ampere
+
+//=================================================================================================
+// Local constants and variables
+//=================================================================================================
 
 /// @brief Response length limits for each single order code.
 /// @note The index corresponds to the single_order_code enum value.
 static const uint8_t ResponseLengthLimits[] = {
-	0,  // Placeholder for index 0
-    12,  // InquiryPower
+    0,  // Placeholder for index 0
+    12, // InquiryPower
     9,  // SetPower
-    10,  // InquiryZ
+    10, // InquiryZ
     5,  // SetZ
-    12,  // InquiryPC
-    12,  // SetPC
+    12, // InquiryPC
+    12, // SetPC
     44, // InquiryST
     38, // InquiryVersion
     23, // ResetErrors
 };
 
-rstl_callback_function RstlCallback = nullptr;
-
-/// @brief Registers a callback function for handling RSTL commands.
-/// @param Callback The callback function to be registered.
-/// @note This function can be called only once to register the callback.
-void registerRstlCallback(rstl_callback_function Callback) {
-	assert(nullptr == RstlCallback);
-	assert(nullptr != Callback);
-	RstlCallback = Callback;
-}
+static rstl_callback_function RstlCallback = nullptr;
 
 static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
+
+//=================================================================================================
+// Public method definitions
+//=================================================================================================
 
 modified_rstl_master::modified_rstl_master() {
 	CurrentState = rstl_master_fsm_state::Uninitialized;
@@ -107,28 +113,9 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 	case single_order_code::InquiryPC:
 		CommandInTextFormat = "?PC\r\n";
 		break;
-	case single_order_code::SetPC: {
-		assert(NewOrder.Argument >= -1000); // TODO correct magic numbers
-		assert(NewOrder.Argument <= 1000);
-		bool IsNegative;
-		int16_t AbsoluteValue;
-		if (NewOrder.Argument >= 0) {
-			IsNegative = false;
-			AbsoluteValue = NewOrder.Argument;
-		}
-		else {
-			IsNegative = true;
-			AbsoluteValue = -NewOrder.Argument;
-		}
-		int16_t BeforePoint = AbsoluteValue / 100;
-		int16_t AfterPoint = AbsoluteValue % 100;
-		if (IsNegative) {
-			CommandInTextFormat = "PC -" + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
-		}
-		else {
-			CommandInTextFormat = "PC " + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
-		}
-	} break;
+	case single_order_code::SetPC:
+		placeOrderSetPC(NewOrder);
+		break;
 	case single_order_code::InquiryST:
 		CommandInTextFormat = "ST\r\n";
 		break;
@@ -140,8 +127,7 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 		break;
 	default:
 		// Unsupported order code
-		std::cout << "Unsupported order code #" << static_cast<int>(NewOrder.OrderCode) << 
-		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Unsupported order code #" << static_cast<int>(NewOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return false;
 	}
 
@@ -238,6 +224,10 @@ bool modified_rstl_master::fsmTick(bool TerminationSignal) {
 	return true;
 }
 
+//=================================================================================================
+// Private method definitions
+//=================================================================================================
+
 void modified_rstl_master::fsmTickUninitialized() {
 	assert(usart_low_level_state::Error != LowLevelUsartPtr->getState());
 	if (!SerialPortName.empty()) {
@@ -278,8 +268,7 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 	}
 	// Unexpected input while expecting silence
 	CurrentState = rstl_master_fsm_state::Noise;
-	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
-	" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 }
 
 void modified_rstl_master::fsmTickWaitForResponse() {
@@ -305,8 +294,7 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
-		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return;
 	}
 	// Receive incoming transmission until silence is detected
@@ -333,8 +321,7 @@ void modified_rstl_master::fsmTickReceive() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << 
-		" (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return;
 	}
 
@@ -365,6 +352,42 @@ void modified_rstl_master::updateCommunicationQuality(bool SuccessfulCommunicati
 		TotalFailedResponseCount++;
 	}
 	TotalResponseCount++;
+}
+
+void modified_rstl_master::placeOrderSetPC(const order_with_argument &NewOrder) {
+	assert(NewOrder.Argument >= ABSOLUTE_MINIMUM_SETTING);
+	assert(NewOrder.Argument <= ABSOLUTE_MAXIMUM_SETTING);
+	bool IsNegative;
+	int16_t AbsoluteValue;
+	if (NewOrder.Argument >= 0) {
+		IsNegative = false;
+		AbsoluteValue = NewOrder.Argument;
+	}
+	else {
+		IsNegative = true;
+		AbsoluteValue = static_cast<int16_t>(-NewOrder.Argument);
+	}
+	int16_t BeforePoint = static_cast<int16_t>(AbsoluteValue / 100);
+	int16_t AfterPoint = static_cast<int16_t>(AbsoluteValue % 100);
+	if (IsNegative) {
+		CommandInTextFormat = "PC -" + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+	}
+	else {
+		CommandInTextFormat = "PC " + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+	}
+}
+
+//=================================================================================================
+// Definitions of public functions
+//=================================================================================================
+
+/// @brief Registers a callback function for handling RSTL commands.
+/// @param Callback The callback function to be registered.
+/// @note This function can be called only once to register the callback.
+void registerRstlCallback(rstl_callback_function Callback) {
+	assert(nullptr == RstlCallback);
+	assert(nullptr != Callback);
+	RstlCallback = Callback;
 }
 
 usart_low_level_error initializeRstlMaster() {

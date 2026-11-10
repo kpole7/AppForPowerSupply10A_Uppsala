@@ -72,9 +72,7 @@ void printResults(const char *ResultText1, const char *ResultText2) {
 	std::cout << "Response: [" << MyBuffer2 << "]\n";
 }
 
-void usartMasterDebuggingInitialize() {
-	registerRstlCallback(printResults);
-}
+void usartMasterDebuggingInitialize() { registerRstlCallback(printResults); }
 
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Error"};
 
