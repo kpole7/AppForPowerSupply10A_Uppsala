@@ -45,37 +45,16 @@ static const order_with_argument MyOrders[26] = {
     {single_order_code::SetPC, -1000}       // z
 };
 
-#if 0
-void printResults(const char *ResultText1, const char *ResultText2) {
-	static char MyBuffer1[300];
-	static char MyBuffer2[300];
-	strncpy(MyBuffer1, ResultText1, sizeof(MyBuffer1) - 1);
-	MyBuffer1[sizeof(MyBuffer1) - 1] = '\0';
-	strncpy(MyBuffer2, ResultText2, sizeof(MyBuffer2) - 1);
-	MyBuffer2[sizeof(MyBuffer2) - 1] = '\0';
-	int Length1 = static_cast<int>(strlen(MyBuffer1));
-	int Length2 = static_cast<int>(strlen(MyBuffer2));
-	if (Length1 > 2) {
-		for (int J = 0; J < Length1; ++J) {
-			if (MyBuffer1[J] < ' ') {
-				MyBuffer1[J] = '~';
-			}
+void printResults(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr, uint8_t EssentialResponseLength) {
+	std::cout << "Response success: " << (IsResponseSuccessful ? "Yes" : "No") << " ";
+	std::cout << "Value returned in response: " << ValueReturnedInResponse << '\n';
+	if (nullptr != EssentialResponsePtr) {
+		std::cout << "Essential response: [";
+		for (uint8_t i = 0; i < EssentialResponseLength; ++i) {
+			std::cout << EssentialResponsePtr[i];
 		}
+		std::cout << "]\n";
 	}
-	if (Length2 > 2) {
-		for (int J = 0; J < Length2; ++J) {
-			if (MyBuffer2[J] < ' ') {
-				MyBuffer2[J] = '~';
-			}
-		}
-	}
-	std::cout << "Command:  [" << MyBuffer1 << "]\n";
-	std::cout << "Response: [" << MyBuffer2 << "]\n";
-}
-#endif
-
-void printResults(bool IsResponseSuccessful, uint16_t ValueReturnedInResponse, const char *EssentialResponsePtr, uint8_t EssentialResponseLength) {
-	// TODO
 }
 
 void usartMasterDebuggingInitialize() { registerRstlCallback(printResults); }

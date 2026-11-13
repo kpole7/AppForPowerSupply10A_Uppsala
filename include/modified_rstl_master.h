@@ -58,7 +58,12 @@ class modified_rstl_master {
 
 	void updateCommunicationQuality(bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
 	void placeOrderSetPC(const order_with_argument &NewOrder);
-	bool parseResponse(uint16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const;
+	bool parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const;
+	bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length, int16_t &ValueExtracted, uint8_t Position,
+	                            uint8_t MinValue, uint8_t MaxValue) const;
+	bool parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) const;
+	bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength) const;
+	bool parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) const;
 
   public:
 	modified_rstl_master();
@@ -80,7 +85,7 @@ usart_low_level_error initializeRstlMaster();
 
 bool rstlMasterTick(bool TerminationSignal);
 
-typedef void (*rstl_callback_function)(bool IsResponseSuccessful, uint16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
+typedef void (*rstl_callback_function)(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
                                        uint8_t EssentialResponseLength);
 
 void registerRstlCallback(rstl_callback_function Callback);

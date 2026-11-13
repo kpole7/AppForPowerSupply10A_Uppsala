@@ -11,6 +11,7 @@
 /// higher-level module is responsible for creating and managing sequences of commands.
 
 #include <cassert>
+#include <cstring>
 #include <iostream>
 
 #include "modified_rstl_master.h"
@@ -42,7 +43,7 @@ static const uint8_t ResponseLengthLimits[] = {
     5,  // SetZ
     14, // InquiryPC
     13, // SetPC
-    44, // InquiryST
+    50, // InquiryST (44+6=50)
     38, // InquiryVersion
     23, // ResetErrors
 };
@@ -319,17 +320,19 @@ void modified_rstl_master::fsmTickReceive() {
 	if (Silence) {
 		// Silence detected, indicating the end of the incoming transmission
 
-		bool IsResponseSyntaxCorrect;
-		uint16_t ValueReturned;
+		int16_t ValueReturned;
 		uint8_t EssentialStart, EssentialLength;
-		IsResponseSyntaxCorrect = parseResponse(ValueReturned, EssentialStart, EssentialLength);
+		bool IsResponseSyntaxCorrect = parseResponse(ValueReturned, EssentialStart, EssentialLength);
 		const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
 		assert(ReceivingBuffer != nullptr);
 		ReceivingBuffer += EssentialStart;
-#if 0
+
+		if(!IsResponseSyntaxCorrect) {
+			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		}
+
 		// Call the registered callback function
 		(*RstlCallback)(IsResponseSyntaxCorrect, ValueReturned, ReceivingBuffer, EssentialLength);
-#endif
 		CurrentState = rstl_master_fsm_state::IdleAndSend; // the command-response cycle successfully completed
 		updateCommunicationQuality(SUCCESSFUL_COMMUNICATION);
 		return;
@@ -393,7 +396,7 @@ void modified_rstl_master::placeOrderSetPC(const order_with_argument &NewOrder) 
 	}
 }
 
-bool modified_rstl_master::parseResponse(uint16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const {
+bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const {
 	const char *SendingBuffer = LowLevelUsartPtr->getSendingBuffer();
 	assert(SendingBuffer != nullptr);
 	const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
@@ -405,7 +408,256 @@ bool modified_rstl_master::parseResponse(uint16_t &ValueReturnedInResponse, uint
 	printAllCharacters(ReceivingBuffer);
 	std::cout << '\n';
 
-	return false;
+	int SendingBufferLength = static_cast<int>(strlen(SendingBuffer));
+	int ReceivingBufferLength = static_cast<int>(strlen(ReceivingBuffer));
+	if (ReceivingBufferLength <= SendingBufferLength) {
+		return false;
+	}
+
+	char *SearchResult = const_cast<char *>(strstr(ReceivingBuffer, SendingBuffer));
+	if (SearchResult != ReceivingBuffer) {
+		return false;
+	}
+	ReceivingBuffer += SendingBufferLength;
+
+	std::cout << "Essentials: ";
+	printAllCharacters(ReceivingBuffer);
+	std::cout << '\n';
+
+	ValueReturnedInResponse = 0;
+	EssentialResponseStart = 0;
+	EssentialResponseLength = 0;
+	switch (CurrentOrder.OrderCode) {
+	case single_order_code::SetPC:
+	case single_order_code::SetPower:
+	case single_order_code::SetZ: {
+		bool Success = (0 == strncmp(ReceivingBuffer, ">", 2));
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+	} break;
+
+	case single_order_code::ResetErrors: {
+		bool Success = (0 == strncmp(ReceivingBuffer, "Resetting errors\r\n>", 20));
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+	} break;
+
+	case single_order_code::InquiryPower: {
+		bool Success = testAndExtractOneDigit(ReceivingBuffer, "#\r\n>", 5, ValueReturnedInResponse, 1, 0, 1);
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+	} break;
+
+	case single_order_code::InquiryZ: {
+		bool Success = testAndExtractOneDigit(ReceivingBuffer, "Z=#\r\n>", 7, ValueReturnedInResponse, 3, 1, PSU_NUMBER_OF_CHANNELS);
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+	} break;
+
+	case single_order_code::InquiryVersion: {
+		bool Success = parseInquiryVersion(ReceivingBuffer, EssentialResponseLength);
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+		EssentialResponseStart = 9;
+	} break;
+
+	case single_order_code::InquiryST: {
+		bool Success = parseInquiryStatus(ReceivingBuffer, ValueReturnedInResponse, EssentialResponseLength);
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+		EssentialResponseStart = 4;
+	} break;
+
+	case single_order_code::InquiryPC: {
+		bool Success = parseInquiryPC(ReceivingBuffer, ValueReturnedInResponse);
+		if (!Success) {
+			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+			return false;
+		}
+	} break;
+
+	default:
+		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+		return false;
+	}
+
+	return true;
+}
+
+bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length, int16_t &ValueExtracted,
+                                                  uint8_t Position, uint8_t MinValue, uint8_t MaxValue) const {
+	if (0 != strncmp(BufferUnderTest, ConstantPhrase, Position - 1)) {
+		printf("Response syntax error in %s at line %d; [", __FILE__, __LINE__);
+		printAllCharacters(BufferUnderTest);
+		printf("] != [");
+		printAllCharacters(ConstantPhrase);
+		printf("] len. %d\n", (int)(Position - 1));
+		return false;
+	}
+	if (0 != strncmp(BufferUnderTest + Position + 1, ConstantPhrase + Position + 1, Length - Position)) {
+		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+		return false;
+	}
+	if ((BufferUnderTest[Position - 1] < '0') || (BufferUnderTest[Position - 1] > '9')) {
+		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+		return false;
+	}
+	ValueExtracted = BufferUnderTest[Position - 1] - '0';
+	if ((ValueExtracted < MinValue) || (ValueExtracted > MaxValue)) {
+		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+		return false;
+	}
+	return true;
+}
+
+bool modified_rstl_master::parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) const {
+	// Example:
+	// Command:  [VERSION~~]
+	// Response: [VERSION~~ver. Oct  8 2026, 15:04:13~~>]
+	// BufferUnderTest: "ver. Oct  8 2026, 15:04:13\r\n>"
+	int RequiredLength = 29;
+	if ((int)strlen(BufferUnderTest) != RequiredLength) {
+		printf("Response syntax error in %s at line %d; [", __FILE__, __LINE__);
+		printAllCharacters(BufferUnderTest);
+		printf("]\n");
+		return false;
+	}
+	const char Form[] = "ver. Oct  8 2026, 15:04:13\r\n>";
+	const char Mask[] = "ver. Www pd dddd, dd:dd:dd\r\n>";
+	for (int i = 0; i < RequiredLength; ++i) {
+		if (Mask[i] == 'W') {
+			if (0 == isupper(BufferUnderTest[i])) {
+				printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+				return false;
+			}
+		}
+		else if (Mask[i] == 'w') {
+			if (0 == islower(BufferUnderTest[i])) {
+				printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+				return false;
+			}
+		}
+		else if (Mask[i] == 'd') {
+			if (0 == isdigit(BufferUnderTest[i])) {
+				printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+				return false;
+			}
+		}
+		else if (Mask[i] == 'p') {
+			if ((0 == isdigit(BufferUnderTest[i])) && (BufferUnderTest[i] != ' ')) {
+				printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+				return false;
+			}
+		}
+		else {
+			if (BufferUnderTest[i] != Form[i]) {
+				printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
+				return false;
+			}
+		}
+	}
+	EssentialResponseLength = 26;
+	return true;
+}
+
+bool modified_rstl_master::parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength) const {
+	// Example:
+	// Command:  [ST~~]
+	// Response: [ST~~sig2 ?? ?? ?? ?? i2c 0 0 uart 0 fsm 0~~>]
+	// Response: [ST~~sig2 LH LH LH LH i2c 0 0 uart 0 fsm 8~~>]
+	//                1234567890123456789012345678901234567890
+	// BufferUnderTest: "sig2 LH LH LH LH i2c 0 0 uart 0 fsm 8\r\n>"
+	int MeasuredLength = strlen(BufferUnderTest);
+	if (MeasuredLength < 40) {
+		return false;
+	}
+	if (MeasuredLength > 46) {
+		return false;
+	}
+	if (BufferUnderTest != strstr(BufferUnderTest, "sig2 ")) {
+		return false;
+	}
+	if (nullptr == strstr(BufferUnderTest, " i2c ")) {
+		return false;
+	}
+	if (nullptr == strstr(BufferUnderTest, " uart ")) {
+		return false;
+	}
+	const char *FsmPtr = strstr(BufferUnderTest, " fsm ");
+	if (nullptr == FsmPtr) {
+		return false;
+	}
+	if (BufferUnderTest + MeasuredLength - 3 != strstr(BufferUnderTest, "\r\n>")) {
+		return false;
+	}
+	ValueExtracted = static_cast<int16_t>(strtol(FsmPtr + 5, nullptr, 10));
+	EssentialResponseLength = MeasuredLength - 3;
+	return true;
+}
+
+bool modified_rstl_master::parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) const {
+	// Example:
+	// Command:  [PC~~]
+	// Response: [?PC~~-10.00~~>]
+	// Response: [?PC~~-3.00~~>]
+	// Response: [?PC~~0.00~~>]
+	// Response: [?PC~~2.00~~>]
+	// Response: [?PC~~10.00~~>]
+	//                 123456789
+	int MeasuredLength = strlen(BufferUnderTest);
+	if (MeasuredLength < 7) {
+		return false;
+	}
+	if (MeasuredLength > 9) {
+		return false;
+	}
+	const char *DotPtr = strchr(BufferUnderTest, '.');
+	if (nullptr == DotPtr) {
+		return false;
+	}
+	if (DotPtr - BufferUnderTest < 1) {
+		return false;
+	}
+	const char *EndingPtr = strstr(BufferUnderTest, "\r\n>");
+	if (nullptr == EndingPtr) {
+		return false;
+	}
+	if (EndingPtr - DotPtr != 3) {
+		return false;
+	}
+	char *EndPtr = nullptr;
+	int16_t Value1 = static_cast<int16_t>(strtol(BufferUnderTest, &EndPtr, 10));
+	if (EndPtr != DotPtr) {
+		return false;
+	}
+	int16_t Value2 = static_cast<int16_t>(strtol(DotPtr + 1, &EndPtr, 10));
+	if (EndPtr != EndingPtr) {
+		return false;
+	}
+
+	if (BufferUnderTest[0] != '-') {
+		ValueReturnedInResponse = Value1 * 100 + Value2;
+	}
+	else {
+		ValueReturnedInResponse = Value1 * 100 - Value2;
+	}
+	if ((ValueReturnedInResponse < ABSOLUTE_MINIMUM_SETTING) || (ValueReturnedInResponse > ABSOLUTE_MAXIMUM_SETTING)) {
+		return false;
+	}
+
+	return true;
 }
 
 //=================================================================================================
@@ -446,14 +698,15 @@ static void printAllCharacters(const char *Buffer) {
 	for (size_t i = 0; Buffer[i] != '\0'; ++i) {
 		if (Buffer[i] == '\r') {
 			std::cout << "\\r";
-		} else if (Buffer[i] == '\n') {
+		}
+		else if (Buffer[i] == '\n') {
 			std::cout << "\\n";
-		} else 
-		if ((Buffer[i] < (char)32) || ((uint8_t)Buffer[i] > 127)) {
+		}
+		else if ((Buffer[i] < (char)32) || ((uint8_t)Buffer[i] > 127)) {
 			std::cout << "\\x" << std::hex << static_cast<int>(static_cast<unsigned char>(Buffer[i])) << std::dec;
-		} else {
+		}
+		else {
 			std::cout << Buffer[i];
 		}
 	}
-	std::cout << '\n';
 }
