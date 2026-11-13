@@ -88,6 +88,7 @@ modified_rstl_master::modified_rstl_master() {
 	CurrentState = rstl_master_fsm_state::Uninitialized;
 	LowLevelUsartPtr = new low_level_usart();
 	OrderProcessingState = order_processing_state::NotReady;
+	IsResentTransmissionSuccessful = true;
 	ResponseFailureHistory = 0;
 	TotalResponseCount = 0;
 	TotalFailedResponseCount = 0;
@@ -116,6 +117,7 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 		std::cout << "Order is not ready for placement (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 		return false;
 	}
+	IsResentTransmissionSuccessful = false; // Reset the response success flag for the new order
 
 	// Formulate the command based on the current order
 	switch (NewOrder.OrderCode) {
@@ -164,6 +166,12 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 	OrderProcessingState = order_processing_state::Placed;
 
 	return true;
+}
+
+/// @brief Returns whether the response for the current order was successful TODO: in Idle state ...
+/// @return true if the response was successful, false otherwise
+bool modified_rstl_master::getIsResponseSuccessful() const {
+	return IsResentTransmissionSuccessful;
 }
 
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
@@ -357,6 +365,7 @@ void modified_rstl_master::fsmTickReceive() {
 		// Call the registered callback function
 		(*RstlCallback)(IsResponseSyntaxCorrect, ValueReturned, ReceivingBuffer, EssentialLength);
 		CurrentState = rstl_master_fsm_state::IdleAndSend; // the command-response cycle successfully completed
+		IsResentTransmissionSuccessful = true;
 		updateCommunicationQuality(SUCCESSFUL_COMMUNICATION);
 		return;
 	}
@@ -717,6 +726,16 @@ bool rstlMasterTick(bool TerminationSignal) {
 bool placeRstlOrder(const order_with_argument &NewOrder) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->placeOrder(NewOrder);
+}
+
+order_processing_state getOrderProcessingState() {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	return RstlMasterInstancePtr->getOrderProcessingState();
+}
+
+[[nodiscard]] bool getIsResponseSuccessful() {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	return RstlMasterInstancePtr->getIsResponseSuccessful();
 }
 
 //=================================================================================================

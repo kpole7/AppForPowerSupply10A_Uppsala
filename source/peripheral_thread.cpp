@@ -34,52 +34,99 @@
 enum class top_level_fsm_states : uint8_t {
 	// Initialization states
 	Uninitialized = 0,
-	GetVersion = 1,
-	GetPowerStatus = 2,
+	OptionalInitialPause = 1,
+	GetVersion = 2,
+	InitializationComplete = 3,
 
 	// Idle states
-	StatusCheck = 3,
-	SelectChannel1 = 4,
-	Channel1Check = 5,
-	GetChannel1Setting = 6,
-	SelectChannel2 = 7,
-	Channel2Check = 8,
-	GetChannel2Setting = 9,
+	OptionalIdlePause = 4,
+	StatusCheck = 5,
+	SelectChannel1 = 6,
+	Channel1Check = 7,
+	GetChannel1Setting = 8,
+	SelectChannel2 = 9,
+	Channel2Check = 10,
+	GetChannel2Setting = 11,
 
 	// User interaction states
-	PowerOn = 10,
-	PowerOff = 11,
-	Channel1NewValue = 12,
-	Channel2NewValue = 13,
+	PowerOn = 12,
+	PowerOff = 13,
+	Channel1NewValue = 14,
+	Channel2NewValue = 15,
 
 	// Error states
-	PermanentError = 14
+	PermanentError = 16
 };
 
 static top_level_fsm_states TopLevelFsmState = top_level_fsm_states::Uninitialized;
 
-#if 0
+void topLevelFsmUninitializedState() {
+	if (getOrderProcessingState() == order_processing_state::Ready) {
+		if (getIsResponseSuccessful()) {
+			order_with_argument NewOrder;
+			NewOrder.OrderCode = single_order_code::InquiryVersion;
+			NewOrder.Argument = 0;
+			bool Success = placeRstlOrder(NewOrder);
+			if (Success) {
+				TopLevelFsmState = top_level_fsm_states::GetVersion;
+				return;
+			}
+			TopLevelFsmState = top_level_fsm_states::PermanentError;
+			return;
+		}
+		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+	}
+}
+
+
+
+
+void topLevelFsmGetVersionState() {
+	if (getOrderProcessingState() == order_processing_state::Ready) {
+		if (getIsResponseSuccessful()) {
+			TopLevelFsmState = top_level_fsm_states::InitializationComplete;
+			return;
+		}
+		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+	}
+}
+
+
+
+
+void topLevelFsmInitializationCompleteState() {
+	if (getOrderProcessingState() == order_processing_state::Ready) {
+		if (getIsResponseSuccessful()) {
+			order_with_argument NewOrder;
+			NewOrder.OrderCode = single_order_code::InquiryST;
+			NewOrder.Argument = 0;
+			bool Success = placeRstlOrder(NewOrder);
+			if (Success) {
+				TopLevelFsmState = top_level_fsm_states::InitializationComplete;
+				return;
+			}
+			TopLevelFsmState = top_level_fsm_states::PermanentError;
+			return;
+		}
+		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+	}
+}
+
 void topLevelFsmTick() {
 	switch (TopLevelFsmState) {
-		case top_level_fsm_states::Uninitialized:{
-			order_with_argument NewOrderPtr = new order_with_argument;
-			NewOrderPtr->
-			bool Success = placeRstlOrder(NewOrderPtr);
+		case top_level_fsm_states::Uninitialized:
+			topLevelFsmUninitializedState();
 			break;
-		}
+
 		case top_level_fsm_states::GetVersion:
-			// Handle get version state
+			topLevelFsmGetVersionState();
 			break;
-		case top_level_fsm_states::GetPowerStatus:
-			// Handle get power status state
-			break;
+
 		// Add other states as needed
 		default:
 			break;
 	}
-
 }
-#endif
 
 
 
