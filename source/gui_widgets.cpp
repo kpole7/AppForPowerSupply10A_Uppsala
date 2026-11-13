@@ -68,6 +68,7 @@ void power_indicator::setBrightness(indicator_light_state NewState) {
 
 void power_indicator::draw() {
 	const Fl_Color ColorOn = fl_rgb_color(0x30, 0xFF, 0x30);
+	const Fl_Color ColorDim = fl_rgb_color(0xE3, 0xD3, 0x7A);
 	const Fl_Color ColorOff = fl_rgb_color(0x80, 0x88, 0x80);
 	const Fl_Color ColorUndefined = fl_rgb_color(0xD0, 0xD8, 0xD0);
 	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
@@ -86,6 +87,9 @@ void power_indicator::draw() {
 		if (indicator_light_state::ON == State) {
 			fl_color(ColorOn);
 		}
+		else if (indicator_light_state::DIM == State) {
+			fl_color(ColorDim);
+		}
 		else if (indicator_light_state::UNDEFINED == State) {
 			fl_color(ColorUndefined);
 		}
@@ -94,13 +98,6 @@ void power_indicator::draw() {
 		}
 
 		fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 360.0);
-	}
-	if (indicator_light_state::DIM == State) {
-		fl_color(ColorOn);
-		if (Inner > 0) {
-			fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 270.0, 360.0);
-			fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 90.0);
-		}
 	}
 }
 
@@ -121,7 +118,7 @@ void initializeGraphicWidgets() {
 	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
-	PowerIndicatorPtr = new power_indicator(25, 50, 30, 30);
+	PowerIndicatorPtr = new power_indicator(70, 100, 60, 60);
 	(void)PowerIndicatorPtr;
 }
 

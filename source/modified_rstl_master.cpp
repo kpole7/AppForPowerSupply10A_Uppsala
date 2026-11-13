@@ -15,6 +15,8 @@
 #include <iostream>
 
 #include "modified_rstl_master.h"
+#include "multithread_resources.h"
+#include "peripheral_thread.h"
 #include "settings_file.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
@@ -28,6 +30,24 @@
 
 #define ABSOLUTE_MINIMUM_SETTING (-1000) // in hundredths of an ampere
 #define ABSOLUTE_MAXIMUM_SETTING 1000    // in hundredths of an ampere
+
+//=================================================================================================
+// Types
+//=================================================================================================
+
+enum class external_device_states : uint8_t {
+	PSU_STOPPED,					// stable state; power supply is turned off
+	PSU_INITIAL_SIG2_LOW_SET_DAC,	// transitional state; during power-up
+	PSU_INITIAL_SIG2_LOW_TEST,		// transitional state; during power-up
+	PSU_INITIAL_SIG2_HIGH_SET_DAC,	// transitional state; during power-up
+	PSU_INITIAL_SIG2_HIGH_TEST,		// transitional state; during power-up
+	PSU_INITIAL_ZEROING,			// transitional state; during power-up
+	PSU_INITIAL_CONTACTOR_ON,		// transitional state; during power-up
+	PSU_RUNNING,					// stable state; power supply is turned on
+	PSU_SHUTTING_DOWN_ZEROING,		// transitional state; during power-down
+	PSU_SHUTTING_DOWN_CONTACTOR_OFF,// transitional state; during power-down
+	PSU_ILLEGAL_STATE				// number of correct states
+};
 
 //=================================================================================================
 // Local constants and variables
@@ -55,6 +75,8 @@ static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
 //=================================================================================================
 // Local function declarations
 //=================================================================================================
+
+static main_power_state convertToExternalDeviceSimplifiedState(uint16_t ExternalDevicedState);
 
 static void printAllCharacters(const char *Buffer);
 
@@ -402,11 +424,13 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
 	assert(ReceivingBuffer != nullptr);
 
+#if 0
 	std::cout << "  SendingBuffer: ";
 	printAllCharacters(SendingBuffer);
 	std::cout << "ReceivingBuffer: ";
 	printAllCharacters(ReceivingBuffer);
 	std::cout << '\n';
+#endif
 
 	int SendingBufferLength = static_cast<int>(strlen(SendingBuffer));
 	int ReceivingBufferLength = static_cast<int>(strlen(ReceivingBuffer));
@@ -420,9 +444,11 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	}
 	ReceivingBuffer += SendingBufferLength;
 
+#if 0
 	std::cout << "Essentials: ";
 	printAllCharacters(ReceivingBuffer);
 	std::cout << '\n';
+#endif
 
 	ValueReturnedInResponse = 0;
 	EssentialResponseStart = 0;
@@ -478,6 +504,9 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 			return false;
 		}
 		EssentialResponseStart = 4;
+		main_power_state ExternalDeviceSimplifiedState = convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
+		atomic_store_explicit(&SharedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
+		AwakeRefreshWholeGui = true;
 	} break;
 
 	case single_order_code::InquiryPC: {
@@ -692,6 +721,34 @@ bool placeRstlOrder(const order_with_argument &NewOrder) {
 //=================================================================================================
 // Definitions of local functions
 //=================================================================================================
+
+static main_power_state convertToExternalDeviceSimplifiedState(uint16_t ExternalDevicedState) {
+	external_device_states ExternalState = static_cast<external_device_states>(ExternalDevicedState);
+
+	switch (ExternalState) {
+		case external_device_states::PSU_STOPPED:
+			return main_power_state::OFF;
+
+		case external_device_states::PSU_INITIAL_SIG2_LOW_SET_DAC:
+		case external_device_states::PSU_INITIAL_SIG2_LOW_TEST:
+		case external_device_states::PSU_INITIAL_SIG2_HIGH_SET_DAC:
+		case external_device_states::PSU_INITIAL_SIG2_HIGH_TEST:
+		case external_device_states::PSU_INITIAL_ZEROING:
+		case external_device_states::PSU_INITIAL_CONTACTOR_ON:
+			return main_power_state::RISING;
+
+		case external_device_states::PSU_RUNNING:
+			return main_power_state::ON;
+
+		case external_device_states::PSU_SHUTTING_DOWN_ZEROING:
+		case external_device_states::PSU_SHUTTING_DOWN_CONTACTOR_OFF:
+			return main_power_state::FALLING;
+
+		default:
+		break;
+	}
+	return main_power_state::UNDEFINED; // failure case
+}
 
 static void printAllCharacters(const char *Buffer) {
 	assert(Buffer != nullptr);
