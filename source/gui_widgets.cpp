@@ -46,16 +46,34 @@ static Fl_Box *GeneralStatusTextBoxPtr;
 static Fl_Box *FailureMessagePtr;
 
 static power_indicator *PowerIndicatorPtr;
+static Fl_Button *PowerButtonPtr;
 
 //=================================================================================================
 // Local function prototypes
 //=================================================================================================
 
 static const char *getErrorDescription(initialization_failure_codes Error);
+static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 
 //=================================================================================================
 // Function definitions
 //=================================================================================================
+
+/// @brief Callback function for the power button. Toggles between SendPowerOnCommand and SendPowerOffCommand.
+static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	(void)Data;
+	
+	// Get current power state
+	main_power_state CurrentState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
+	
+	// Toggle power command based on current state
+	if (CurrentState == main_power_state::OFF || CurrentState == main_power_state::FALLING) {
+		atomic_store_explicit(&SendPowerOnCommand, true, std::memory_order_release);
+	} else if (CurrentState == main_power_state::ON || CurrentState == main_power_state::RISING) {
+		atomic_store_explicit(&SendPowerOffCommand, true, std::memory_order_release);
+	}
+}
 
 power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
@@ -119,6 +137,9 @@ void initializeGraphicWidgets() {
 	FailureMessagePtr->hide();
 
 	PowerIndicatorPtr = new power_indicator(70, 100, 60, 60);
+	PowerButtonPtr = new Fl_Button(200, 115, 60, 30, "");
+	PowerButtonPtr->callback(powerButtonCallback);
+
 	(void)PowerIndicatorPtr;
 }
 
@@ -174,19 +195,27 @@ void refreshWholeGui(void *Data) {
 	switch (atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire)) {
 	case main_power_state::UNDEFINED:
 		CurrentState = indicator_light_state::UNDEFINED;
+		PowerButtonPtr->activate();
+		PowerButtonPtr->label("?");
 		break;
 	case main_power_state::ON:
 		CurrentState = indicator_light_state::ON;
+		PowerButtonPtr->activate();
+		PowerButtonPtr->label("Wyłącz");
 		break;
 	case main_power_state::OFF:
 		CurrentState = indicator_light_state::OFF;
+		PowerButtonPtr->activate();
+		PowerButtonPtr->label("Włącz");
 		break;
 	case main_power_state::RISING:
 	case main_power_state::FALLING:
 		CurrentState = indicator_light_state::DIM;
+		PowerButtonPtr->deactivate();
 		break;
 	default:
 		std::cout << "Unexpected main power state" << '\n';
+		PowerButtonPtr->activate();
 		break;
 	}
 

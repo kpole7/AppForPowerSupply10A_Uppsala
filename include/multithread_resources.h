@@ -46,6 +46,12 @@ extern std::string ThisApplicationDirectory;
 /// @details This variable can be set only once, during the initialization of the application.
 extern std::string ConfigurationFilePath;
 
+/// @brief Command to send power ON to the device.
+extern std::atomic<bool> SendPowerOnCommand;
+
+/// @brief Command to send power OFF to the device.
+extern std::atomic<bool> SendPowerOffCommand;
+
 //=================================================================================================
 // Prototypes of functions that are called from the FLTK thread, but impact the peripheral thread.
 //=================================================================================================

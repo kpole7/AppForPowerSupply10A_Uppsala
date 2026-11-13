@@ -36,17 +36,17 @@
 //=================================================================================================
 
 enum class external_device_states : uint8_t {
-	PSU_STOPPED,					// stable state; power supply is turned off
-	PSU_INITIAL_SIG2_LOW_SET_DAC,	// transitional state; during power-up
-	PSU_INITIAL_SIG2_LOW_TEST,		// transitional state; during power-up
-	PSU_INITIAL_SIG2_HIGH_SET_DAC,	// transitional state; during power-up
-	PSU_INITIAL_SIG2_HIGH_TEST,		// transitional state; during power-up
-	PSU_INITIAL_ZEROING,			// transitional state; during power-up
-	PSU_INITIAL_CONTACTOR_ON,		// transitional state; during power-up
-	PSU_RUNNING,					// stable state; power supply is turned on
-	PSU_SHUTTING_DOWN_ZEROING,		// transitional state; during power-down
-	PSU_SHUTTING_DOWN_CONTACTOR_OFF,// transitional state; during power-down
-	PSU_ILLEGAL_STATE				// number of correct states
+	PSU_STOPPED,                     // stable state; power supply is turned off
+	PSU_INITIAL_SIG2_LOW_SET_DAC,    // transitional state; during power-up
+	PSU_INITIAL_SIG2_LOW_TEST,       // transitional state; during power-up
+	PSU_INITIAL_SIG2_HIGH_SET_DAC,   // transitional state; during power-up
+	PSU_INITIAL_SIG2_HIGH_TEST,      // transitional state; during power-up
+	PSU_INITIAL_ZEROING,             // transitional state; during power-up
+	PSU_INITIAL_CONTACTOR_ON,        // transitional state; during power-up
+	PSU_RUNNING,                     // stable state; power supply is turned on
+	PSU_SHUTTING_DOWN_ZEROING,       // transitional state; during power-down
+	PSU_SHUTTING_DOWN_CONTACTOR_OFF, // transitional state; during power-down
+	PSU_ILLEGAL_STATE                // number of correct states
 };
 
 //=================================================================================================
@@ -349,8 +349,9 @@ void modified_rstl_master::fsmTickReceive() {
 		assert(ReceivingBuffer != nullptr);
 		ReceivingBuffer += EssentialStart;
 
-		if(!IsResponseSyntaxCorrect) {
-			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		if (!IsResponseSyntaxCorrect) {
+			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+			          << __FILE__ << ")\n";
 		}
 
 		// Call the registered callback function
@@ -726,25 +727,25 @@ static main_power_state convertToExternalDeviceSimplifiedState(uint16_t External
 	external_device_states ExternalState = static_cast<external_device_states>(ExternalDevicedState);
 
 	switch (ExternalState) {
-		case external_device_states::PSU_STOPPED:
-			return main_power_state::OFF;
+	case external_device_states::PSU_STOPPED:
+		return main_power_state::OFF;
 
-		case external_device_states::PSU_INITIAL_SIG2_LOW_SET_DAC:
-		case external_device_states::PSU_INITIAL_SIG2_LOW_TEST:
-		case external_device_states::PSU_INITIAL_SIG2_HIGH_SET_DAC:
-		case external_device_states::PSU_INITIAL_SIG2_HIGH_TEST:
-		case external_device_states::PSU_INITIAL_ZEROING:
-		case external_device_states::PSU_INITIAL_CONTACTOR_ON:
-			return main_power_state::RISING;
+	case external_device_states::PSU_INITIAL_SIG2_LOW_SET_DAC:
+	case external_device_states::PSU_INITIAL_SIG2_LOW_TEST:
+	case external_device_states::PSU_INITIAL_SIG2_HIGH_SET_DAC:
+	case external_device_states::PSU_INITIAL_SIG2_HIGH_TEST:
+	case external_device_states::PSU_INITIAL_ZEROING:
+	case external_device_states::PSU_INITIAL_CONTACTOR_ON:
+		return main_power_state::RISING;
 
-		case external_device_states::PSU_RUNNING:
-			return main_power_state::ON;
+	case external_device_states::PSU_RUNNING:
+		return main_power_state::ON;
 
-		case external_device_states::PSU_SHUTTING_DOWN_ZEROING:
-		case external_device_states::PSU_SHUTTING_DOWN_CONTACTOR_OFF:
-			return main_power_state::FALLING;
+	case external_device_states::PSU_SHUTTING_DOWN_ZEROING:
+	case external_device_states::PSU_SHUTTING_DOWN_CONTACTOR_OFF:
+		return main_power_state::FALLING;
 
-		default:
+	default:
 		break;
 	}
 	return main_power_state::UNDEFINED; // failure case

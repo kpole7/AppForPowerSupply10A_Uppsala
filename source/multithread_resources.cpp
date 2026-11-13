@@ -18,3 +18,6 @@ std::atomic<main_power_state> SharedMainPowerState{main_power_state::UNDEFINED};
 std::string ThisApplicationDirectory;
 
 std::string ConfigurationFilePath;
+
+std::atomic<bool> SendPowerOnCommand{false};
+std::atomic<bool> SendPowerOffCommand{false};

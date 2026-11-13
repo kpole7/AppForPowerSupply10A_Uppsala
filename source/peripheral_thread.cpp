@@ -23,6 +23,71 @@
 
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
 
+
+
+
+
+
+
+
+
+enum class top_level_fsm_states : uint8_t {
+	// Initialization states
+	Uninitialized = 0,
+	GetVersion = 1,
+	GetPowerStatus = 2,
+
+	// Idle states
+	StatusCheck = 3,
+	SelectChannel1 = 4,
+	Channel1Check = 5,
+	GetChannel1Setting = 6,
+	SelectChannel2 = 7,
+	Channel2Check = 8,
+	GetChannel2Setting = 9,
+
+	// User interaction states
+	PowerOn = 10,
+	PowerOff = 11,
+	Channel1NewValue = 12,
+	Channel2NewValue = 13,
+
+	// Error states
+	PermanentError = 14
+};
+
+static top_level_fsm_states TopLevelFsmState = top_level_fsm_states::Uninitialized;
+
+#if 0
+void topLevelFsmTick() {
+	switch (TopLevelFsmState) {
+		case top_level_fsm_states::Uninitialized:{
+			order_with_argument NewOrderPtr = new order_with_argument;
+			NewOrderPtr->
+			bool Success = placeRstlOrder(NewOrderPtr);
+			break;
+		}
+		case top_level_fsm_states::GetVersion:
+			// Handle get version state
+			break;
+		case top_level_fsm_states::GetPowerStatus:
+			// Handle get power status state
+			break;
+		// Add other states as needed
+		default:
+			break;
+	}
+
+}
+#endif
+
+
+
+
+
+
+
+
 //=================================================================================================
 // Global variables
 //=================================================================================================
@@ -124,6 +189,28 @@ static void peripheralThreadHandler() {
 		ContinuePeripheralsLoop |= debuggingToolsTick(TerminationSignal);
 
 		ContinuePeripheralsLoop |= rstlMasterTick(TerminationSignal);
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 	} // while (...)
 	// exit
