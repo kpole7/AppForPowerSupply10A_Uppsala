@@ -17,6 +17,7 @@ add_executable(AppForPowerSupply10A_Uppsala
   source/usart_master_debug.cpp
   source/modified_rstl_master.cpp
   source/settings_file.cpp
+  source/top_level_fsm.cpp
 )
 
 
