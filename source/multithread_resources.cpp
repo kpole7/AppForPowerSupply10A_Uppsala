@@ -13,11 +13,16 @@ std::atomic<bool> VerboseMode{false};
 
 std::atomic<uint8_t> StatusLevelForGui{DEFAULT_STATUS_LEVEL_FOR_GUI};
 
-std::atomic<main_power_state> SharedMainPowerState{main_power_state::UNDEFINED};
-
 std::string ThisApplicationDirectory;
 
 std::string ConfigurationFilePath;
 
+std::atomic<main_power_state> ReceivedMainPowerState{main_power_state::UNDEFINED};
+std::atomic<int16_t> ReceivedSetpoint1{0};
+std::atomic<int16_t> ReceivedSetpoint2{0};
+
 std::atomic<bool> SendPowerOnCommand{false};
 std::atomic<bool> SendPowerOffCommand{false};
+
+std::atomic<int16_t> SendSetpoint1{0};
+std::atomic<int16_t> SendSetpoint2{0};

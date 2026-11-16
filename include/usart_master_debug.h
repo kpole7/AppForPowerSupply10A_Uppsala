@@ -13,4 +13,6 @@ void usartMasterDebuggingTick(int PressedKey);
 
 void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState, const char *UserEventName);
 
+void printTopLevelChanges(uint8_t StateIndex1, uint8_t StateIndex2);
+
 #endif // USART_MASTER_DEBUG_H_

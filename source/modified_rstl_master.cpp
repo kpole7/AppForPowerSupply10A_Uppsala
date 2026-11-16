@@ -170,9 +170,7 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 
 /// @brief Returns whether the response for the current order was successful TODO: in Idle state ...
 /// @return true if the response was successful, false otherwise
-bool modified_rstl_master::getIsResponseSuccessful() const {
-	return IsResentTransmissionSuccessful;
-}
+bool modified_rstl_master::getIsResponseSuccessful() const { return IsResentTransmissionSuccessful; }
 
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 	if (TotalResponseCount == 0) {
@@ -350,16 +348,20 @@ void modified_rstl_master::fsmTickReceive() {
 	if (Silence) {
 		// Silence detected, indicating the end of the incoming transmission
 
-		int16_t ValueReturned;
-		uint8_t EssentialStart, EssentialLength;
+		int16_t ValueReturned = 0;
+		uint8_t EssentialStart = 0;
+		uint8_t EssentialLength = 0;
 		bool IsResponseSyntaxCorrect = parseResponse(ValueReturned, EssentialStart, EssentialLength);
 		const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
 		assert(ReceivingBuffer != nullptr);
 		ReceivingBuffer += EssentialStart;
 
 		if (!IsResponseSyntaxCorrect) {
+			CurrentState = rstl_master_fsm_state::Noise;
+			updateCommunicationQuality(FAILED_COMMUNICATION);
 			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 			          << __FILE__ << ")\n";
+			return;
 		}
 
 		// Call the registered callback function
@@ -463,6 +465,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	ValueReturnedInResponse = 0;
 	EssentialResponseStart = 0;
 	EssentialResponseLength = 0;
+
 	switch (CurrentOrder.OrderCode) {
 	case single_order_code::SetPC:
 	case single_order_code::SetPower:
@@ -515,7 +518,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 		}
 		EssentialResponseStart = 4;
 		main_power_state ExternalDeviceSimplifiedState = convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
-		atomic_store_explicit(&SharedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
+		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
 		AwakeRefreshWholeGui = true;
 	} break;
 
@@ -715,6 +718,7 @@ void registerRstlCallback(rstl_callback_function Callback) {
 usart_low_level_error initializeRstlMaster() {
 	assert(nullptr == RstlMasterInstancePtr); // Ensure no previous instance exists
 	RstlMasterInstancePtr = new modified_rstl_master();
+
 	return RstlMasterInstancePtr->initialize();
 }
 

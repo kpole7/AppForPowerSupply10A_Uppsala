@@ -23,117 +23,146 @@
 
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
 
+#define OPTIONAL_INITIAL_PAUSE_TICKS 100 // in ticks TODO
 
+#define OPTIONAL_IDLE_PAUSE_TICKS 100 // in ticks TODO
 
-
-
-
-
-
+#define REST_BREAK_TICKS 100 // in ticks TODO
 
 enum class top_level_fsm_states : uint8_t {
 	// Initialization states
 	Uninitialized = 0,
-	OptionalInitialPause = 1,
-	GetVersion = 2,
-	InitializationComplete = 3,
+	GettingVersion = 1,
+	OptionalInitialPause = 2, // used after transmission failures during initialization
 
 	// Idle states
-	OptionalIdlePause = 4,
-	StatusCheck = 5,
-	SelectChannel1 = 6,
-	Channel1Check = 7,
-	GetChannel1Setting = 8,
-	SelectChannel2 = 9,
-	Channel2Check = 10,
-	GetChannel2Setting = 11,
+	OptionalIdlePause = 3, // used after transmission failures during normal operation
+	CheckingStatus = 4,
+	SelectingChannel1 = 5,
+	CheckingChannel1 = 6,
+	GettingSetpoint1 = 7,
+	SelectingChannel2 = 8,
+	CheckingChannel2 = 9,
+	GettingSetpoint2 = 10,
+	RestBreak = 11, // can be finished if a new order arrives
 
 	// User interaction states
-	PowerOn = 12,
-	PowerOff = 13,
-	Channel1NewValue = 14,
-	Channel2NewValue = 15,
+	SendingPowerOn = 12,
+	SendingPowerOff = 13,
+	SendingNewSetpoint1 = 14,
+	SendingNewSetpoint2 = 15,
 
 	// Error states
 	PermanentError = 16
 };
 
 static top_level_fsm_states TopLevelFsmState = top_level_fsm_states::Uninitialized;
+static uint16_t OptionalInitialPauseCounter = 0;
+static uint16_t OptionalIdlePauseCounter = 0;
+static uint16_t RestBreakCounter = 0;
 
-void topLevelFsmUninitializedState() {
+void initializeTopLevelFsm() {
+	OptionalInitialPauseCounter = 0;
+	OptionalIdlePauseCounter = 0;
+	RestBreakCounter = 0;
+	TopLevelFsmState = top_level_fsm_states::Uninitialized;
+}
+
+void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument, top_level_fsm_states NextStateOnSuccess) {
+	order_with_argument NewOrder;
+	NewOrder.OrderCode = NewCommand;
+	NewOrder.Argument = Argument;
+	bool Success = placeRstlOrder(NewOrder);
+	if (Success) {
+		TopLevelFsmState = NextStateOnSuccess;
+		return;
+	}
+	TopLevelFsmState = top_level_fsm_states::PermanentError; // Internal error or USART error
+}
+
+void topLevelCommonCommand(single_order_code NewCommand, int16_t Argument, top_level_fsm_states NextStateOnSuccess,
+                           top_level_fsm_states NextStateOnFailure) {
 	if (getOrderProcessingState() == order_processing_state::Ready) {
 		if (getIsResponseSuccessful()) {
-			order_with_argument NewOrder;
-			NewOrder.OrderCode = single_order_code::InquiryVersion;
-			NewOrder.Argument = 0;
-			bool Success = placeRstlOrder(NewOrder);
-			if (Success) {
-				TopLevelFsmState = top_level_fsm_states::GetVersion;
-				return;
-			}
-			TopLevelFsmState = top_level_fsm_states::PermanentError;
+			topLevelFsmPlaceOrder(NewCommand, Argument, NextStateOnSuccess);
 			return;
 		}
-		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+		TopLevelFsmState = NextStateOnFailure;
 	}
 }
 
+void topLevelFsmCommonOptionalPauseState(uint16_t &PauseCounter, uint16_t PauseTicksMax, top_level_fsm_states NextState) {
+	if (PauseCounter < PauseTicksMax) {
+		PauseCounter++;
+		return;
+	}
+	PauseCounter = 0;
+	TopLevelFsmState = NextState;
+}
 
-
-
-void topLevelFsmGetVersionState() {
+void topLevelFsmCheckingStatusState() {
 	if (getOrderProcessingState() == order_processing_state::Ready) {
 		if (getIsResponseSuccessful()) {
-			TopLevelFsmState = top_level_fsm_states::InitializationComplete;
+			RestBreakCounter = 0;
+			TopLevelFsmState = top_level_fsm_states::RestBreak; // can be shortened
 			return;
 		}
-		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+		TopLevelFsmState = top_level_fsm_states::OptionalIdlePause; // cannot be shortened
 	}
 }
 
-
-
-
-void topLevelFsmInitializationCompleteState() {
-	if (getOrderProcessingState() == order_processing_state::Ready) {
-		if (getIsResponseSuccessful()) {
-			order_with_argument NewOrder;
-			NewOrder.OrderCode = single_order_code::InquiryST;
-			NewOrder.Argument = 0;
-			bool Success = placeRstlOrder(NewOrder);
-			if (Success) {
-				TopLevelFsmState = top_level_fsm_states::InitializationComplete;
-				return;
-			}
-			TopLevelFsmState = top_level_fsm_states::PermanentError;
-			return;
-		}
-		TopLevelFsmState = top_level_fsm_states::OptionalInitialPause;
+void topLevelFsmRestBreakState() {
+	if (RestBreakCounter < REST_BREAK_TICKS) {
+		RestBreakCounter++;
+		return;
 	}
+	RestBreakCounter = 0;
+	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }
 
-void topLevelFsmTick() {
+void topLevelFsmTick(bool TerminationSignal) {
+	if (TerminationSignal) {
+		return;
+	}
+
 	switch (TopLevelFsmState) {
-		case top_level_fsm_states::Uninitialized:
-			topLevelFsmUninitializedState();
-			break;
+	case top_level_fsm_states::Uninitialized:
+		topLevelCommonCommand(single_order_code::InquiryVersion, 0, top_level_fsm_states::GettingVersion, top_level_fsm_states::OptionalInitialPause);
+		break;
 
-		case top_level_fsm_states::GetVersion:
-			topLevelFsmGetVersionState();
-			break;
+	case top_level_fsm_states::GettingVersion:
+		topLevelCommonCommand(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus, top_level_fsm_states::OptionalInitialPause);
+		break;
 
-		// Add other states as needed
-		default:
-			break;
+	case top_level_fsm_states::OptionalInitialPause:
+		topLevelFsmCommonOptionalPauseState(OptionalInitialPauseCounter, OPTIONAL_INITIAL_PAUSE_TICKS, top_level_fsm_states::Uninitialized);
+		break;
+
+	case top_level_fsm_states::OptionalIdlePause:
+		topLevelFsmCommonOptionalPauseState(OptionalIdlePauseCounter, OPTIONAL_IDLE_PAUSE_TICKS, top_level_fsm_states::Uninitialized);
+		break;
+
+	case top_level_fsm_states::CheckingStatus:
+		topLevelFsmCheckingStatusState();
+		break;
+
+	case top_level_fsm_states::RestBreak:
+		topLevelFsmRestBreakState();
+		break;
+
+	case top_level_fsm_states::PermanentError:
+		// Handle permanent error state if needed
+		break;
+
+	// Add other states as needed
+	default:
+		break;
 	}
+
+	static top_level_fsm_states PreviousTopLevelFsmState = top_level_fsm_states::Uninitialized;
+	printTopLevelChanges(static_cast<uint8_t>(PreviousTopLevelFsmState), static_cast<uint8_t>(TopLevelFsmState));
+	PreviousTopLevelFsmState = TopLevelFsmState;
 }
-
-
-
-
-
-
-
 
 //=================================================================================================
 // Global variables
@@ -214,6 +243,7 @@ static void peripheralThreadHandler() {
 
 	debugPeripheralsInitializations();
 	initializeRstlMaster();
+	initializeTopLevelFsm();
 
 	PeripheralThreadTimeInMilliseconds = 0;
 	PeripheralThreadLoopStart = std::chrono::high_resolution_clock::now();
@@ -237,27 +267,7 @@ static void peripheralThreadHandler() {
 
 		ContinuePeripheralsLoop |= rstlMasterTick(TerminationSignal);
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
+		topLevelFsmTick(TerminationSignal);
 
 	} // while (...)
 	// exit

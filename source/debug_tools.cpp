@@ -136,43 +136,6 @@ bool debuggingToolsTick(bool TerminationSignal) {
 	}
 #endif
 
-#if 0 // test of mechanism using the AwakeRefreshWholeGui variable
-	if (JustPressedKey == 'S') {
-		main_power_state PsuState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
-		switch (PsuState) {
-		case main_power_state::OFF:
-			PsuState = main_power_state::RISING;
-			break;
-		case main_power_state::RISING:
-			PsuState = main_power_state::ON;
-			break;
-		case main_power_state::ON:
-			PsuState = main_power_state::FALLING;
-			break;
-		default:
-			PsuState = main_power_state::OFF;
-			break;
-		}
-		atomic_store_explicit(&SharedMainPowerState, PsuState, std::memory_order_release);
-		AwakeRefreshWholeGui = true;
-		std::cout << "Key pressed: " << (char)JustPressedKey << " | SharedMainPowerState changed: " << static_cast<int>(PsuState) << '\n';
-	}
-	else if (JustPressedKey == 's') {
-		atomic_store_explicit(&SharedMainPowerState, main_power_state::UNDEFINED, std::memory_order_release);
-		AwakeRefreshWholeGui = true;
-		std::cout << "Key pressed: " << (char)JustPressedKey << " | SharedMainPowerState changed: " << static_cast<int>(main_power_state::UNDEFINED)
-		          << " (UNDEFINED)" << '\n';
-	}
-	else if ((JustPressedKey >= (int)' ') && (JustPressedKey <= (int)'~')) {
-		std::cout << "Key pressed: " << (char)JustPressedKey << '\n';
-	}
-	else {
-		if (JustPressedKey != -1) {
-			std::cout << "Key pressed: " << JustPressedKey << '\n';
-		}
-	}
-#endif
-
 	if (TerminationSignal) {
 		KeepMeRunning = false; // instantly stop if termination signal is received
 	}

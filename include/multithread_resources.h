@@ -35,11 +35,11 @@ extern std::atomic<bool> VerboseMode;
 extern std::atomic<uint8_t> StatusLevelForGui;
 
 /// @brief This variable stores the current state of the main power visible for the user.
-/// @details This variable can be read from the FLTK thread and updated from the peripheral thread.
-extern std::atomic<main_power_state> SharedMainPowerState;
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<main_power_state> ReceivedMainPowerState;
 
 /// @brief This variable stores the directory where the application executable file is located.
-/// @details This variable can be set only once, during the initialization of the application.
+/// @details This variable is to be set only once, during the initialization of the application.
 extern std::string ThisApplicationDirectory;
 
 /// @brief This variable stores the full path to the configuration file.

@@ -65,6 +65,13 @@ char RstlMasterFsmStateTexts[6][16] = {"Uninitialized", "IdleAndSend", "WaitForR
 
 char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
 
+char TopLevelFsmStateTexts[17][25] = {"Uninitialized",       "GettingVersion",   "OptionalInitialPause", "OptionalIdlePause", "CheckingStatus",
+                                      "SelectingChannel1",   "CheckingChannel1", "GettingSetpoint1",     "SelectingChannel2", "CheckingChannel2",
+                                      "GettingSetpoint2",    "RestBreak",        "SendingPowerOn",       "SendingPowerOff",   "SendingNewSetpoint1",
+                                      "SendingNewSetpoint2", "PermanentError"};
+
+char *TopLevelFsmStateTextPtr = &TopLevelFsmStateTexts[0][0];
+
 /// @brief Handles a single tick of peripheral operations.
 /// @param PressedKey the key that was pressed by the user
 /// @callgraph
@@ -148,4 +155,15 @@ void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState
 	LastState = UsartPtr->getState();
 	LastErrorCode = UsartPtr->getErrorCode();
 	LastFsmState = FsmState;
+}
+
+void printTopLevelChanges(uint8_t StateIndex1, uint8_t StateIndex2) {
+	uint8_t MaxIndex = static_cast<uint8_t>(sizeof(TopLevelFsmStateTexts) / sizeof(TopLevelFsmStateTexts[0]));
+	if ((StateIndex1 == StateIndex2) || (StateIndex1 >= MaxIndex) || (StateIndex2 >= MaxIndex)) {
+		return;
+	}
+	auto TimeNow = std::chrono::high_resolution_clock::now();
+	auto TimeSinceReference = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeReference).count();
+	std::cout << formatElapsedTime(TimeSinceReference) << " ";
+	std::cout << "Top-level State [" << TopLevelFsmStateTexts[StateIndex1] << "] -> [" << TopLevelFsmStateTexts[StateIndex2] << "]\n";
 }

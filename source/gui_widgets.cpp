@@ -63,15 +63,19 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	(void)Data;
-	
+
 	// Get current power state
-	main_power_state CurrentState = atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire);
-	
+	main_power_state CurrentState = atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire);
+
 	// Toggle power command based on current state
 	if (CurrentState == main_power_state::OFF || CurrentState == main_power_state::FALLING) {
 		atomic_store_explicit(&SendPowerOnCommand, true, std::memory_order_release);
-	} else if (CurrentState == main_power_state::ON || CurrentState == main_power_state::RISING) {
+	}
+	else if (CurrentState == main_power_state::ON || CurrentState == main_power_state::RISING) {
 		atomic_store_explicit(&SendPowerOffCommand, true, std::memory_order_release);
+	}
+	else {
+		// Do nothing
 	}
 }
 
@@ -192,7 +196,7 @@ void refreshWholeGui(void *Data) {
 
 	indicator_light_state CurrentState;
 
-	switch (atomic_load_explicit(&SharedMainPowerState, std::memory_order_acquire)) {
+	switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
 	case main_power_state::UNDEFINED:
 		CurrentState = indicator_light_state::UNDEFINED;
 		PowerButtonPtr->activate();
