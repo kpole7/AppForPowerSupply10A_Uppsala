@@ -59,7 +59,7 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 // Function definitions
 //=================================================================================================
 
-/// @brief Callback function for the power button. Toggles between SendPowerOnCommand and SendPowerOffCommand.
+/// @brief Callback function for the power button. Toggles between CommandToBeSentPowerOn and CommandToBeSentPowerOff.
 static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	(void)Data;
@@ -69,10 +69,10 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 
 	// Toggle power command based on current state
 	if (CurrentState == main_power_state::OFF || CurrentState == main_power_state::FALLING) {
-		atomic_store_explicit(&SendPowerOnCommand, true, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentPowerOn, true, std::memory_order_release);
 	}
 	else if (CurrentState == main_power_state::ON || CurrentState == main_power_state::RISING) {
-		atomic_store_explicit(&SendPowerOffCommand, true, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentPowerOff, true, std::memory_order_release);
 	}
 	else {
 		// Do nothing

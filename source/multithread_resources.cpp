@@ -21,8 +21,10 @@ std::atomic<main_power_state> ReceivedMainPowerState{main_power_state::UNDEFINED
 std::atomic<int16_t> ReceivedSetpoint1{0};
 std::atomic<int16_t> ReceivedSetpoint2{0};
 
-std::atomic<bool> SendPowerOnCommand{false};
-std::atomic<bool> SendPowerOffCommand{false};
+std::atomic<bool> CommandToBeSentPowerOn{false};
+std::atomic<bool> CommandToBeSentPowerOff{false};
 
-std::atomic<int16_t> SendSetpoint1{0};
-std::atomic<int16_t> SendSetpoint2{0};
+std::atomic<bool> CommandToBeSentSetpoint1{false};
+std::atomic<int16_t> ValueToBeSentSetpoint1{0};
+std::atomic<bool> CommandToBeSentSetpoint2{false};
+std::atomic<int16_t> ValueToBeSentSetpoint2{0};

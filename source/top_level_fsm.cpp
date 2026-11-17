@@ -39,14 +39,32 @@ enum class top_level_fsm_states : uint8_t {
 	GettingSetpoint2 = 10,
 	RestBreak = 11, // can be finished if a new order arrives
 
-	// User interaction states
-	SendingPowerOn = 12,
-	SendingPowerOff = 13,
-	SendingNewSetpoint1 = 14,
-	SendingNewSetpoint2 = 15,
+	// User interaction states on the 'power on' event
+	PowerOnExecuting = 12,
+	PowerOnChecking = 13,      // i.e. checking status
+	PowerOnOptionalPause = 14, // used after transmission failures during power on
 
-	// Error states
-	PermanentError = 16
+	// User interaction states on the 'power off' event
+	PowerOffExecuting = 15,
+	PowerOffChecking = 16,      // i.e. checking status
+	PowerOffOptionalPause = 17, // used after transmission failures during power off
+
+	// User interaction states on the 'change setpoint 1' event
+	Setpoint1SelectingChannel = 18,
+	Setpoint1CheckingChannel = 19,
+	Setpoint1Executing = 20,
+	Setpoint1Checking = 21,
+	Setpoint1OptionalPause = 22, // used after transmission failures during setpoint 1
+
+	// User interaction states on the 'change setpoint 2' event
+	Setpoint2SelectingChannel = 23,
+	Setpoint2CheckingChannel = 24,
+	Setpoint2Executing = 25,
+	Setpoint2Checking = 26,
+	Setpoint2OptionalPause = 27, // used after transmission failures during setpoint 2
+
+	// Error state
+	PermanentError = 28
 };
 
 //=================================================================================================

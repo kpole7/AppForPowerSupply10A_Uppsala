@@ -65,10 +65,35 @@ char RstlMasterFsmStateTexts[6][16] = {"Uninitialized", "IdleAndSend", "WaitForR
 
 char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
 
-char TopLevelFsmStateTexts[17][25] = {"Uninitialized",       "GettingVersion",   "OptionalInitialPause", "OptionalIdlePause", "CheckingStatus",
-                                      "SelectingChannel1",   "CheckingChannel1", "GettingSetpoint1",     "SelectingChannel2", "CheckingChannel2",
-                                      "GettingSetpoint2",    "RestBreak",        "SendingPowerOn",       "SendingPowerOff",   "SendingNewSetpoint1",
-                                      "SendingNewSetpoint2", "PermanentError"};
+char TopLevelFsmStateTexts[29][26] = {"Uninitialized",
+                                      "GettingVersion",
+                                      "OptionalInitialPause",
+                                      "OptionalIdlePause",
+                                      "CheckingStatus",
+                                      "SelectingChannel1",
+                                      "CheckingChannel1",
+                                      "GettingSetpoint1",
+                                      "SelectingChannel2",
+                                      "CheckingChannel2",
+                                      "GettingSetpoint2",
+                                      "RestBreak",
+                                      "PowerOnExecuting",
+                                      "PowerOnChecking",
+                                      "PowerOnOptionalPause",
+                                      "PowerOffExecuting",
+                                      "PowerOffChecking",
+                                      "PowerOffOptionalPause",
+                                      "Setpoint1SelectingChannel",
+                                      "Setpoint1CheckingChannel",
+                                      "Setpoint1Executing",
+                                      "Setpoint1Checking",
+                                      "Setpoint1OptionalPause",
+                                      "Setpoint2SelectingChannel",
+                                      "Setpoint2CheckingChannel",
+                                      "Setpoint2Executing",
+                                      "Setpoint2Checking",
+                                      "Setpoint2OptionalPause",
+                                      "PermanentError"};
 
 char *TopLevelFsmStateTextPtr = &TopLevelFsmStateTexts[0][0];
 
