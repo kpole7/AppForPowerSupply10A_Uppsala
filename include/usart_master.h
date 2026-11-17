@@ -19,7 +19,7 @@ enum class usart_low_level_state {
 	Error
 };
 
-enum class usart_low_level_error {
+enum class usart_low_level_error : uint8_t {
 	None,
 	UsartDeviceNotFound, // port manipulation error
 	OpenFailed,          // port manipulation error

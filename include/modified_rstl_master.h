@@ -46,6 +46,7 @@ class modified_rstl_master {
 	order_processing_state OrderProcessingState;
 	order_with_argument CurrentOrder;
 	bool IsResentTransmissionSuccessful;
+	mutable int16_t ReceivedValueInResponse;
 	std::string CommandInTextFormat;
 	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success); LSB = the most recent response
 	uint32_t TotalResponseCount;
@@ -86,6 +87,8 @@ typedef modified_rstl_master *modified_rstl_master_ptr;
 
 usart_low_level_error initializeRstlMaster();
 
+[[nodiscard]] rstl_master_fsm_state getRstlMasterState(usart_low_level_error &ErrorCode);
+
 bool rstlMasterTick(bool TerminationSignal);
 
 typedef void (*rstl_callback_function)(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
@@ -98,5 +101,7 @@ bool placeRstlOrder(const order_with_argument &NewOrder);
 order_processing_state getOrderProcessingState();
 
 [[nodiscard]] bool getIsResponseSuccessful();
+
+[[nodiscard]] uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality);
 
 #endif // MODIFIED_RSTL_MASTER_H

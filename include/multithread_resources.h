@@ -34,10 +34,6 @@ extern std::atomic<bool> VerboseMode;
 /// @brief This variable defines amount of information to be displayed in the GUI. It can be used in the FLTK thread only.
 extern std::atomic<uint8_t> StatusLevelForGui;
 
-/// @brief This variable stores the current state of the main power visible for the user.
-/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
-extern std::atomic<main_power_state> ReceivedMainPowerState;
-
 /// @brief This variable stores the directory where the application executable file is located.
 /// @details This variable is to be set only once, during the initialization of the application.
 extern std::string ThisApplicationDirectory;
@@ -46,22 +42,50 @@ extern std::string ThisApplicationDirectory;
 /// @details This variable can be set only once, during the initialization of the application.
 extern std::string ConfigurationFilePath;
 
-/// @brief TODO
+// Information obtained from the “peripheral” thread
+
+/// @brief This variable stores the current state of the main power visible for the user.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<main_power_state> ReceivedMainPowerState;
+
+/// @brief This variable stores the last USART low-level error received from the peripheral thread.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<uint8_t> ReceivedUsartErrorCode;
+
+/// @brief This variable stores the current communication quality received from the peripheral thread.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<uint8_t> ReceivedCommunicationQuality;
+
+/// @brief This variable stores the total communication quality received from the peripheral thread.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<uint8_t> ReceivedTotalCommunicationQuality;
+
+/// @brief This variable stores the current value of setpoint 1 received from the peripheral thread.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<int16_t> ReceivedSetpoint1;
+
+/// @brief This variable stores the current value of setpoint 2 received from the peripheral thread.
+/// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
+extern std::atomic<int16_t> ReceivedSetpoint2;
+
+// The user demands (information from GUI)
+
+/// @brief This variable indicates whether a power-on command has been issued from the GUI.
 extern std::atomic<bool> CommandToBeSentPowerOn;
 
-/// @brief TODO
+/// @brief This variable indicates whether a power-off command has been issued from the GUI.
 extern std::atomic<bool> CommandToBeSentPowerOff;
 
-/// @brief TODO
+/// @brief This variable indicates whether a command to set setpoint 1 was issued from the graphical user interface.
 extern std::atomic<bool> CommandToBeSentSetpoint1;
 
-/// @brief TODO
+/// @brief This variable stores the value to be sent for setpoint 1 from the GUI.
 extern std::atomic<int16_t> ValueToBeSentSetpoint1;
 
-/// @brief TODO
+/// @brief This variable indicates whether a command to set setpoint 2 was issued from the graphical user interface.
 extern std::atomic<bool> CommandToBeSentSetpoint2;
 
-/// @brief TODO
+/// @brief This variable stores the value to be sent for setpoint 2 from the GUI.
 extern std::atomic<int16_t> ValueToBeSentSetpoint2;
 
 //=================================================================================================

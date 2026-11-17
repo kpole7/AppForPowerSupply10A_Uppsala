@@ -491,6 +491,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
 		}
+		ReceivedValueInResponse = ValueReturnedInResponse;
 	} break;
 
 	case single_order_code::InquiryZ: {
@@ -499,6 +500,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
 		}
+		ReceivedValueInResponse = ValueReturnedInResponse;
 	} break;
 
 	case single_order_code::InquiryVersion: {
@@ -520,6 +522,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 		main_power_state ExternalDeviceSimplifiedState = convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
 		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
 		AwakeRefreshWholeGui = true;
+		ReceivedValueInResponse = static_cast<int16_t>(ExternalDeviceSimplifiedState);
 	} break;
 
 	case single_order_code::InquiryPC: {
@@ -528,6 +531,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
 		}
+		ReceivedValueInResponse = ValueReturnedInResponse;
 	} break;
 
 	default:
@@ -722,6 +726,12 @@ usart_low_level_error initializeRstlMaster() {
 	return RstlMasterInstancePtr->initialize();
 }
 
+rstl_master_fsm_state getRstlMasterState(usart_low_level_error &ErrorCode) {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	ErrorCode = RstlMasterInstancePtr->getUsartErrorCode();
+	return RstlMasterInstancePtr->getCurrentState();
+}
+
 bool rstlMasterTick(bool TerminationSignal) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->fsmTick(TerminationSignal);
@@ -740,6 +750,12 @@ order_processing_state getOrderProcessingState() {
 [[nodiscard]] bool getIsResponseSuccessful() {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->getIsResponseSuccessful();
+}
+
+uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality) {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	TotalCommunicationQuality = RstlMasterInstancePtr->getTotalCommunicationQuality();
+	return RstlMasterInstancePtr->getCurrentCommunicationQuality();
 }
 
 //=================================================================================================
