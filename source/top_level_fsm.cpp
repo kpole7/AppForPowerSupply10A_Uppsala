@@ -145,13 +145,64 @@ void topLevelFsmTick(bool TerminationSignal) {
 		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
 		if (SuccessfulResponse) {
 			int16_t ReceivedMainPowerStateValue = getReceivedNumericalData();
-#if 0
-			std::cout << "---Received main power state value: " << ReceivedMainPowerStateValue << "\n";
-#endif
 			ReceivedMainPowerState.store(static_cast<main_power_state>(ReceivedMainPowerStateValue),
 			                             std::memory_order_release);
 			AwakeRefreshWholeGui = true;
-			TopLevelFsmState = top_level_fsm_states::RestBreak;
+			topLevelFsmPlaceOrder(single_order_code::SetZ, 1, top_level_fsm_states::SelectingChannel1);
+		}
+	} break;
+
+	case top_level_fsm_states::SelectingChannel1: {
+		topLevelCommonCommand(top_level_fsm_states::OptionalIdlePause, single_order_code::InquiryZ, 0,
+		                      top_level_fsm_states::CheckingChannel1);
+	} break;
+
+	case top_level_fsm_states::CheckingChannel1: {
+		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
+		if (SuccessfulResponse) {
+			int16_t Value = getReceivedNumericalData();
+			if (Value != 1) {
+				TopLevelFsmState = top_level_fsm_states::OptionalIdlePause;
+			}
+			else {
+				topLevelFsmPlaceOrder(single_order_code::InquiryPC, 0, top_level_fsm_states::GettingSetpoint1);
+			}
+		}
+	} break;
+
+	case top_level_fsm_states::GettingSetpoint1: {
+		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
+		if (SuccessfulResponse) {
+			int16_t Value = getReceivedNumericalData();
+			ReceivedSetpoint1.store(Value, std::memory_order_release);
+			topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::SelectingChannel2);
+		}
+	} break;
+
+	case top_level_fsm_states::SelectingChannel2: {
+		topLevelCommonCommand(top_level_fsm_states::OptionalIdlePause, single_order_code::InquiryZ, 0,
+		                      top_level_fsm_states::CheckingChannel2);
+	} break;
+
+	case top_level_fsm_states::CheckingChannel2: {
+		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
+		if (SuccessfulResponse) {
+			int16_t Value = getReceivedNumericalData();
+			if (Value != 2) {
+				TopLevelFsmState = top_level_fsm_states::OptionalIdlePause;
+			}
+			else {
+				topLevelFsmPlaceOrder(single_order_code::InquiryPC, 0, top_level_fsm_states::GettingSetpoint2);
+			}
+		}
+	} break;
+
+	case top_level_fsm_states::GettingSetpoint2: {
+		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
+		if (SuccessfulResponse) {
+			int16_t Value = getReceivedNumericalData();
+			ReceivedSetpoint2.store(Value, std::memory_order_release);
+			topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::RestBreak);
 		}
 	} break;
 
@@ -356,7 +407,7 @@ static void topLevelFsmRestBreakState() {
 	static bool IsResponseChecked;
 	static uint16_t RestBreakCounter = 0;
 
-	assert(getDifferentPreviousState() == top_level_fsm_states::CheckingStatus);
+	assert(getDifferentPreviousState() == top_level_fsm_states::GettingSetpoint2);
 
 	if (TopLevelFsmState != PreviousTopLevelFsmState) {
 		RestBreakCounter = 0;
