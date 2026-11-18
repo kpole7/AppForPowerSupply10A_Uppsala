@@ -156,6 +156,7 @@ std::string formatElapsedTime(std::chrono::milliseconds::rep TimeSinceReference)
 	auto Milliseconds = TimeSinceReference % 1000;
 
 	std::ostringstream FormattedTime;
-	FormattedTime << std::setfill('0') << std::setw(2) << Minutes << ":" << std::setw(2) << Seconds << ":" << std::setw(3) << Milliseconds;
+	FormattedTime << std::setfill('0') << std::setw(2) << Minutes << ":" << std::setw(2) << Seconds << ":"
+	              << std::setw(3) << Milliseconds;
 	return FormattedTime.str();
 }

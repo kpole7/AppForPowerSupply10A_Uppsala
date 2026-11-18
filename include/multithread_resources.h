@@ -31,7 +31,8 @@ enum class main_power_state : uint8_t { OFF = 0, RISING = 1, ON = 2, FALLING = 3
 /// This variable is set if there is argument "-v" in command line
 extern std::atomic<bool> VerboseMode;
 
-/// @brief This variable defines amount of information to be displayed in the GUI. It can be used in the FLTK thread only.
+/// @brief This variable defines amount of information to be displayed in the GUI. It can be used in the FLTK thread
+/// only.
 extern std::atomic<uint8_t> StatusLevelForGui;
 
 /// @brief This variable stores the directory where the application executable file is located.

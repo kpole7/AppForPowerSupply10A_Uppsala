@@ -158,7 +158,8 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 		break;
 	default:
 		// Unsupported order code
-		std::cout << "Unsupported order code #" << static_cast<int>(NewOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Unsupported order code #" << static_cast<int>(NewOrder.OrderCode) << " (line " << __LINE__
+		          << " in file " << __FILE__ << ")\n";
 		return false;
 	}
 
@@ -182,7 +183,8 @@ uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 			FailureCount++;
 		}
 	}
-	return static_cast<uint8_t>(((TotalResponseCount - FailureCount) * 100 + TotalResponseCount / 2) / TotalResponseCount);
+	return static_cast<uint8_t>(((TotalResponseCount - FailureCount) * 100 + TotalResponseCount / 2) /
+	                            TotalResponseCount);
 }
 
 uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
@@ -284,9 +286,11 @@ void modified_rstl_master::fsmTickUninitialized() {
 void modified_rstl_master::fsmTickIdleAndSend() {
 	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
 	bool Silence = false;
-	assert(static_cast<uint8_t>(CurrentOrder.OrderCode) < sizeof(ResponseLengthLimits) / sizeof(ResponseLengthLimits[0]));
+	assert(static_cast<uint8_t>(CurrentOrder.OrderCode) <
+	       sizeof(ResponseLengthLimits) / sizeof(ResponseLengthLimits[0]));
 	uint8_t ExpectedResponseLimit = ResponseLengthLimits[static_cast<uint8_t>(CurrentOrder.OrderCode)]; // TODO
-	usart_low_level_error Error = LowLevelUsartPtr->handleIdleAndSendState(&Silence, CommandInTextFormat, ExpectedResponseLimit);
+	usart_low_level_error Error =
+	    LowLevelUsartPtr->handleIdleAndSendState(&Silence, CommandInTextFormat, ExpectedResponseLimit);
 	if (Error != usart_low_level_error::None) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
@@ -303,7 +307,8 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 	}
 	// Unexpected input while expecting silence
 	CurrentState = rstl_master_fsm_state::Noise;
-	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+	          << __FILE__ << ")\n";
 }
 
 void modified_rstl_master::fsmTickWaitForResponse() {
@@ -311,7 +316,8 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	bool TimeoutExceeded = false;
 	bool Silence = false;
 	bool LimitsExceeded = false;
-	usart_low_level_error Error = LowLevelUsartPtr->handleWaitForResponseState(&TimeoutExceeded, &Silence, &LimitsExceeded);
+	usart_low_level_error Error =
+	    LowLevelUsartPtr->handleWaitForResponseState(&TimeoutExceeded, &Silence, &LimitsExceeded);
 	if (Error != usart_low_level_error::None) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
@@ -329,7 +335,8 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+		          << __FILE__ << ")\n";
 		return;
 	}
 	// Receive incoming transmission until silence is detected
@@ -359,8 +366,8 @@ void modified_rstl_master::fsmTickReceive() {
 		if (!IsResponseSyntaxCorrect) {
 			CurrentState = rstl_master_fsm_state::Noise;
 			updateCommunicationQuality(FAILED_COMMUNICATION);
-			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
-			          << __FILE__ << ")\n";
+			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode)
+			          << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 			return;
 		}
 
@@ -374,7 +381,8 @@ void modified_rstl_master::fsmTickReceive() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
+		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+		          << __FILE__ << ")\n";
 		return;
 	}
 
@@ -423,14 +431,17 @@ void modified_rstl_master::placeOrderSetPC(const order_with_argument &NewOrder) 
 	int16_t BeforePoint = static_cast<int16_t>(AbsoluteValue / 100);
 	int16_t AfterPoint = static_cast<int16_t>(AbsoluteValue % 100);
 	if (IsNegative) {
-		CommandInTextFormat = "PC -" + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+		CommandInTextFormat = "PC -" + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") +
+		                      std::to_string(AfterPoint) + "\r\n";
 	}
 	else {
-		CommandInTextFormat = "PC " + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") + std::to_string(AfterPoint) + "\r\n";
+		CommandInTextFormat = "PC " + std::to_string(BeforePoint) + "." + (AfterPoint < 10 ? "0" : "") +
+		                      std::to_string(AfterPoint) + "\r\n";
 	}
 }
 
-bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const {
+bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart,
+                                         uint8_t &EssentialResponseLength) const {
 	const char *SendingBuffer = LowLevelUsartPtr->getSendingBuffer();
 	assert(SendingBuffer != nullptr);
 	const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
@@ -495,7 +506,8 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	} break;
 
 	case single_order_code::InquiryZ: {
-		bool Success = testAndExtractOneDigit(ReceivingBuffer, "Z=#\r\n>", 7, ValueReturnedInResponse, 3, 1, PSU_NUMBER_OF_CHANNELS);
+		bool Success = testAndExtractOneDigit(ReceivingBuffer, "Z=#\r\n>", 7, ValueReturnedInResponse, 3, 1,
+		                                      PSU_NUMBER_OF_CHANNELS);
 		if (!Success) {
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
@@ -519,7 +531,8 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 			return false;
 		}
 		EssentialResponseStart = 4;
-		main_power_state ExternalDeviceSimplifiedState = convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
+		main_power_state ExternalDeviceSimplifiedState =
+		    convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
 		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
 		AwakeRefreshWholeGui = true;
 		ReceivedValueInResponse = static_cast<int16_t>(ExternalDeviceSimplifiedState);
@@ -542,8 +555,9 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	return true;
 }
 
-bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length, int16_t &ValueExtracted,
-                                                  uint8_t Position, uint8_t MinValue, uint8_t MaxValue) const {
+bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase,
+                                                  size_t Length, int16_t &ValueExtracted, uint8_t Position,
+                                                  uint8_t MinValue, uint8_t MaxValue) const {
 	if (0 != strncmp(BufferUnderTest, ConstantPhrase, Position - 1)) {
 		printf("Response syntax error in %s at line %d; [", __FILE__, __LINE__);
 		printAllCharacters(BufferUnderTest);
@@ -618,7 +632,8 @@ bool modified_rstl_master::parseInquiryVersion(const char *BufferUnderTest, uint
 	return true;
 }
 
-bool modified_rstl_master::parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength) const {
+bool modified_rstl_master::parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted,
+                                              uint8_t &EssentialResponseLength) const {
 	// Example:
 	// Command:  [ST~~]
 	// Response: [ST~~sig2 ?? ?? ?? ?? i2c 0 0 uart 0 fsm 0~~>]

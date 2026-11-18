@@ -41,7 +41,8 @@ class low_level_usart {
 	uint16_t TotalCommandBytes;
 	uint16_t TotalReceivedBytes;
 	uint16_t ReceivedBytesLimit;
-	std::chrono::milliseconds WaitingLimit; // from the moment transmission begins until the first byte of the response is received
+	std::chrono::milliseconds
+	    WaitingLimit; // from the moment transmission begins until the first byte of the response is received
 	std::chrono::high_resolution_clock::time_point TimeWhenOutgoingDataStarted;
 	std::chrono::high_resolution_clock::time_point TimeWhenResponseStarted;
 	bool TerminationFlag;
@@ -65,8 +66,10 @@ class low_level_usart {
 	[[nodiscard]] const char *getSendingBuffer() const;
 	[[nodiscard]] const char *getReceivingBuffer() const;
 
-	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString, uint16_t ResponseLimit);
-	[[nodiscard]] usart_low_level_error handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr, bool *IsOverLimitsPtr);
+	[[nodiscard]] usart_low_level_error handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString,
+	                                                           uint16_t ResponseLimit);
+	[[nodiscard]] usart_low_level_error handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr,
+	                                                               bool *IsOverLimitsPtr);
 	[[nodiscard]] usart_low_level_error handleReceiveState(bool *IsSilencePtr, bool *IsOverLimitsPtr);
 	[[nodiscard]] usart_low_level_error handleNoiseState(bool *IsSilencePtr);
 };

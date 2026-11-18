@@ -126,7 +126,8 @@ void power_indicator::draw() {
 void initializeGraphicWidgets() {
 	int GeneralStatusTextBoxPositionX = 130;
 	GeneralStatusTextBoxPtr =
-	    new Fl_Box(GeneralStatusTextBoxPositionX, 1, MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20, "Tu powinny być różne dane");
+	    new Fl_Box(GeneralStatusTextBoxPositionX, 1, MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20,
+	               "Tu powinny być różne dane");
 	GeneralStatusTextBoxPtr->hide();
 	GeneralStatusTextBoxPtr->labelfont(FL_COURIER);
 	GeneralStatusTextBoxPtr->labelsize(8);
@@ -137,7 +138,8 @@ void initializeGraphicWidgets() {
 	GeneralStatusTextBoxPtr->box(FL_FLAT_BOX);
 #endif
 
-	FailureMessagePtr = new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
+	FailureMessagePtr =
+	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
 	PowerIndicatorPtr = new power_indicator(70, 100, 60, 60);
@@ -150,14 +152,17 @@ void initializeGraphicWidgets() {
 void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 	static char Buffer[300];
 	snprintf(Buffer, sizeof(Buffer) - 1,
-	         "Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać dodatkowe informacje",
+	         "Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać "
+	         "dodatkowe informacje",
 	         getErrorDescription(FailureCodeForGui));
 	FailureMessagePtr->label(Buffer);
 	FailureMessagePtr->show();
 	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
-		std::cout << "--------------------------------------GUI FAILURE MESSAGE--------------------------------------" << '\n';
+		std::cout << "--------------------------------------GUI FAILURE MESSAGE--------------------------------------"
+		          << '\n';
 		std::cout << Buffer << '\n';
-		std::cout << "-----------------------------------------------------------------------------------------------" << '\n';
+		std::cout << "-----------------------------------------------------------------------------------------------"
+		          << '\n';
 	}
 }
 

@@ -48,7 +48,8 @@ class modified_rstl_master {
 	bool IsResentTransmissionSuccessful;
 	mutable int16_t ReceivedValueInResponse;
 	std::string CommandInTextFormat;
-	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success); LSB = the most recent response
+	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success);
+	                                 // LSB = the most recent response
 	uint32_t TotalResponseCount;
 	uint32_t TotalFailedResponseCount;
 
@@ -58,13 +59,16 @@ class modified_rstl_master {
 	void fsmTickReceive();
 	void fsmTickNoise();
 
-	void updateCommunicationQuality(bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
+	void updateCommunicationQuality(
+	    bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
 	void placeOrderSetPC(const order_with_argument &NewOrder);
-	bool parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart, uint8_t &EssentialResponseLength) const;
-	bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length, int16_t &ValueExtracted, uint8_t Position,
-	                            uint8_t MinValue, uint8_t MaxValue) const;
+	bool parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart,
+	                   uint8_t &EssentialResponseLength) const;
+	bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length,
+	                            int16_t &ValueExtracted, uint8_t Position, uint8_t MinValue, uint8_t MaxValue) const;
 	bool parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) const;
-	bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength) const;
+	bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted,
+	                        uint8_t &EssentialResponseLength) const;
 	bool parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) const;
 
   public:
@@ -91,8 +95,8 @@ usart_low_level_error initializeRstlMaster();
 
 bool rstlMasterTick(bool TerminationSignal);
 
-typedef void (*rstl_callback_function)(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
-                                       uint8_t EssentialResponseLength);
+typedef void (*rstl_callback_function)(bool IsResponseSuccessful, int16_t ValueReturnedInResponse,
+                                       const char *EssentialResponsePtr, uint8_t EssentialResponseLength);
 
 void registerRstlCallback(rstl_callback_function Callback);
 

@@ -106,7 +106,8 @@ void low_level_usart::flushBuffer() {
 	}
 }
 
-/// @brief Check for silence on the USART line and prepare a new command for transmission if CommandTextPtr is not empty.
+/// @brief Check for silence on the USART line and prepare a new command for transmission if CommandTextPtr is not
+/// empty.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if the line is silent, false otherwise
 /// @param CommandTextPtr The command text to be sent over the USART line or nullptr if no new command is to be sent
 /// @param ResponseLimit The maximum number of bytes expected in the response
@@ -179,7 +180,8 @@ void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) 
 	}
 	if (*IsSilencePtr) {
 		// no bytes have been received yet, check if waiting time has exceeded the limit
-		auto SilenceDuration = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenOutgoingDataStarted);
+		auto SilenceDuration =
+		    std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeWhenOutgoingDataStarted);
 		if (SilenceDuration.count() > WaitingLimit.count()) {
 			// waiting time has exceeded the limit
 			*IsTimeoutPtr = true;
@@ -189,7 +191,8 @@ void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) 
 }
 
 /// @brief Receive the data from the USART interface assuming there is incoming data available
-/// @param IsOverLimitsPtr Pointer to a boolean that will be set to true if the number of received bytes exceeds the limit
+/// @param IsOverLimitsPtr Pointer to a boolean that will be set to true if the number of received bytes exceeds the
+/// limit
 void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 	assert(usart_low_level_error::None == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
@@ -319,9 +322,11 @@ const char *low_level_usart::getReceivingBuffer() const { return ReceivingBuffer
 /// @brief Handle the IdleAndSend state of the Low-level USART FSM.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
 /// @param CommandString Reference to the command text to be sent or an empty string if no command is to be sent
-/// @param ResponseLimit The maximum number of response bytes expected if a command is to be sent; should be 0 if no command is to be sent
+/// @param ResponseLimit The maximum number of response bytes expected if a command is to be sent; should be 0 if no
+/// command is to be sent
 /// @return The error code indicating the result of the operation
-usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString, uint16_t ResponseLimit) {
+usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr, const std::string &CommandString,
+                                                              uint16_t ResponseLimit) {
 	bool IsSilence = false;
 	doIdle(&IsSilence, CommandString.c_str(), ResponseLimit);
 	if (usart_low_level_error::None != UsartErrorCode) {
@@ -343,12 +348,14 @@ usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr
 }
 
 /// @brief Handle the WaitForResponse state of the Low-level USART FSM.
-/// @param IsTimeoutExceededPtr Pointer to a boolean that will be set to true if the response timeout is exceeded (no response received within the
-/// expected time)
+/// @param IsTimeoutExceededPtr Pointer to a boolean that will be set to true if the response timeout is exceeded (no
+/// response received within the expected time)
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
-/// @param IsOverLimitsPtr Pointer to a boolean that will be set to true if the number of received bytes exceeds the limit
+/// @param IsOverLimitsPtr Pointer to a boolean that will be set to true if the number of received bytes exceeds the
+/// limit
 /// @return The error code indicating the result of the operation
-usart_low_level_error low_level_usart::handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr, bool *IsOverLimitsPtr) {
+usart_low_level_error low_level_usart::handleWaitForResponseState(bool *IsTimeoutExceededPtr, bool *IsSilencePtr,
+                                                                  bool *IsOverLimitsPtr) {
 	*IsSilencePtr = false;
 	*IsOverLimitsPtr = false;
 	doWaitForResponse(IsTimeoutExceededPtr, IsSilencePtr);
@@ -365,8 +372,8 @@ usart_low_level_error low_level_usart::handleWaitForResponseState(bool *IsTimeou
 
 /// @brief Handle the Receive state of the Low-level USART FSM.
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
-/// @param IsOverLimitsPtr A pointer to a boolean variable that will be set to “true” if the number of bytes received exceeds
-/// the limit or if there are short pauses in the response and their total duration is too long
+/// @param IsOverLimitsPtr A pointer to a boolean variable that will be set to “true” if the number of bytes received
+/// exceeds the limit or if there are short pauses in the response and their total duration is too long
 /// @return The error code indicating the result of the operation
 usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bool *IsOverLimitsPtr) {
 	assert(usart_low_level_error::None == UsartErrorCode);
@@ -394,7 +401,8 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 		return UsartErrorCode;
 	}
 
-	// Check if adding the new received bytes would exceed the limit given by the higher layer for the particular command
+	// Check if adding the new received bytes would exceed the limit given by the higher layer for the particular
+	// command
 #if 0
 	std::cout << "Number of received bytes: " << NumberOfReceived + TotalReceivedBytes << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__
 	          << " in file " << __FILE__ << "\n";
@@ -405,13 +413,14 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 	}
 
 	// a rough check of transmission continuity
-	auto ResponseDuration =
-	    std::chrono::duration_cast<std::chrono::milliseconds>(std::chrono::high_resolution_clock::now() - TimeWhenResponseStarted);
+	auto ResponseDuration = std::chrono::duration_cast<std::chrono::milliseconds>(
+	    std::chrono::high_resolution_clock::now() - TimeWhenResponseStarted);
 	int64_t ResponseDurationMs = ResponseDuration.count();
 	if (ResponseDurationMs > LIMIT_ADDITION_COMPONENT) {
 		ResponseDurationMs -= LIMIT_ADDITION_COMPONENT;
 		int64_t ResponseDurationUs = ResponseDurationMs * 1000; // change the unit from milliseconds to microseconds
-		if (ResponseDurationUs > static_cast<int64_t>(LIMIT_MULTIPLIER_PER_BYTE) * static_cast<int64_t>(TotalReceivedBytes + NumberOfReceived)) {
+		if (ResponseDurationUs > static_cast<int64_t>(LIMIT_MULTIPLIER_PER_BYTE) *
+		                             static_cast<int64_t>(TotalReceivedBytes + NumberOfReceived)) {
 			*IsOverLimitsPtr = true;
 			return UsartErrorCode;
 		}

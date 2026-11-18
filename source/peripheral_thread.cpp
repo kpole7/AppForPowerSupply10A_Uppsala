@@ -81,7 +81,8 @@ void peripheralThreadExit() {
 	atomic_store_explicit(&DoClosePeripheralThread, true, std::memory_order_release);
 
 	int TimeoutCounter = SHUT_DOWN_COUNT_DOWN;
-	while (!(atomic_load_explicit(&PeripheralThreadIsStopped, std::memory_order_acquire)) || (!peripheralThread.joinable())) {
+	while (!(atomic_load_explicit(&PeripheralThreadIsStopped, std::memory_order_acquire)) ||
+	       (!peripheralThread.joinable())) {
 		if (0 == TimeoutCounter) {
 			std::cout << "Problem encountered during peripherals closing" << '\n';
 			atomic_store_explicit(&DoHardClosePeripheralThread, true, std::memory_order_release);
@@ -142,7 +143,8 @@ static void peripheralThreadTiming() {
 
 	PeripheralThreadTimeInMilliseconds += PERIPHERAL_THREAD_LOOP_DURATION;
 	TimeNow = std::chrono::high_resolution_clock::now();
-	std::chrono::milliseconds DurationTime = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
+	std::chrono::milliseconds DurationTime =
+	    std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - PeripheralThreadLoopStart);
 	bool ItIsRunningOutOfTime = true;
 	while (DurationTime.count() < PeripheralThreadTimeInMilliseconds) {
 		ItIsRunningOutOfTime = false;

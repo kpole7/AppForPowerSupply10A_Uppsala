@@ -100,7 +100,8 @@ int main(int argc, char **argv) {
 	MenuWidget.box(FL_FLAT_BOX);
 
 	MenuWidget.add("Narzędzia/Status/Ukryty", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
-	int indexOfMenuItemStatusNormal = MenuWidget.add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
+	int indexOfMenuItemStatusNormal =
+	    MenuWidget.add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
 	MenuWidget.add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)2, FL_MENU_RADIO);
 	MenuWidget.add("Pomoc/Instrukcja użytkowania", 0, callbackForMenuItemHelp);
 
@@ -258,7 +259,8 @@ static initialization_failure_codes determineApplicationPath(char *Argv0) {
 #if 0
         	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
 #endif
-			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n' << " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
+			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n'
+			          << " Data kompilacji: " << __DATE__ << " " << __TIME__ << '\n';
 		}
 	}
 	else {
@@ -275,10 +277,12 @@ static void callbackForMenuItemStatus(Fl_Widget *WidgetPtr, void *) {
 		return;
 	}
 
-	atomic_store_explicit(&StatusLevelForGui, static_cast<uint8_t>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data())),
+	atomic_store_explicit(&StatusLevelForGui,
+	                      static_cast<uint8_t>(reinterpret_cast<intptr_t>(TemporaryMenuItem->user_data())),
 	                      std::memory_order_release);
 	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
-		std::cout << "Opcja Status ustawiona na wartość: " << atomic_load_explicit(&StatusLevelForGui, std::memory_order_acquire) << '\n';
+		std::cout << "Opcja Status ustawiona na wartość: "
+		          << atomic_load_explicit(&StatusLevelForGui, std::memory_order_acquire) << '\n';
 	}
 }
 

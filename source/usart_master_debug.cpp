@@ -45,7 +45,8 @@ static const order_with_argument MyOrders[26] = {
     {single_order_code::SetPC, -1000}       // z
 };
 
-void printResults(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr, uint8_t EssentialResponseLength) {
+void printResults(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
+                  uint8_t EssentialResponseLength) {
 	std::cout << "Response success: " << (IsResponseSuccessful ? "Yes" : "No") << " ";
 	std::cout << "Value returned in response: " << ValueReturnedInResponse << '\n';
 	if (nullptr != EssentialResponsePtr) {
@@ -61,9 +62,11 @@ void usartMasterDebuggingInitialize() { registerRstlCallback(printResults); }
 
 char UsartLowLevelStateTexts[4][15] = {"Uninitialized", "Open", "Error"};
 
-char RstlMasterFsmStateTexts[6][16] = {"Uninitialized", "IdleAndSend", "WaitForResponse", "Receive", "Noise", "CriticalError"};
+char RstlMasterFsmStateTexts[6][16] = {"Uninitialized", "IdleAndSend", "WaitForResponse",
+                                       "Receive",       "Noise",       "CriticalError"};
 
-char SingleCommandFsmStateTexts[10][21] = {"Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
+char SingleCommandFsmStateTexts[10][21] = {
+    "Uninitialized", "Closed", "Idle", "WaitingForResponse", "Receiving", "CriticalError", "NonCriticalError"};
 
 char TopLevelFsmStateTexts[29][26] = {"Uninitialized",
                                       "GettingVersion",
@@ -139,7 +142,8 @@ void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState
 
 	if (AnyChange) {
 		auto TimeNow = std::chrono::high_resolution_clock::now();
-		auto TimeSinceReference = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeReference).count();
+		auto TimeSinceReference =
+		    std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeReference).count();
 		std::cout << formatElapsedTime(TimeSinceReference) << " ";
 	}
 
@@ -153,7 +157,8 @@ void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState
 		}
 	}
 	if (ErrorChanged) {
-		std::cout << "Error [" << static_cast<int>(LastErrorCode) << "] -> [" << static_cast<int>(UsartPtr->getErrorCode()) << "]";
+		std::cout << "Error [" << static_cast<int>(LastErrorCode) << "] -> ["
+		          << static_cast<int>(UsartPtr->getErrorCode()) << "]";
 	}
 	else {
 		if (AnyChange) {
@@ -190,5 +195,6 @@ void printTopLevelChanges(uint8_t StateIndex1, uint8_t StateIndex2) {
 	auto TimeNow = std::chrono::high_resolution_clock::now();
 	auto TimeSinceReference = std::chrono::duration_cast<std::chrono::milliseconds>(TimeNow - TimeReference).count();
 	std::cout << formatElapsedTime(TimeSinceReference) << " ";
-	std::cout << "Top-level State [" << TopLevelFsmStateTexts[StateIndex1] << "] -> [" << TopLevelFsmStateTexts[StateIndex2] << "]\n";
+	std::cout << "Top-level State [" << TopLevelFsmStateTexts[StateIndex1] << "] -> ["
+	          << TopLevelFsmStateTexts[StateIndex2] << "]\n";
 }

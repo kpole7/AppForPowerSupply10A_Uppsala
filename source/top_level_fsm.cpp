@@ -82,10 +82,11 @@ static top_level_fsm_states AnotherPreviousTopLevelFsmState = top_level_fsm_stat
 //=================================================================================================
 
 static top_level_fsm_states getDifferentPreviousState();
-static void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument, top_level_fsm_states NextStateOnSuccess);
-static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure);
-static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeCommand, single_order_code NewCommand, int16_t Argument,
+static void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument,
                                   top_level_fsm_states NextStateOnSuccess);
+static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure);
+static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeCommand, single_order_code NewCommand,
+                                  int16_t Argument, top_level_fsm_states NextStateOnSuccess);
 static void inescapablePauseThenCommandAndJump(uint16_t PauseTicksMax, single_order_code NewCommand, int16_t Argument,
                                                top_level_fsm_states NextState);
 static void topLevelFsmTakeUpNewOrder();
@@ -117,21 +118,25 @@ void topLevelFsmTick(bool TerminationSignal) {
 		// Initialization states
 
 	case top_level_fsm_states::Uninitialized:
-		topLevelCommonCommand(top_level_fsm_states::OptionalInitialPause, single_order_code::InquiryVersion, 0, top_level_fsm_states::GettingVersion);
+		topLevelCommonCommand(top_level_fsm_states::OptionalInitialPause, single_order_code::InquiryVersion, 0,
+		                      top_level_fsm_states::GettingVersion);
 		break;
 
 	case top_level_fsm_states::GettingVersion:
-		topLevelCommonCommand(top_level_fsm_states::OptionalInitialPause, single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
+		topLevelCommonCommand(top_level_fsm_states::OptionalInitialPause, single_order_code::InquiryST, 0,
+		                      top_level_fsm_states::CheckingStatus);
 		break;
 
 	case top_level_fsm_states::OptionalInitialPause:
-		inescapablePauseThenCommandAndJump(OPTIONAL_INITIAL_PAUSE_TICKS, single_order_code::None, 0, top_level_fsm_states::Uninitialized);
+		inescapablePauseThenCommandAndJump(OPTIONAL_INITIAL_PAUSE_TICKS, single_order_code::None, 0,
+		                                   top_level_fsm_states::Uninitialized);
 		break;
 
 		// Idle states
 
 	case top_level_fsm_states::OptionalIdlePause:
-		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::InquiryST, 0,
+		                                   top_level_fsm_states::CheckingStatus);
 		break;
 
 	case top_level_fsm_states::CheckingStatus: {
@@ -148,11 +153,13 @@ void topLevelFsmTick(bool TerminationSignal) {
 		// User interaction states on the 'power on' event
 
 	case top_level_fsm_states::PowerOnExecuting:
-		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1, top_level_fsm_states::PowerOnChecking);
+		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1,
+		                      top_level_fsm_states::PowerOnChecking);
 		break;
 
 	case top_level_fsm_states::PowerOnChecking:
-		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1, top_level_fsm_states::PowerOnSummary);
+		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1,
+		                      top_level_fsm_states::PowerOnSummary);
 		break;
 
 	case top_level_fsm_states::PowerOnSummary:
@@ -189,7 +196,8 @@ static top_level_fsm_states getDifferentPreviousState() {
 	return AnotherPreviousTopLevelFsmState;
 }
 
-static void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument, top_level_fsm_states NextStateOnSuccess) {
+static void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument,
+                                  top_level_fsm_states NextStateOnSuccess) {
 	order_with_argument NewOrder;
 	NewOrder.OrderCode = NewCommand;
 	NewOrder.Argument = Argument;
@@ -216,8 +224,8 @@ static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure
 	return true;
 }
 
-static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeCommand, single_order_code NewCommand, int16_t Argument,
-                                  top_level_fsm_states NextStateAfterCommand) {
+static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeCommand, single_order_code NewCommand,
+                                  int16_t Argument, top_level_fsm_states NextStateAfterCommand) {
 	if (getOrderProcessingState() != order_processing_state::Ready) {
 		return;
 	}
@@ -292,7 +300,8 @@ static void topLevelFsmRestBreakState() {
 		}
 	}
 
-	bool IsNewOrderReady = CommandToBeSentPowerOn.load(std::memory_order_acquire) || CommandToBeSentPowerOff.load(std::memory_order_acquire);
+	bool IsNewOrderReady = CommandToBeSentPowerOn.load(std::memory_order_acquire) ||
+	                       CommandToBeSentPowerOff.load(std::memory_order_acquire);
 
 	if (IsNewOrderReady) {
 		RestBreakCounter = 0; // Reset the rest break counter when a new order is ready
@@ -315,14 +324,16 @@ static void topLevelFsmPowerOnSummaryState() {
 	top_level_fsm_states PreviousDifferentState = getDifferentPreviousState();
 	if (top_level_fsm_states::PowerOnExecuting == PreviousDifferentState) {
 		// Pause after failure related to power on command
-		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 1, top_level_fsm_states::PowerOnExecuting);
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 1,
+		                                   top_level_fsm_states::PowerOnExecuting);
 		return;
 	}
 	assert(top_level_fsm_states::PowerOnChecking == PreviousDifferentState);
 
 	if (!getIsResponseSuccessful()) {
 		// Pause after failure related to check status command
-		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 1, top_level_fsm_states::PowerOnExecuting);
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 1,
+		                                   top_level_fsm_states::PowerOnExecuting);
 		return;
 	}
 }
