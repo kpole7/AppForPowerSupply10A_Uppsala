@@ -10,7 +10,7 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Scroll.H>
+#include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
 
@@ -48,6 +48,9 @@ static Fl_Box *FailureMessagePtr;
 static power_indicator *PowerIndicatorPtr;
 static Fl_Button *PowerButtonPtr;
 
+static setpoint_adjustment_group *SetpointGroup1Ptr;
+static setpoint_adjustment_group *SetpointGroup2Ptr;
+
 //=================================================================================================
 // Local function prototypes
 //=================================================================================================
@@ -78,6 +81,151 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 	}
 	else {
 		// Do nothing
+	}
+}
+
+//=================================================================================================
+// setpoint_adjustment_group implementation
+//=================================================================================================
+
+setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber)
+    : Fl_Group(X, Y, W, H), SetpointNumber(SetpointNumber) {
+	const int ValueDisplayWidth = 80;
+	const int AmpereLabelWidth = 25;
+	const int ButtonWidth = 50;
+	const int ButtonHeight = 20;
+	const int ButtonSpacing = 2;
+	const int TotalButtonHeight = (ButtonHeight + ButtonSpacing) * 4;
+	const int VerticalCenterPadding = (H - TotalButtonHeight) / 2;
+
+	// Left side: value display box
+	ValueDisplayPtr = new Fl_Box(X + 10, Y + (H - 40) / 2, ValueDisplayWidth, 40);
+	ValueDisplayPtr->box(FL_DOWN_BOX);
+	ValueDisplayPtr->labelfont(FL_COURIER_BOLD);
+	ValueDisplayPtr->labelsize(28);
+	ValueDisplayPtr->labelcolor(FL_BLACK);
+	ValueDisplayPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+	// Label "A" (Amperes) next to the value
+	Fl_Box *UnitLabel = new Fl_Box(X + 10 + ValueDisplayWidth + 5, Y + (H - 20) / 2, AmpereLabelWidth, 20, "A");
+	UnitLabel->labelfont(FL_COURIER_BOLD);
+	UnitLabel->labelsize(16);
+	UnitLabel->labelcolor(FL_BLACK);
+	UnitLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+
+	// Center: buttons arranged vertically
+	int ButtonGroupStartX = X + 10 + ValueDisplayWidth + AmpereLabelWidth + 20;
+	int ButtonGroupStartY = Y + VerticalCenterPadding;
+
+	Button_Plus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY, ButtonWidth, ButtonHeight, "+1");
+	Button_Plus1Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Plus1Ptr->labelsize(12);
+	Button_Plus1Ptr->callback(buttonPlusOneCallback, this);
+
+	Button_Plus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + ButtonHeight + ButtonSpacing, ButtonWidth,
+	                                   ButtonHeight, "+0.1");
+	Button_Plus01Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Plus01Ptr->labelsize(12);
+	Button_Plus01Ptr->callback(buttonPlusTenthCallback, this);
+
+	Button_Minus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 2 * (ButtonHeight + ButtonSpacing),
+	                                    ButtonWidth, ButtonHeight, "-0.1");
+	Button_Minus01Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Minus01Ptr->labelsize(12);
+	Button_Minus01Ptr->callback(buttonMinusTenthCallback, this);
+
+	Button_Minus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 3 * (ButtonHeight + ButtonSpacing),
+	                                   ButtonWidth, ButtonHeight, "-1");
+	Button_Minus1Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Minus1Ptr->labelsize(12);
+	Button_Minus1Ptr->callback(buttonMinusOneCallback, this);
+
+	end();
+	updateDisplay();
+}
+
+void setpoint_adjustment_group::updateDisplay() {
+	static char Buffer[16];
+
+	int16_t CurrentValue;
+	if (SetpointNumber == 1) {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
+	}
+	else {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
+	}
+
+	double DisplayValue = static_cast<double>(CurrentValue) / 100.0;
+	snprintf(Buffer, sizeof(Buffer), "%.2f", DisplayValue);
+	ValueDisplayPtr->label(strdup(Buffer));
+	ValueDisplayPtr->redraw();
+}
+
+void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
+
+	int16_t CurrentValue;
+	if (pThis->SetpointNumber == 1) {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue + 100, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+	}
+	else {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue + 100, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+	}
+}
+
+void setpoint_adjustment_group::buttonPlusTenthCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
+
+	int16_t CurrentValue;
+	if (pThis->SetpointNumber == 1) {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue + 10, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+	}
+	else {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue + 10, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+	}
+}
+
+void setpoint_adjustment_group::buttonMinusTenthCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
+
+	int16_t CurrentValue;
+	if (pThis->SetpointNumber == 1) {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue - 10, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+	}
+	else {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue - 10, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+	}
+}
+
+void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
+
+	int16_t CurrentValue;
+	if (pThis->SetpointNumber == 1) {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue - 100, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+	}
+	else {
+		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
+		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue - 100, std::memory_order_release);
+		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
 	}
 }
 
@@ -147,6 +295,12 @@ void initializeGraphicWidgets() {
 	PowerIndicatorPtr = new power_indicator(70, 100, 60, 60);
 	PowerButtonPtr = new Fl_Button(200, 115, 60, 30, "");
 	PowerButtonPtr->callback(powerButtonCallback);
+
+	// First setpoint adjustment group: middle 1/3 of main window
+	SetpointGroup1Ptr = new setpoint_adjustment_group(0, MAIN_WINDOW_HEIGHT / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 1);
+
+	// Second setpoint adjustment group: bottom 1/3 of main window
+	SetpointGroup2Ptr = new setpoint_adjustment_group(0, (MAIN_WINDOW_HEIGHT * 2) / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 2);
 
 	(void)PowerIndicatorPtr;
 }
@@ -231,4 +385,12 @@ void refreshWholeGui(void *Data) {
 	}
 
 	PowerIndicatorPtr->setBrightness(CurrentState);
+
+	// Update setpoint displays
+	if (SetpointGroup1Ptr != nullptr) {
+		SetpointGroup1Ptr->updateDisplay();
+	}
+	if (SetpointGroup2Ptr != nullptr) {
+		SetpointGroup2Ptr->updateDisplay();
+	}
 }

@@ -59,6 +59,34 @@ class main_power_group : public Fl_Group {
 	Fl_Box *StatusTextBoxPtr;
 };
 
+/// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
+class setpoint_adjustment_group : public Fl_Group {
+  public:
+	/// Constructor for setpoint adjustment group
+	/// @param X X position
+	/// @param Y Y position
+	/// @param W Width (should span entire main window width)
+	/// @param H Height
+	/// @param SetpointNumber 1 or 2 to identify which setpoint to control
+	setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber);
+
+  private:
+	uint8_t SetpointNumber;
+	Fl_Box *ValueDisplayPtr;
+	Fl_Button *Button_Plus1Ptr;
+	Fl_Button *Button_Plus01Ptr;
+	Fl_Button *Button_Minus01Ptr;
+	Fl_Button *Button_Minus1Ptr;
+
+	static void buttonPlusOneCallback(Fl_Widget *Widget, void *Data);
+	static void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data);
+	static void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data);
+	static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
+	void updateDisplay();
+
+	friend void refreshWholeGui(void *Data);
+};
+
 //=================================================================================================
 // Function prototypes
 //=================================================================================================
