@@ -48,14 +48,15 @@ static const order_with_argument MyOrders[26] = {
 void printResults(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
                   uint8_t EssentialResponseLength) {
 	std::cout << "Response success: " << (IsResponseSuccessful ? "Yes" : "No") << " ";
-	std::cout << "Value returned in response: " << ValueReturnedInResponse << '\n';
+	std::cout << "Value returned in response: " << ValueReturnedInResponse;
 	if (nullptr != EssentialResponsePtr) {
-		std::cout << "Essential response: [";
+		std::cout << "    Essential response: [";
 		for (uint8_t i = 0; i < EssentialResponseLength; ++i) {
 			std::cout << EssentialResponsePtr[i];
 		}
-		std::cout << "]\n";
+		std::cout << "]";
 	}
+	std::cout << "\n";
 }
 
 void usartMasterDebuggingInitialize() { registerRstlCallback(printResults); }

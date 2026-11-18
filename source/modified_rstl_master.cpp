@@ -245,9 +245,9 @@ bool modified_rstl_master::fsmTick(bool TerminationSignal) {
 		// Wait for termination
 		break;
 	}
-
+#if 0
 	printStateChanges(LowLevelUsartPtr, CurrentState, nullptr);
-
+#endif
 	switch (CurrentState) {
 	case rstl_master_fsm_state::IdleAndSend:
 	case rstl_master_fsm_state::Noise:

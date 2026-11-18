@@ -66,12 +66,14 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 
 	// Get current power state
 	main_power_state CurrentState = atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire);
-
+#if 0
+	std::cout << "--------------Power button pressed, current state: " << static_cast<int>(CurrentState) << "\n";
+#endif
 	// Toggle power command based on current state
-	if (CurrentState == main_power_state::OFF || CurrentState == main_power_state::FALLING) {
+	if (CurrentState == main_power_state::OFF) {
 		atomic_store_explicit(&CommandToBeSentPowerOn, true, std::memory_order_release);
 	}
-	else if (CurrentState == main_power_state::ON || CurrentState == main_power_state::RISING) {
+	else if (CurrentState == main_power_state::ON) {
 		atomic_store_explicit(&CommandToBeSentPowerOff, true, std::memory_order_release);
 	}
 	else {

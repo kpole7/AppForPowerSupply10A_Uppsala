@@ -9,7 +9,7 @@
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
 #include <cstdint>
-
+#include <iostream>
 //=================================================================================================
 // Preprocessor directives
 //=================================================================================================
@@ -108,7 +108,6 @@ void topLevelFsmTick(bool TerminationSignal) {
 
 	usart_low_level_error ErrorCode;
 	rstl_master_fsm_state RstlMasterState = getRstlMasterState(ErrorCode);
-	ReceivedMainPowerState.store(static_cast<main_power_state>(RstlMasterState), std::memory_order_release);
 	ReceivedUsartErrorCode.store(static_cast<uint8_t>(ErrorCode), std::memory_order_release);
 	if (RstlMasterState == rstl_master_fsm_state::CriticalError) {
 		TopLevelFsmState = top_level_fsm_states::PermanentError;
@@ -143,7 +142,11 @@ void topLevelFsmTick(bool TerminationSignal) {
 	case top_level_fsm_states::CheckingStatus: {
 		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
 		if (SuccessfulResponse) {
-			ReceivedMainPowerState.store(static_cast<main_power_state>(getReceivedNumericalData()), std::memory_order_release);
+			int16_t ReceivedMainPowerStateValue = getReceivedNumericalData();
+#if 0
+			std::cout << "---Received main power state value: " << ReceivedMainPowerStateValue << "\n";
+#endif
+			ReceivedMainPowerState.store(static_cast<main_power_state>(ReceivedMainPowerStateValue), std::memory_order_release);
 			AwakeRefreshWholeGui = true;
 			TopLevelFsmState = top_level_fsm_states::RestBreak;
 		}
