@@ -44,26 +44,26 @@ enum class top_level_fsm_states : uint8_t {
 	// User interaction states on the 'power on' event
 	PowerOnExecuting = 12,
 	PowerOnChecking = 13, // i.e. checking status
-	PowerOnSummary = 14,  // used after transmission failures during power on
+	PowerOnSummary = 14,
 
 	// User interaction states on the 'power off' event
 	PowerOffExecuting = 15,
 	PowerOffChecking = 16,      // i.e. checking status
-	PowerOffOptionalPause = 17, // used after transmission failures during power off
+	PowerOffSummary = 17,
 
 	// User interaction states on the 'change setpoint 1' event
 	Setpoint1SelectingChannel = 18,
 	Setpoint1CheckingChannel = 19,
 	Setpoint1Executing = 20,
 	Setpoint1Checking = 21,
-	Setpoint1OptionalPause = 22, // used after transmission failures during setpoint 1
+	Setpoint1Summary = 22,
 
 	// User interaction states on the 'change setpoint 2' event
 	Setpoint2SelectingChannel = 23,
 	Setpoint2CheckingChannel = 24,
 	Setpoint2Executing = 25,
 	Setpoint2Checking = 26,
-	Setpoint2OptionalPause = 27, // used after transmission failures during setpoint 2
+	Setpoint2Summary = 27,
 
 	// Error state
 	PermanentError = 28
@@ -93,6 +93,7 @@ static void topLevelFsmTakeUpNewOrder();
 
 static void topLevelFsmRestBreakState();
 static void topLevelFsmPowerOnSummaryState();
+static void topLevelFsmPowerOffSummaryState();
 
 //=================================================================================================
 // Global function definitions
@@ -142,6 +143,8 @@ void topLevelFsmTick(bool TerminationSignal) {
 	case top_level_fsm_states::CheckingStatus: {
 		bool SuccessfulResponse = checkResponseAndJumpOnFailure(top_level_fsm_states::OptionalIdlePause);
 		if (SuccessfulResponse) {
+			ReceivedMainPowerState.store(static_cast<main_power_state>(getReceivedNumericalData()), std::memory_order_release);
+			AwakeRefreshWholeGui = true;
 			TopLevelFsmState = top_level_fsm_states::RestBreak;
 		}
 	} break;
@@ -153,17 +156,33 @@ void topLevelFsmTick(bool TerminationSignal) {
 		// User interaction states on the 'power on' event
 
 	case top_level_fsm_states::PowerOnExecuting:
-		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1,
+		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 0,
 		                      top_level_fsm_states::PowerOnChecking);
 		break;
 
 	case top_level_fsm_states::PowerOnChecking:
-		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 1,
+		topLevelCommonCommand(top_level_fsm_states::PowerOnSummary, single_order_code::InquiryST, 0,
 		                      top_level_fsm_states::PowerOnSummary);
 		break;
 
 	case top_level_fsm_states::PowerOnSummary:
 		topLevelFsmPowerOnSummaryState();
+		break;
+
+		// User interaction states on the 'power off' event
+
+	case top_level_fsm_states::PowerOffExecuting:
+		topLevelCommonCommand(top_level_fsm_states::PowerOffSummary, single_order_code::InquiryST, 0,
+		                      top_level_fsm_states::PowerOffChecking);
+		break;
+
+	case top_level_fsm_states::PowerOffChecking:
+		topLevelCommonCommand(top_level_fsm_states::PowerOffSummary, single_order_code::InquiryST, 0,
+		                      top_level_fsm_states::PowerOffSummary);
+		break;
+
+	case top_level_fsm_states::PowerOffSummary:
+		topLevelFsmPowerOffSummaryState();
 		break;
 
 		// Error state
@@ -217,7 +236,7 @@ static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure
 		return false;
 	}
 
-	if (getIsResponseSuccessful()) {
+	if (!getIsResponseSuccessful()) {
 		TopLevelFsmState = NewStateOnFailure;
 		return false;
 	}
@@ -336,4 +355,56 @@ static void topLevelFsmPowerOnSummaryState() {
 		                                   top_level_fsm_states::PowerOnExecuting);
 		return;
 	}
+	int16_t ReceivedData = getReceivedNumericalData();
+	main_power_state ReceivedMainPowerStateValue = static_cast<main_power_state>(ReceivedData);
+	assert(ReceivedMainPowerStateValue < main_power_state::UNDEFINED);
+	if (ReceivedMainPowerStateValue != main_power_state::RISING) {
+		// Pause after failure related to check status command
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 1,
+		                                   top_level_fsm_states::PowerOnExecuting);
+		return;
+	}
+
+	// If we reach this point, the power is rising as expected
+
+	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
+	AwakeRefreshWholeGui = true;
+	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
+}
+
+static void topLevelFsmPowerOffSummaryState() {
+	if (getOrderProcessingState() != order_processing_state::Ready) {
+		return;
+	}
+
+	top_level_fsm_states PreviousDifferentState = getDifferentPreviousState();
+	if (top_level_fsm_states::PowerOffExecuting == PreviousDifferentState) {
+		// Pause after failure related to power off command
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 0,
+		                                   top_level_fsm_states::PowerOffExecuting);
+		return;
+	}
+	assert(top_level_fsm_states::PowerOffChecking == PreviousDifferentState);
+
+	if (!getIsResponseSuccessful()) {
+		// Pause after failure related to check status command
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 0,
+		                                   top_level_fsm_states::PowerOffExecuting);
+		return;
+	}
+	int16_t ReceivedData = getReceivedNumericalData();
+	main_power_state ReceivedMainPowerStateValue = static_cast<main_power_state>(ReceivedData);
+	assert(ReceivedMainPowerStateValue < main_power_state::UNDEFINED);
+	if (ReceivedMainPowerStateValue != main_power_state::FALLING) {
+		// Pause after failure related to check status command
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetPower, 0,
+		                                   top_level_fsm_states::PowerOffExecuting);
+		return;
+	}
+
+	// If we reach this point, the power is falling as expected
+
+	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
+	AwakeRefreshWholeGui = true;
+	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }

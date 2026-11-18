@@ -82,6 +82,7 @@ class modified_rstl_master {
 	[[nodiscard]] order_processing_state getOrderProcessingState() const;
 	bool placeOrder(const order_with_argument &NewOrder);
 	[[nodiscard]] bool getIsResponseSuccessful() const;
+	[[nodiscard]] int16_t getReceivedNumericalData() const;
 
 	[[nodiscard]] uint8_t getCurrentCommunicationQuality() const;
 	[[nodiscard]] uint8_t getTotalCommunicationQuality() const;
@@ -105,6 +106,8 @@ bool placeRstlOrder(const order_with_argument &NewOrder);
 order_processing_state getOrderProcessingState();
 
 [[nodiscard]] bool getIsResponseSuccessful();
+
+[[nodiscard]] int16_t getReceivedNumericalData();
 
 [[nodiscard]] uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality);
 

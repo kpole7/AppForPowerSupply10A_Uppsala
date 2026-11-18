@@ -173,6 +173,13 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 /// @return true if the response was successful, false otherwise
 bool modified_rstl_master::getIsResponseSuccessful() const { return IsResentTransmissionSuccessful; }
 
+int16_t modified_rstl_master::getReceivedNumericalData() const { 
+	if (!IsResentTransmissionSuccessful) {
+		return INT16_MIN; // Return a sentinel value indicating an invalid response
+	}
+	return ReceivedValueInResponse; 
+}
+
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 	if (TotalResponseCount == 0) {
 		return 100;
@@ -533,8 +540,10 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 		EssentialResponseStart = 4;
 		main_power_state ExternalDeviceSimplifiedState =
 		    convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
+#if 0
 		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
 		AwakeRefreshWholeGui = true;
+#endif
 		ReceivedValueInResponse = static_cast<int16_t>(ExternalDeviceSimplifiedState);
 	} break;
 
@@ -766,6 +775,12 @@ order_processing_state getOrderProcessingState() {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->getIsResponseSuccessful();
 }
+
+[[nodiscard]] int16_t getReceivedNumericalData() {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	return RstlMasterInstancePtr->getReceivedNumericalData();
+}
+
 
 uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
