@@ -143,6 +143,21 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	updateDisplay();
 }
 
+void setpoint_adjustment_group::activateButtons() {
+	Button_Plus1Ptr->activate();
+	Button_Plus01Ptr->activate();
+	Button_Minus01Ptr->activate();
+	Button_Minus1Ptr->activate();
+}
+
+void setpoint_adjustment_group::deactivateButtons() {
+	Button_Plus1Ptr->deactivate();
+	Button_Plus01Ptr->deactivate();
+	Button_Minus01Ptr->deactivate();
+	Button_Minus1Ptr->deactivate();
+}
+
+
 void setpoint_adjustment_group::updateDisplay() {
 	static char Buffer[16];
 
@@ -363,25 +378,35 @@ void refreshWholeGui(void *Data) {
 		CurrentState = indicator_light_state::UNDEFINED;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("?");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	case main_power_state::ON:
 		CurrentState = indicator_light_state::ON;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("Wyłącz");
+		SetpointGroup1Ptr->activateButtons();
+		SetpointGroup2Ptr->activateButtons();
 		break;
 	case main_power_state::OFF:
 		CurrentState = indicator_light_state::OFF;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("Włącz");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	case main_power_state::RISING:
 	case main_power_state::FALLING:
 		CurrentState = indicator_light_state::DIM;
 		PowerButtonPtr->deactivate();
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	default:
 		std::cout << "Unexpected main power state" << '\n';
 		PowerButtonPtr->activate();
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	}
 

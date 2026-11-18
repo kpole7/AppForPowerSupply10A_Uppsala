@@ -70,6 +70,9 @@ class setpoint_adjustment_group : public Fl_Group {
 	/// @param SetpointNumber 1 or 2 to identify which setpoint to control
 	setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber);
 
+	void activateButtons();
+	void deactivateButtons();
+
   private:
 	uint8_t SetpointNumber;
 	Fl_Box *ValueDisplayPtr;
