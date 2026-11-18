@@ -173,11 +173,11 @@ bool modified_rstl_master::placeOrder(const order_with_argument &NewOrder) {
 /// @return true if the response was successful, false otherwise
 bool modified_rstl_master::getIsResponseSuccessful() const { return IsResentTransmissionSuccessful; }
 
-int16_t modified_rstl_master::getReceivedNumericalData() const { 
+int16_t modified_rstl_master::getReceivedNumericalData() const {
 	if (!IsResentTransmissionSuccessful) {
 		return INT16_MIN; // Return a sentinel value indicating an invalid response
 	}
-	return ReceivedValueInResponse; 
+	return ReceivedValueInResponse;
 }
 
 uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
@@ -193,6 +193,8 @@ uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
 	return static_cast<uint8_t>(((TotalResponseCount - FailureCount) * 100 + TotalResponseCount / 2) /
 	                            TotalResponseCount);
 }
+
+single_order_code modified_rstl_master::getRecentOrder() const { return CurrentOrder.OrderCode; }
 
 uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
 	if (TotalResponseCount == 0) {
@@ -781,6 +783,10 @@ order_processing_state getOrderProcessingState() {
 	return RstlMasterInstancePtr->getReceivedNumericalData();
 }
 
+[[nodiscard]] single_order_code getRecentOrder() {
+	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+	return RstlMasterInstancePtr->getRecentOrder();
+}
 
 uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists

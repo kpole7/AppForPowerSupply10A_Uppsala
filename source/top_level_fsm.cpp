@@ -48,25 +48,23 @@ enum class top_level_fsm_states : uint8_t {
 
 	// User interaction states on the 'power off' event
 	PowerOffExecuting = 15,
-	PowerOffChecking = 16,      // i.e. checking status
+	PowerOffChecking = 16, // i.e. checking status
 	PowerOffSummary = 17,
 
 	// User interaction states on the 'change setpoint 1' event
 	Setpoint1SelectingChannel = 18,
 	Setpoint1CheckingChannel = 19,
 	Setpoint1Executing = 20,
-	Setpoint1Checking = 21,
-	Setpoint1Summary = 22,
+	Setpoint1Summary = 21,
 
 	// User interaction states on the 'change setpoint 2' event
-	Setpoint2SelectingChannel = 23,
-	Setpoint2CheckingChannel = 24,
-	Setpoint2Executing = 25,
-	Setpoint2Checking = 26,
-	Setpoint2Summary = 27,
+	Setpoint2SelectingChannel = 22,
+	Setpoint2CheckingChannel = 23,
+	Setpoint2Executing = 24,
+	Setpoint2Summary = 25,
 
 	// Error state
-	PermanentError = 28
+	PermanentError = 26
 };
 
 //=================================================================================================
@@ -94,6 +92,10 @@ static void topLevelFsmTakeUpNewOrder();
 static void topLevelFsmRestBreakState();
 static void topLevelFsmPowerOnSummaryState();
 static void topLevelFsmPowerOffSummaryState();
+static void topLevelFsmSetpoint1CheckingChannelState();
+static void topLevelFsmSetpoint1SummaryState();
+static void topLevelFsmSetpoint2CheckingChannelState();
+static void topLevelFsmSetpoint2SummaryState();
 
 //=================================================================================================
 // Global function definitions
@@ -146,7 +148,8 @@ void topLevelFsmTick(bool TerminationSignal) {
 #if 0
 			std::cout << "---Received main power state value: " << ReceivedMainPowerStateValue << "\n";
 #endif
-			ReceivedMainPowerState.store(static_cast<main_power_state>(ReceivedMainPowerStateValue), std::memory_order_release);
+			ReceivedMainPowerState.store(static_cast<main_power_state>(ReceivedMainPowerStateValue),
+			                             std::memory_order_release);
 			AwakeRefreshWholeGui = true;
 			TopLevelFsmState = top_level_fsm_states::RestBreak;
 		}
@@ -186,6 +189,46 @@ void topLevelFsmTick(bool TerminationSignal) {
 
 	case top_level_fsm_states::PowerOffSummary:
 		topLevelFsmPowerOffSummaryState();
+		break;
+
+		// User interaction states on the 'change setpoint 1' event
+
+	case top_level_fsm_states::Setpoint1SelectingChannel:
+		topLevelCommonCommand(top_level_fsm_states::Setpoint1Summary, single_order_code::InquiryZ, 0,
+		                      top_level_fsm_states::Setpoint1CheckingChannel);
+		break;
+
+	case top_level_fsm_states::Setpoint1CheckingChannel:
+		topLevelFsmSetpoint1CheckingChannelState();
+		break;
+
+	case top_level_fsm_states::Setpoint1Executing:
+		topLevelCommonCommand(top_level_fsm_states::Setpoint1Summary, single_order_code::InquiryPC, 0,
+		                      top_level_fsm_states::Setpoint1Summary);
+		break;
+
+	case top_level_fsm_states::Setpoint1Summary:
+		topLevelFsmSetpoint1SummaryState();
+		break;
+
+		// User interaction states on the 'change setpoint 2' event
+
+	case top_level_fsm_states::Setpoint2SelectingChannel:
+		topLevelCommonCommand(top_level_fsm_states::Setpoint2Summary, single_order_code::InquiryZ, 0,
+		                      top_level_fsm_states::Setpoint2CheckingChannel);
+		break;
+
+	case top_level_fsm_states::Setpoint2CheckingChannel:
+		topLevelFsmSetpoint2CheckingChannelState();
+		break;
+
+	case top_level_fsm_states::Setpoint2Executing:
+		topLevelCommonCommand(top_level_fsm_states::Setpoint2Summary, single_order_code::InquiryPC, 0,
+		                      top_level_fsm_states::Setpoint2Summary);
+		break;
+
+	case top_level_fsm_states::Setpoint2Summary:
+		topLevelFsmSetpoint2SummaryState();
 		break;
 
 		// Error state
@@ -297,6 +340,16 @@ static void topLevelFsmTakeUpNewOrder() {
 		CommandToBeSentPowerOff.store(false, std::memory_order_release);
 		return;
 	}
+	if (CommandToBeSentSetpoint1.load(std::memory_order_acquire)) {
+		topLevelFsmPlaceOrder(single_order_code::SetZ, 1, top_level_fsm_states::Setpoint1SelectingChannel);
+		CommandToBeSentSetpoint1.store(false, std::memory_order_release);
+		return;
+	}
+	if (CommandToBeSentSetpoint2.load(std::memory_order_acquire)) {
+		topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::Setpoint2SelectingChannel);
+		CommandToBeSentSetpoint2.store(false, std::memory_order_release);
+		return;
+	}
 }
 
 static void topLevelFsmRestBreakState() {
@@ -323,7 +376,9 @@ static void topLevelFsmRestBreakState() {
 	}
 
 	bool IsNewOrderReady = CommandToBeSentPowerOn.load(std::memory_order_acquire) ||
-	                       CommandToBeSentPowerOff.load(std::memory_order_acquire);
+	                       CommandToBeSentPowerOff.load(std::memory_order_acquire) ||
+	                       CommandToBeSentSetpoint1.load(std::memory_order_acquire) ||
+	                       CommandToBeSentSetpoint2.load(std::memory_order_acquire);
 
 	if (IsNewOrderReady) {
 		RestBreakCounter = 0; // Reset the rest break counter when a new order is ready
@@ -409,5 +464,107 @@ static void topLevelFsmPowerOffSummaryState() {
 
 	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
 	AwakeRefreshWholeGui = true;
+
+	// Jump to the idle sequence
+	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
+}
+
+static void topLevelFsmSetpoint1CheckingChannelState() {
+	if (getOrderProcessingState() != order_processing_state::Ready) {
+		return;
+	}
+
+	top_level_fsm_states PreviousDifferentState = getDifferentPreviousState();
+	assert(top_level_fsm_states::Setpoint1SelectingChannel == PreviousDifferentState);
+
+	if (!getIsResponseSuccessful()) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 1,
+		                                   top_level_fsm_states::Setpoint1SelectingChannel);
+		return;
+	}
+	int16_t ReceivedData = getReceivedNumericalData();
+	assert((ReceivedData >= 0) && (ReceivedData <= PSU_NUMBER_OF_CHANNELS));
+	if (ReceivedData != 1) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 1,
+		                                   top_level_fsm_states::Setpoint1SelectingChannel);
+		return;
+	}
+
+	// If we reach this point, the channel selection is successful
+
+	topLevelFsmPlaceOrder(single_order_code::SetPC, ValueToBeSentSetpoint1.load(std::memory_order_acquire),
+	                      top_level_fsm_states::Setpoint1Executing);
+}
+
+static void topLevelFsmSetpoint1SummaryState() {
+	if (getOrderProcessingState() != order_processing_state::Ready) {
+		return;
+	}
+
+	single_order_code RecentOrder = getRecentOrder();
+	int16_t ReceivedData = getReceivedNumericalData();
+	if ((RecentOrder != single_order_code::InquiryPC) || !getIsResponseSuccessful() ||
+	    (ReceivedData != ValueToBeSentSetpoint1.load(std::memory_order_acquire))) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 1,
+		                                   top_level_fsm_states::Setpoint1SelectingChannel);
+		return;
+	}
+
+	ReceivedSetpoint1.store(ReceivedData, std::memory_order_release);
+
+	// Jump to the idle sequence
+	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
+}
+
+static void topLevelFsmSetpoint2CheckingChannelState() {
+	if (getOrderProcessingState() != order_processing_state::Ready) {
+		return;
+	}
+
+	top_level_fsm_states PreviousDifferentState = getDifferentPreviousState();
+	assert(top_level_fsm_states::Setpoint2SelectingChannel == PreviousDifferentState);
+
+	if (!getIsResponseSuccessful()) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 2,
+		                                   top_level_fsm_states::Setpoint2SelectingChannel);
+		return;
+	}
+	int16_t ReceivedData = getReceivedNumericalData();
+	assert((ReceivedData >= 0) && (ReceivedData <= PSU_NUMBER_OF_CHANNELS));
+	if (ReceivedData != 2) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 2,
+		                                   top_level_fsm_states::Setpoint2SelectingChannel);
+		return;
+	}
+
+	// If we reach this point, the channel selection is successful
+
+	topLevelFsmPlaceOrder(single_order_code::SetPC, ValueToBeSentSetpoint2.load(std::memory_order_acquire),
+	                      top_level_fsm_states::Setpoint2Executing);
+}
+
+static void topLevelFsmSetpoint2SummaryState() {
+	if (getOrderProcessingState() != order_processing_state::Ready) {
+		return;
+	}
+
+	single_order_code RecentOrder = getRecentOrder();
+	int16_t ReceivedData = getReceivedNumericalData();
+	if ((RecentOrder != single_order_code::InquiryPC) || !getIsResponseSuccessful() ||
+	    (ReceivedData != ValueToBeSentSetpoint2.load(std::memory_order_acquire))) {
+		// Pause after failure
+		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::SetZ, 2,
+		                                   top_level_fsm_states::Setpoint2SelectingChannel);
+		return;
+	}
+
+	ReceivedSetpoint2.store(ReceivedData, std::memory_order_release);
+
+	// Jump to the idle sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }

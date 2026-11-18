@@ -10,7 +10,6 @@
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Group.H>
 #include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Group.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
 
@@ -123,19 +122,19 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	Button_Plus1Ptr->callback(buttonPlusOneCallback, this);
 
 	Button_Plus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + ButtonHeight + ButtonSpacing, ButtonWidth,
-	                                   ButtonHeight, "+0.1");
+	                                 ButtonHeight, "+0.1");
 	Button_Plus01Ptr->labelfont(FL_COURIER_BOLD);
 	Button_Plus01Ptr->labelsize(12);
 	Button_Plus01Ptr->callback(buttonPlusTenthCallback, this);
 
 	Button_Minus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 2 * (ButtonHeight + ButtonSpacing),
-	                                    ButtonWidth, ButtonHeight, "-0.1");
+	                                  ButtonWidth, ButtonHeight, "-0.1");
 	Button_Minus01Ptr->labelfont(FL_COURIER_BOLD);
 	Button_Minus01Ptr->labelsize(12);
 	Button_Minus01Ptr->callback(buttonMinusTenthCallback, this);
 
 	Button_Minus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 3 * (ButtonHeight + ButtonSpacing),
-	                                   ButtonWidth, ButtonHeight, "-1");
+	                                 ButtonWidth, ButtonHeight, "-1");
 	Button_Minus1Ptr->labelfont(FL_COURIER_BOLD);
 	Button_Minus1Ptr->labelsize(12);
 	Button_Minus1Ptr->callback(buttonMinusOneCallback, this);
@@ -297,10 +296,12 @@ void initializeGraphicWidgets() {
 	PowerButtonPtr->callback(powerButtonCallback);
 
 	// First setpoint adjustment group: middle 1/3 of main window
-	SetpointGroup1Ptr = new setpoint_adjustment_group(0, MAIN_WINDOW_HEIGHT / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 1);
+	SetpointGroup1Ptr =
+	    new setpoint_adjustment_group(0, MAIN_WINDOW_HEIGHT / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 1);
 
 	// Second setpoint adjustment group: bottom 1/3 of main window
-	SetpointGroup2Ptr = new setpoint_adjustment_group(0, (MAIN_WINDOW_HEIGHT * 2) / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 2);
+	SetpointGroup2Ptr =
+	    new setpoint_adjustment_group(0, (MAIN_WINDOW_HEIGHT * 2) / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 2);
 
 	(void)PowerIndicatorPtr;
 }
