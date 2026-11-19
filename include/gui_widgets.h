@@ -18,7 +18,7 @@
 //=================================================================================================
 
 #define MAIN_WINDOW_WIDTH 370
-#define MAIN_WINDOW_HEIGHT 700
+#define MAIN_WINDOW_HEIGHT 470
 #define MAIN_MENU_HEIGHT 22
 
 #define COLOR_BACKGROUND 0x35
@@ -44,19 +44,6 @@ class power_indicator : public Fl_Widget {
 	indicator_light_state State{indicator_light_state::UNDEFINED};
 };
 
-/// Main power controls
-class main_power_group : public Fl_Group {
-  public:
-	main_power_group(int X, int Y, int W, int H, const char *L = nullptr);
-	void setState(main_power_state NewState);
-
-  private:
-	main_power_state CurrentState{main_power_state::UNDEFINED};
-	power_indicator *PowerIndicatorPtr;
-	Fl_Button *PowerSwitchPtr;
-	Fl_Box *StatusTextBoxPtr;
-};
-
 /// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
 class setpoint_adjustment_group : public Fl_Group {
   public:
@@ -70,10 +57,13 @@ class setpoint_adjustment_group : public Fl_Group {
 
 	void activateButtons();
 	void deactivateButtons();
+	void setTitle(const char *Title);
 
   private:
 	uint8_t SetpointNumber;
+	Fl_Box *SeparatorPtr;
 	Fl_Box *ValueDisplayPtr;
+	Fl_Box *TitlePtr;
 	Fl_Button *Button_Plus1Ptr;
 	Fl_Button *Button_Plus01Ptr;
 	Fl_Button *Button_Minus01Ptr;

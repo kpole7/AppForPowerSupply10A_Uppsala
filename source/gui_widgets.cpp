@@ -19,19 +19,12 @@
 // Preprocessor directives
 //=================================================================================================
 
+#define SEPARATOR_COLOR 0x2A
+
 //=================================================================================================
 // Definitions of types
 //=================================================================================================
 
-class on_error_group : public Fl_Group {
-  public:
-	on_error_group(int X, int Y, int W, int H, const char *L = nullptr);
-	void draw() override;
-
-  private:
-	run_time_failure_codes CurrentRuntimeFailureCode;
-	Fl_Box *ErrorTextBoxPtr;
-};
 
 //=================================================================================================
 // Local constants
@@ -44,8 +37,10 @@ class on_error_group : public Fl_Group {
 static Fl_Box *GeneralStatusTextBoxPtr;
 static Fl_Box *FailureMessagePtr;
 
+static Fl_Box *SeparatorPtr;
 static power_indicator *PowerIndicatorPtr;
 static Fl_Button *PowerButtonPtr;
+static Fl_Box *PowerStateDescriptionPtr;
 
 static setpoint_adjustment_group *SetpointGroup1Ptr;
 static setpoint_adjustment_group *SetpointGroup2Ptr;
@@ -89,32 +84,48 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 
 setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber)
     : Fl_Group(X, Y, W, H), SetpointNumber(SetpointNumber) {
-	const int ValueDisplayWidth = 80;
+	const int ValueDisplayWidth = 110;
 	const int AmpereLabelWidth = 25;
 	const int ButtonWidth = 50;
 	const int ButtonHeight = 20;
 	const int ButtonSpacing = 2;
 	const int TotalButtonHeight = (ButtonHeight + ButtonSpacing) * 4;
 	const int VerticalCenterPadding = (H - TotalButtonHeight) / 2;
+	const int TitleHeight = 20;
+	const int TitleSpacing = 5;
+	const int TitleSpace = 16;
+
+	// Separator line at the top of the group
+	SeparatorPtr = new Fl_Box(X, Y, W, 1);
+	SeparatorPtr->box(FL_FLAT_BOX);
+	SeparatorPtr->color(SEPARATOR_COLOR);
+
+	// Title at the top of the group
+	TitlePtr = new Fl_Box(X, Y + TitleSpacing, W, TitleHeight);
+	TitlePtr->box(FL_FLAT_BOX);
+	TitlePtr->labelsize(16);
+	TitlePtr->labelcolor(FL_BLACK);
+	TitlePtr->color(COLOR_BACKGROUND);
+	TitlePtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
 	// Left side: value display box
-	ValueDisplayPtr = new Fl_Box(X + 10, Y + (H - 40) / 2, ValueDisplayWidth, 40);
+	ValueDisplayPtr = new Fl_Box(X + 40, Y + (H - 40) / 2 + TitleSpace - 20, ValueDisplayWidth, 40);
 	ValueDisplayPtr->box(FL_DOWN_BOX);
 	ValueDisplayPtr->labelfont(FL_COURIER_BOLD);
-	ValueDisplayPtr->labelsize(20);
+	ValueDisplayPtr->labelsize(26);
 	ValueDisplayPtr->labelcolor(FL_BLACK);
 	ValueDisplayPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
 	// Label "A" (Amperes) next to the value
-	Fl_Box *UnitLabel = new Fl_Box(X + 10 + ValueDisplayWidth + 5, Y + (H - 20) / 2, AmpereLabelWidth, 20, "A");
+	Fl_Box *UnitLabel = new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
 	UnitLabel->labelfont(FL_COURIER_BOLD);
 	UnitLabel->labelsize(16);
 	UnitLabel->labelcolor(FL_BLACK);
 	UnitLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
 	// Center: buttons arranged vertically
-	int ButtonGroupStartX = X + 10 + ValueDisplayWidth + AmpereLabelWidth + 20;
-	int ButtonGroupStartY = Y + VerticalCenterPadding;
+	int ButtonGroupStartX = X + 40 + ValueDisplayWidth + AmpereLabelWidth + 70;
+	int ButtonGroupStartY = Y + VerticalCenterPadding + TitleSpace;
 
 	Button_Plus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY, ButtonWidth, ButtonHeight, "+1");
 	Button_Plus1Ptr->labelfont(FL_COURIER_BOLD);
@@ -155,6 +166,11 @@ void setpoint_adjustment_group::deactivateButtons() {
 	Button_Plus01Ptr->deactivate();
 	Button_Minus01Ptr->deactivate();
 	Button_Minus1Ptr->deactivate();
+}
+
+void setpoint_adjustment_group::setTitle(const char *Title) {
+	TitlePtr->label(Title);
+	TitlePtr->redraw();
 }
 
 void setpoint_adjustment_group::updateDisplay() {
@@ -384,9 +400,9 @@ void power_indicator::setBrightness(indicator_light_state NewState) {
 }
 
 void power_indicator::draw() {
-	const Fl_Color ColorOn = fl_rgb_color(0x30, 0xFF, 0x30);
+	const Fl_Color ColorOn = fl_rgb_color(0xFF, 0x5F, 0x5B); // 0xFF, 0x3C, 0x3C
 	const Fl_Color ColorDim = fl_rgb_color(0xE3, 0xD3, 0x7A);
-	const Fl_Color ColorOff = fl_rgb_color(0x80, 0x88, 0x80);
+	const Fl_Color ColorOff = fl_rgb_color(0x00, 0x91, 0x00); // 0x00, 0x7A, 0x00
 	const Fl_Color ColorUndefined = fl_rgb_color(0xD0, 0xD8, 0xD0);
 	const Fl_Color ColorRim = fl_rgb_color(0x5C, 0x5C, 0x5C);
 	const Fl_Color ColorRimUndefined = fl_rgb_color(0xCC, 0xCC, 0xCC);
@@ -398,7 +414,7 @@ void power_indicator::draw() {
 	fl_color(State == indicator_light_state::UNDEFINED ? ColorRimUndefined : ColorRim);
 	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
 
-	int Rim = (Diameter >= 12) ? 5 : 1;
+	int Rim = (Diameter >= 12) ? 4 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
 		if (indicator_light_state::ON == State) {
@@ -437,17 +453,36 @@ void initializeGraphicWidgets() {
 	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
-	PowerIndicatorPtr = new power_indicator(70, 100, 60, 60);
-	PowerButtonPtr = new Fl_Button(200, 115, 60, 30, "");
+	SeparatorPtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, 1, nullptr);
+	SeparatorPtr->box(FL_FLAT_BOX);
+	SeparatorPtr->color(SEPARATOR_COLOR);
+
+	Fl_Box *ContactorTitle = new Fl_Box(0, MAIN_MENU_HEIGHT+1+2, MAIN_WINDOW_WIDTH, 20, "Stycznik mocy");
+	ContactorTitle->labelfont(FL_HELVETICA);
+	ContactorTitle->labelsize(16);
+	ContactorTitle->labelcolor(FL_BLACK);
+	ContactorTitle->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+	PowerIndicatorPtr = new power_indicator(60, 60, 46, 46);
+
+	PowerButtonPtr = new Fl_Button(180, 65, 90, 34, "");
 	PowerButtonPtr->callback(powerButtonCallback);
+
+	PowerStateDescriptionPtr = new Fl_Box(0, 60 + 46 + 5, (MAIN_WINDOW_WIDTH * 9) / 20, 20, "");
+	PowerStateDescriptionPtr->labelfont(FL_HELVETICA);
+	PowerStateDescriptionPtr->labelsize(12);
+	PowerStateDescriptionPtr->labelcolor(FL_BLACK);
+	PowerStateDescriptionPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
 	// First setpoint adjustment group: middle 1/3 of main window
 	SetpointGroup1Ptr =
 	    new setpoint_adjustment_group(0, MAIN_WINDOW_HEIGHT / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 1);
+	SetpointGroup1Ptr->setTitle("Prąd zadany w kwadrupolu górnym");
 
 	// Second setpoint adjustment group: bottom 1/3 of main window
 	SetpointGroup2Ptr =
 	    new setpoint_adjustment_group(0, (MAIN_WINDOW_HEIGHT * 2) / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 2);
+	SetpointGroup2Ptr->setTitle("Prąd zadany w kwadrupolu dolnym");
 
 	(void)PowerIndicatorPtr;
 }
@@ -509,6 +544,7 @@ void refreshWholeGui(void *Data) {
 		CurrentState = indicator_light_state::UNDEFINED;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("?");
+		PowerStateDescriptionPtr->label("Stycznik nieokreślony");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
@@ -516,6 +552,7 @@ void refreshWholeGui(void *Data) {
 		CurrentState = indicator_light_state::ON;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("Wyłącz");
+		PowerStateDescriptionPtr->label("Stycznik włączony");
 		SetpointGroup1Ptr->activateButtons();
 		SetpointGroup2Ptr->activateButtons();
 		break;
@@ -523,6 +560,7 @@ void refreshWholeGui(void *Data) {
 		CurrentState = indicator_light_state::OFF;
 		PowerButtonPtr->activate();
 		PowerButtonPtr->label("Włącz");
+		PowerStateDescriptionPtr->label("Stycznik wyłączony");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
@@ -530,12 +568,14 @@ void refreshWholeGui(void *Data) {
 	case main_power_state::FALLING:
 		CurrentState = indicator_light_state::DIM;
 		PowerButtonPtr->deactivate();
+		PowerStateDescriptionPtr->label("W trakcie przełączania");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	default:
 		std::cout << "Unexpected main power state" << '\n';
 		PowerButtonPtr->activate();
+		PowerStateDescriptionPtr->label("Nieznany stan stycznika");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
