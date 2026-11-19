@@ -102,7 +102,12 @@ int readConsoleKeyNonBlocking() {
 
 void debugPeripheralsInitializations() {
 	if (ConsoleModePtr == nullptr) {
-		ConsoleModePtr = new console_mode();
+		try {
+			ConsoleModePtr = new console_mode();
+		} catch (const std::runtime_error &e) {
+			std::cerr << "Warning: Console input not available (running without terminal): " << e.what() << '\n';
+			ConsoleModePtr = nullptr;
+		}
 	}
 	usartMasterDebuggingInitialize();
 }
@@ -116,7 +121,14 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		return false;
 	}
 
-	assert(ConsoleModePtr != nullptr);
+	if (ConsoleModePtr == nullptr) {
+		// No console available, skip key processing
+		if (TerminationSignal) {
+			KeepMeRunning = false;
+		}
+		return KeepMeRunning;
+	}
+
 	static int PreviousKey = -1;
 	int Key = readConsoleKeyNonBlocking();
 	int JustPressedKey = -1;
@@ -140,7 +152,10 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		KeepMeRunning = false; // instantly stop if termination signal is received
 	}
 	if (!KeepMeRunning) {
-		delete ConsoleModePtr;
+		if (ConsoleModePtr != nullptr) {
+			delete ConsoleModePtr;
+			ConsoleModePtr = nullptr;
+		}
 		std::cout << "Terminating debugging peripherals tick properly." << '\n';
 		return false;
 	}
