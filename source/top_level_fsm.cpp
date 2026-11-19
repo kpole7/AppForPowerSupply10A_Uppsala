@@ -4,10 +4,13 @@
 /// the external device
 
 #include "top_level_fsm.h"
+#include "config.h"
 #include "debug_tools.h"
 #include "modified_rstl_master.h"
 #include "multithread_resources.h"
 #include "peripheral_thread.h"
+
+#include <cassert>
 #include <cstdint>
 #include <iostream>
 //=================================================================================================
@@ -30,7 +33,7 @@ enum class top_level_fsm_states : uint8_t {
 	GettingVersion = 1,
 	OptionalInitialPause = 2, // used after transmission failures during initialization
 
-	// Idle states
+	// Monitoring-only states
 	OptionalIdlePause = 3, // used after transmission failures during normal operation
 	CheckingStatus = 4,
 	SelectingChannel1 = 5,
@@ -41,23 +44,23 @@ enum class top_level_fsm_states : uint8_t {
 	GettingSetpoint2 = 10,
 	RestBreak = 11, // can be finished if a new order arrives
 
-	// User interaction states on the 'power on' event
+	// User interaction states in response to a 'power on' request
 	PowerOnExecuting = 12,
 	PowerOnChecking = 13, // i.e. checking status
 	PowerOnSummary = 14,
 
-	// User interaction states on the 'power off' event
+	// User interaction states in response to a 'power off' request
 	PowerOffExecuting = 15,
 	PowerOffChecking = 16, // i.e. checking status
 	PowerOffSummary = 17,
 
-	// User interaction states on the 'change setpoint 1' event
+	// User interaction states in response to a 'change setpoint 1' request
 	Setpoint1SelectingChannel = 18,
 	Setpoint1CheckingChannel = 19,
 	Setpoint1Executing = 20,
 	Setpoint1Summary = 21,
 
-	// User interaction states on the 'change setpoint 2' event
+	// User interaction states in response to a 'change setpoint 2' request
 	Setpoint2SelectingChannel = 22,
 	Setpoint2CheckingChannel = 23,
 	Setpoint2Executing = 24,
@@ -134,7 +137,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 		                                   top_level_fsm_states::Uninitialized);
 		break;
 
-		// Idle states
+		// Monitoring-only states
 
 	case top_level_fsm_states::OptionalIdlePause:
 		inescapablePauseThenCommandAndJump(OPTIONAL_IDLE_PAUSE_TICKS, single_order_code::InquiryST, 0,
@@ -565,6 +568,7 @@ static void topLevelFsmSetpoint1SummaryState() {
 	}
 
 	ReceivedSetpoint1.store(ReceivedData, std::memory_order_release);
+	IsFreshReceivedSetpoint1.store(true, std::memory_order_release);
 
 	// Jump to the idle sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
@@ -615,6 +619,7 @@ static void topLevelFsmSetpoint2SummaryState() {
 	}
 
 	ReceivedSetpoint2.store(ReceivedData, std::memory_order_release);
+	IsFreshReceivedSetpoint2.store(true, std::memory_order_release);
 
 	// Jump to the idle sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);

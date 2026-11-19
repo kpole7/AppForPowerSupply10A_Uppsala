@@ -101,7 +101,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	ValueDisplayPtr = new Fl_Box(X + 10, Y + (H - 40) / 2, ValueDisplayWidth, 40);
 	ValueDisplayPtr->box(FL_DOWN_BOX);
 	ValueDisplayPtr->labelfont(FL_COURIER_BOLD);
-	ValueDisplayPtr->labelsize(28);
+	ValueDisplayPtr->labelsize(20);
 	ValueDisplayPtr->labelcolor(FL_BLACK);
 	ValueDisplayPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
@@ -157,7 +157,6 @@ void setpoint_adjustment_group::deactivateButtons() {
 	Button_Minus1Ptr->deactivate();
 }
 
-
 void setpoint_adjustment_group::updateDisplay() {
 	static char Buffer[16];
 
@@ -179,16 +178,49 @@ void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *D
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t CurrentValue;
+	int16_t NewValue;
+	int16_t NewSetpointValue;
 	if (pThis->SetpointNumber == 1) {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue + 100, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + 100;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + 100;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
 	}
 	else {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue + 100, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + 100;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + 100;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
 	}
 }
 
@@ -196,16 +228,49 @@ void setpoint_adjustment_group::buttonPlusTenthCallback(Fl_Widget *Widget, void 
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t CurrentValue;
+	int16_t NewValue;
+	int16_t NewSetpointValue;
 	if (pThis->SetpointNumber == 1) {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue + 10, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + 10;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + 10;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
 	}
 	else {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue + 10, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + 10;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + 10;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
+				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
 	}
 }
 
@@ -213,16 +278,49 @@ void setpoint_adjustment_group::buttonMinusTenthCallback(Fl_Widget *Widget, void
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t CurrentValue;
+	int16_t NewValue;
+	int16_t NewSetpointValue;
 	if (pThis->SetpointNumber == 1) {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue - 10, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) - 10;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) - 10;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
 	}
 	else {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue - 10, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) - 10;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) - 10;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
 	}
 }
 
@@ -230,16 +328,49 @@ void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t CurrentValue;
+	int16_t NewValue;
+	int16_t NewSetpointValue;
 	if (pThis->SetpointNumber == 1) {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint1, CurrentValue - 100, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) - 100;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) - 100;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
+		}
 	}
 	else {
-		CurrentValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire);
-		atomic_store_explicit(&ValueToBeSentSetpoint2, CurrentValue - 100, std::memory_order_release);
-		atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) - 100;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) - 100;
+		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
+		if (IsBeingAdjusted) {
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
+		else {
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
+			}
+			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
+			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
+			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
+		}
 	}
 }
 
@@ -257,7 +388,7 @@ void power_indicator::draw() {
 	const Fl_Color ColorDim = fl_rgb_color(0xE3, 0xD3, 0x7A);
 	const Fl_Color ColorOff = fl_rgb_color(0x80, 0x88, 0x80);
 	const Fl_Color ColorUndefined = fl_rgb_color(0xD0, 0xD8, 0xD0);
-	const Fl_Color ColorRim = fl_rgb_color(0x4C, 0x4C, 0x4C);
+	const Fl_Color ColorRim = fl_rgb_color(0x5C, 0x5C, 0x5C);
 	const Fl_Color ColorRimUndefined = fl_rgb_color(0xCC, 0xCC, 0xCC);
 
 	int Diameter = (w() < h()) ? w() : h();
@@ -267,7 +398,7 @@ void power_indicator::draw() {
 	fl_color(State == indicator_light_state::UNDEFINED ? ColorRimUndefined : ColorRim);
 	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
 
-	int Rim = (Diameter >= 12) ? 3 : 1;
+	int Rim = (Diameter >= 12) ? 5 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
 		if (indicator_light_state::ON == State) {

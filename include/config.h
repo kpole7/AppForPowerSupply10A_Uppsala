@@ -3,8 +3,6 @@
 #ifndef SOURCE_CONFIG_H_
 #define SOURCE_CONFIG_H_
 
-#include <string>
-
 //=================================================================================================
 // Preprocessor directives
 //=================================================================================================
@@ -16,6 +14,9 @@ static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 #define PSU_NUMBER_OF_CHANNELS 2
 
 #define PERIPHERAL_THREAD_LOOP_DURATION 10 // milliseconds
+
+#define ABSOLUTE_MINIMUM_SETTING (-1000) // in hundredths of an ampere
+#define ABSOLUTE_MAXIMUM_SETTING 1000    // in hundredths of an ampere
 
 // TODO review
 // Attention: compare with getErrorDescription()

@@ -14,9 +14,9 @@
 #include <cstring>
 #include <iostream>
 
+#include "config.h"
 #include "modified_rstl_master.h"
 #include "multithread_resources.h"
-#include "peripheral_thread.h"
 #include "settings_file.h"
 #include "usart_master.h"
 #include "usart_master_debug.h"
@@ -27,9 +27,6 @@
 
 #define SUCCESSFUL_COMMUNICATION true
 #define FAILED_COMMUNICATION false
-
-#define ABSOLUTE_MINIMUM_SETTING (-1000) // in hundredths of an ampere
-#define ABSOLUTE_MAXIMUM_SETTING 1000    // in hundredths of an ampere
 
 //=================================================================================================
 // Types

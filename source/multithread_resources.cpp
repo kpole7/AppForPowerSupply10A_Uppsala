@@ -23,7 +23,9 @@ std::atomic<uint8_t> ReceivedCommunicationQuality{100};
 std::atomic<uint8_t> ReceivedTotalCommunicationQuality{100};
 
 std::atomic<int16_t> ReceivedSetpoint1{0};
+std::atomic<bool> IsFreshReceivedSetpoint1{false};
 std::atomic<int16_t> ReceivedSetpoint2{0};
+std::atomic<bool> IsFreshReceivedSetpoint2{false};
 
 std::atomic<bool> CommandToBeSentPowerOn{false};
 std::atomic<bool> CommandToBeSentPowerOff{false};

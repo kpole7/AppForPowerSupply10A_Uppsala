@@ -3,14 +3,12 @@
 #ifndef SOURCE_GUI_WIDGETS_H_
 #define SOURCE_GUI_WIDGETS_H_
 
-#include <FL/Fl.H>
 #include <FL/Fl_Box.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Double_Window.H> // to eliminate flickering
 #include <FL/Fl_Text_Display.H>
 #include <FL/Fl_Window.H>
 #include <cstdint>
-#include <string>
 
 #include "config.h"
 #include "multithread_resources.h"

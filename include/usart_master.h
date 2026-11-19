@@ -3,12 +3,9 @@
 #ifndef USART_MASTER_H
 #define USART_MASTER_H
 
-#include <cassert>
 #include <chrono>
 #include <cinttypes>
 #include <string>
-
-#include "config.h"
 
 /// @brief Size of the USART buffer
 #define USART_BUFFER_SIZE 300

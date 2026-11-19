@@ -16,6 +16,7 @@
 #include <termios.h>
 #include <unistd.h>
 
+#include "config.h"
 #include "debug_tools.h"
 #include "usart_master.h"
 

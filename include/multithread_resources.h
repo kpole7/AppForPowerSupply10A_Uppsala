@@ -65,9 +65,19 @@ extern std::atomic<uint8_t> ReceivedTotalCommunicationQuality;
 /// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
 extern std::atomic<int16_t> ReceivedSetpoint1;
 
+/// @brief This variable indicates whether the received setpoint 1 is fresh
+/// @details This variable indicates whether the received setpoint 1 value has been updated since the last change (i.e.,
+/// since “true” was written to CommandToBeSentSetpoint1)
+extern std::atomic<bool> IsFreshReceivedSetpoint1;
+
 /// @brief This variable stores the current value of setpoint 2 received from the peripheral thread.
 /// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
 extern std::atomic<int16_t> ReceivedSetpoint2;
+
+/// @brief This variable indicates whether the received setpoint 2 is fresh
+/// @details This variable indicates whether the received setpoint 2 value has been updated since the last change (i.e.,
+/// since “true” was written to CommandToBeSentSetpoint2)
+extern std::atomic<bool> IsFreshReceivedSetpoint2;
 
 // The user demands (information from GUI)
 
