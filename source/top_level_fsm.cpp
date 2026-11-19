@@ -178,6 +178,8 @@ void topLevelFsmTick(bool TerminationSignal) {
 		if (SuccessfulResponse) {
 			int16_t Value = getReceivedNumericalData();
 			ReceivedSetpoint1.store(Value, std::memory_order_release);
+			IsFreshReceivedSetpoint1.store(true, std::memory_order_release);
+
 			topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::SelectingChannel2);
 		}
 	} break;
@@ -205,6 +207,8 @@ void topLevelFsmTick(bool TerminationSignal) {
 		if (SuccessfulResponse) {
 			int16_t Value = getReceivedNumericalData();
 			ReceivedSetpoint2.store(Value, std::memory_order_release);
+			IsFreshReceivedSetpoint2.store(true, std::memory_order_release);
+			
 			topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::RestBreak);
 		}
 	} break;
@@ -297,7 +301,9 @@ void topLevelFsmTick(bool TerminationSignal) {
 		break;
 	}
 
+#if 0
 	printTopLevelChanges(static_cast<uint8_t>(PreviousTopLevelFsmState), static_cast<uint8_t>(TopLevelFsmState));
+#endif
 	if (TopLevelFsmState != PreviousTopLevelFsmState) {
 		AnotherPreviousTopLevelFsmState = PreviousTopLevelFsmState;
 	}
@@ -519,7 +525,7 @@ static void topLevelFsmPowerOffSummaryState() {
 	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
 	AwakeRefreshWholeGui = true;
 
-	// Jump to the idle sequence
+	// Jump to the monitoring-only sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }
 
@@ -570,7 +576,7 @@ static void topLevelFsmSetpoint1SummaryState() {
 	ReceivedSetpoint1.store(ReceivedData, std::memory_order_release);
 	IsFreshReceivedSetpoint1.store(true, std::memory_order_release);
 
-	// Jump to the idle sequence
+	// Jump to the monitoring-only sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }
 
@@ -621,6 +627,6 @@ static void topLevelFsmSetpoint2SummaryState() {
 	ReceivedSetpoint2.store(ReceivedData, std::memory_order_release);
 	IsFreshReceivedSetpoint2.store(true, std::memory_order_release);
 
-	// Jump to the idle sequence
+	// Jump to the monitoring-only sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }
