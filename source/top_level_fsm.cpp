@@ -208,7 +208,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 			int16_t Value = getReceivedNumericalData();
 			ReceivedSetpoint2.store(Value, std::memory_order_release);
 			IsFreshReceivedSetpoint2.store(true, std::memory_order_release);
-			
+
 			topLevelFsmPlaceOrder(single_order_code::SetZ, 2, top_level_fsm_states::RestBreak);
 		}
 	} break;

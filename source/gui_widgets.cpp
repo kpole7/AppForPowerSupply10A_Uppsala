@@ -25,7 +25,6 @@
 // Definitions of types
 //=================================================================================================
 
-
 //=================================================================================================
 // Local constants
 //=================================================================================================
@@ -117,7 +116,8 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	ValueDisplayPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
 	// Label "A" (Amperes) next to the value
-	Fl_Box *UnitLabel = new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
+	Fl_Box *UnitLabel =
+	    new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
 	UnitLabel->labelfont(FL_COURIER_BOLD);
 	UnitLabel->labelsize(16);
 	UnitLabel->labelcolor(FL_BLACK);
@@ -190,27 +190,36 @@ void setpoint_adjustment_group::updateDisplay() {
 	ValueDisplayPtr->redraw();
 }
 
-void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *Data) {
-	(void)Widget;
-	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
-
+/// @brief Exports a new setpoint value for the specified setpoint index, taking into account the growth value and
+/// handling both multiclick and single click scenarios.
+/// @param SetpointIndex The index of the setpoint to be adjusted (1 or 2)
+/// @param Growth The amount by which to adjust the setpoint (positive or negative)
+void setpoint_adjustment_group::exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth) {
 	int16_t NewValue;
 	int16_t NewSetpointValue;
-	if (pThis->SetpointNumber == 1) {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + 100;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + 100;
+	if (SetpointIndex == 1) {
+		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + Growth;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + Growth;
 		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
 		if (IsBeingAdjusted) {
+			// multiclick case
 			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
 				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
 			}
 			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
 		}
 		else {
+			// the case of a single click or a slow click
 			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
 				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
 			}
 			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
@@ -218,176 +227,62 @@ void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *D
 		}
 	}
 	else {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + 100;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + 100;
+		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + Growth;
+		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + Growth;
 		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
 		if (IsBeingAdjusted) {
+			// multiclick case
 			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
 				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
 			}
 			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
 		}
 		else {
+			// the case of a single click or a slow click
 			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
 				NewValue = ABSOLUTE_MAXIMUM_SETTING;
+			}
+			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
+				NewValue = ABSOLUTE_MINIMUM_SETTING;
 			}
 			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
 		}
 	}
+}
+
+void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *Data) {
+	(void)Widget;
+	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
+
+	exportNewSetpoint(pThis->SetpointNumber, 100);
 }
 
 void setpoint_adjustment_group::buttonPlusTenthCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t NewValue;
-	int16_t NewSetpointValue;
-	if (pThis->SetpointNumber == 1) {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + 10;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + 10;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-	}
-	else {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + 10;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + 10;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-	}
+	exportNewSetpoint(pThis->SetpointNumber, 10);
 }
 
 void setpoint_adjustment_group::buttonMinusTenthCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t NewValue;
-	int16_t NewSetpointValue;
-	if (pThis->SetpointNumber == 1) {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) - 10;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) - 10;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-	}
-	else {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) - 10;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) - 10;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-	}
+	exportNewSetpoint(pThis->SetpointNumber, -10);
 }
 
 void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	int16_t NewValue;
-	int16_t NewSetpointValue;
-	if (pThis->SetpointNumber == 1) {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) - 100;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) - 100;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
-		}
-	}
-	else {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) - 100;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) - 100;
-		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
-		if (IsBeingAdjusted) {
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-		else {
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
-			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
-			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
-			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
-		}
-	}
+	exportNewSetpoint(pThis->SetpointNumber, -100);
 }
 
 power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
@@ -457,7 +352,7 @@ void initializeGraphicWidgets() {
 	SeparatorPtr->box(FL_FLAT_BOX);
 	SeparatorPtr->color(SEPARATOR_COLOR);
 
-	Fl_Box *ContactorTitle = new Fl_Box(0, MAIN_MENU_HEIGHT+1+2, MAIN_WINDOW_WIDTH, 20, "Stycznik mocy");
+	Fl_Box *ContactorTitle = new Fl_Box(0, MAIN_MENU_HEIGHT + 1 + 2, MAIN_WINDOW_WIDTH, 20, "Stycznik mocy");
 	ContactorTitle->labelfont(FL_HELVETICA);
 	ContactorTitle->labelsize(16);
 	ContactorTitle->labelcolor(FL_BLACK);

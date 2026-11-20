@@ -73,6 +73,7 @@ class setpoint_adjustment_group : public Fl_Group {
 	static void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data);
 	static void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data);
 	static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
+	static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
 	void updateDisplay();
 
 	friend void refreshWholeGui(void *Data);
