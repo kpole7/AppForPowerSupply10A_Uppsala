@@ -313,7 +313,7 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 	}
 	// Unexpected input while expecting silence
 	CurrentState = rstl_master_fsm_state::Noise;
-	std::cout << "Noise (1)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+	std::cout << "Noise (1) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 	          << __FILE__ << ")\n";
 }
 

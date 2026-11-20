@@ -33,7 +33,6 @@
 // Local variables
 //=================================================================================================
 
-static Fl_Box *GeneralStatusTextBoxPtr;
 static Fl_Box *FailureMessagePtr;
 
 static Fl_Box *SeparatorPtr;
@@ -119,7 +118,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	Fl_Box *UnitLabel =
 	    new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
 	UnitLabel->labelfont(FL_COURIER_BOLD);
-	UnitLabel->labelsize(16);
+	UnitLabel->labelsize(22);
 	UnitLabel->labelcolor(FL_BLACK);
 	UnitLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
@@ -330,20 +329,6 @@ void power_indicator::draw() {
 }
 
 void initializeGraphicWidgets() {
-	int GeneralStatusTextBoxPositionX = 130;
-	GeneralStatusTextBoxPtr =
-	    new Fl_Box(GeneralStatusTextBoxPositionX, 1, MAIN_WINDOW_WIDTH - GeneralStatusTextBoxPositionX, 20,
-	               "Tu powinny być różne dane");
-	GeneralStatusTextBoxPtr->hide();
-	GeneralStatusTextBoxPtr->labelfont(FL_COURIER);
-	GeneralStatusTextBoxPtr->labelsize(8);
-	GeneralStatusTextBoxPtr->labelcolor(FL_BLACK);
-	GeneralStatusTextBoxPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE | FL_ALIGN_CLIP);
-#if 0 // debugging
-	GeneralStatusTextBoxPtr->color(FL_CYAN);
-	GeneralStatusTextBoxPtr->box(FL_FLAT_BOX);
-#endif
-
 	FailureMessagePtr =
 	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
