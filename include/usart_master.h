@@ -3,6 +3,7 @@
 #ifndef USART_MASTER_H
 #define USART_MASTER_H
 
+#include "config.h"
 #include <chrono>
 #include <cinttypes>
 #include <string>
@@ -14,17 +15,6 @@ enum class usart_low_level_state {
 	Uninitialized,
 	Open, // normal operation
 	Error
-};
-
-enum class usart_low_level_error : uint8_t {
-	None,
-	UsartDeviceNotFound, // port manipulation error
-	OpenFailed,          // port manipulation error
-	SelectFailed,        // port manipulation error
-	ReadFailed,          // port manipulation error
-	WriteFailed,         // port manipulation error
-	InternalError,       // internal error within the usart_master module
-	CallError            // internal error within this module
 };
 
 class low_level_usart {

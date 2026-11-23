@@ -399,8 +399,6 @@ static const char *getErrorDescription(initialization_failure_codes Error) {
 		return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
 	case initialization_failure_codes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
 		return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-	case initialization_failure_codes::ERROR_DEVICE_NAME_MISMATCH:
-		return "Nieprawidłowa nazwa urządzenia odczytana z Modbus";
 	case initialization_failure_codes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
 		return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
 	case initialization_failure_codes::ANOTHER_ERROR:

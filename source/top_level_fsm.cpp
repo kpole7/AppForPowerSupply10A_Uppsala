@@ -133,7 +133,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 		break;
 
 	case top_level_fsm_states::OptionalInitialPause:
-		inescapablePauseThenCommandAndJump(OPTIONAL_INITIAL_PAUSE_TICKS, single_order_code::None, 0,
+		inescapablePauseThenCommandAndJump(OPTIONAL_INITIAL_PAUSE_TICKS, single_order_code::NoOrder, 0,
 		                                   top_level_fsm_states::Uninitialized);
 		break;
 
@@ -381,7 +381,7 @@ static void inescapablePauseThenCommandAndJump(uint16_t PauseTicksMax, single_or
 	}
 	PauseCounter = 0; // Reset after completing the pause
 
-	if (single_order_code::None == NewCommand) {
+	if (single_order_code::NoOrder == NewCommand) {
 		TopLevelFsmState = NextState;
 		return;
 	}

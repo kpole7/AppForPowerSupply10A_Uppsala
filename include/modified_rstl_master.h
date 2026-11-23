@@ -18,7 +18,7 @@ enum class rstl_master_fsm_state {
 };
 
 enum class single_order_code : uint8_t {
-	None = 0,
+	NoOrder = 0,
 	InquiryPower = 1,   // ?POWER
 	SetPower = 2,       // POWER0, POWER1
 	InquiryZ = 3,       // ?Z
@@ -34,7 +34,7 @@ enum class order_processing_state { NotReady, Ready, Placed, InProgress };
 
 class order_with_argument {
   public:
-	single_order_code OrderCode = single_order_code::None;
+	single_order_code OrderCode = single_order_code::NoOrder;
 	int16_t Argument = 0;
 	order_with_argument() = default;
 };

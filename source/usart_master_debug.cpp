@@ -140,7 +140,7 @@ void printStateChanges(low_level_usart *UsartPtr, rstl_master_fsm_state FsmState
 		return;
 	}
 	static usart_low_level_state LastState = usart_low_level_state::Uninitialized;
-	static usart_low_level_error LastErrorCode = usart_low_level_error::None;
+	static usart_low_level_error LastErrorCode = usart_low_level_error::NoError;
 	static rstl_master_fsm_state LastFsmState = rstl_master_fsm_state::Uninitialized;
 	bool StateChanged = (LastState != UsartPtr->getState());
 	bool ErrorChanged = (LastErrorCode != UsartPtr->getErrorCode());

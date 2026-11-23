@@ -97,7 +97,7 @@ usart_low_level_error modified_rstl_master::initialize() {
 	std::string PortName = "/dev/ttyUSB0";
 	CurrentState = rstl_master_fsm_state::IdleAndSend;
 	usart_low_level_error Error = LowLevelUsartPtr->startModule(PortName);
-	if (Error != usart_low_level_error::None) {
+	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 	}
 	return Error;
@@ -238,7 +238,7 @@ bool modified_rstl_master::fsmTick(bool TerminationSignal) {
 		fsmTickNoise();
 		break;
 	default:
-		assert(usart_low_level_error::None != LowLevelUsartPtr->getErrorCode());
+		assert(usart_low_level_error::NoError != LowLevelUsartPtr->getErrorCode());
 		assert(usart_low_level_state::Error == LowLevelUsartPtr->getState());
 		assert(CurrentState == rstl_master_fsm_state::CriticalError);
 		// Wait for termination
@@ -276,7 +276,7 @@ void modified_rstl_master::fsmTickUninitialized() {
 	if (!SerialPortName.empty()) {
 		if (usart_low_level_state::Uninitialized == LowLevelUsartPtr->getState()) {
 			usart_low_level_error Error = LowLevelUsartPtr->startModule(SerialPortName);
-			if (Error != usart_low_level_error::None) {
+			if (Error != usart_low_level_error::NoError) {
 				CurrentState = rstl_master_fsm_state::CriticalError;
 				return;
 			}
@@ -297,7 +297,7 @@ void modified_rstl_master::fsmTickIdleAndSend() {
 	uint8_t ExpectedResponseLimit = ResponseLengthLimits[static_cast<uint8_t>(CurrentOrder.OrderCode)]; // TODO
 	usart_low_level_error Error =
 	    LowLevelUsartPtr->handleIdleAndSendState(&Silence, CommandInTextFormat, ExpectedResponseLimit);
-	if (Error != usart_low_level_error::None) {
+	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
 	}
@@ -324,7 +324,7 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	bool LimitsExceeded = false;
 	usart_low_level_error Error =
 	    LowLevelUsartPtr->handleWaitForResponseState(&TimeoutExceeded, &Silence, &LimitsExceeded);
-	if (Error != usart_low_level_error::None) {
+	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
 	}
@@ -354,7 +354,7 @@ void modified_rstl_master::fsmTickReceive() {
 	bool Silence = false;
 	bool LimitsExceeded = false;
 	usart_low_level_error Error = LowLevelUsartPtr->handleReceiveState(&Silence, &LimitsExceeded);
-	if (Error != usart_low_level_error::None) {
+	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
 	}
@@ -399,7 +399,7 @@ void modified_rstl_master::fsmTickNoise() {
 	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
 	bool Silence = false;
 	usart_low_level_error Error = LowLevelUsartPtr->handleNoiseState(&Silence);
-	if (Error != usart_low_level_error::None) {
+	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
 	}

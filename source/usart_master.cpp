@@ -70,7 +70,7 @@ void low_level_usart::handleCriticalError(int Line) {
 /// @brief Check for silence on the USART line
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if the line is silent, false otherwise.
 void low_level_usart::checkSilence(bool *IsSilencePtr) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	fd_set SerialReadFds;
@@ -94,7 +94,7 @@ void low_level_usart::checkSilence(bool *IsSilencePtr) {
 }
 
 void low_level_usart::flushBuffer() {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	char ReceivedBytes[500];
@@ -113,7 +113,7 @@ void low_level_usart::flushBuffer() {
 /// @param CommandTextPtr The command text to be sent over the USART line or nullptr if no new command is to be sent
 /// @param ResponseLimit The maximum number of bytes expected in the response
 void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uint16_t ResponseLimit) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	assert(USART_BUFFER_SIZE - 1 > ResponseLimit);
@@ -122,7 +122,7 @@ void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uin
 	ReceivedBytesLimit = ResponseLimit;
 
 	checkSilence(IsSilencePtr);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		// in case of error
 		return;
 	}
@@ -166,7 +166,7 @@ void low_level_usart::doSending() {
 /// @param IsTimeoutPtr Pointer to a boolean that will be set to true if a timeout occurs
 /// @param IsSilencePtr Pointer to a boolean that will be set to true if silence is detected on the line
 void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	assert(0 == TotalReceivedBytes);
@@ -176,7 +176,7 @@ void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) 
 	const auto TimeNow = std::chrono::high_resolution_clock::now();
 
 	checkSilence(IsSilencePtr);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		return;
 	}
 	if (*IsSilencePtr) {
@@ -195,7 +195,7 @@ void low_level_usart::doWaitForResponse(bool *IsTimeoutPtr, bool *IsSilencePtr) 
 /// @param IsOverLimitsPtr Pointer to a boolean that will be set to true if the number of received bytes exceeds the
 /// limit
 void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	assert(0 == TotalReceivedBytes);
@@ -239,7 +239,7 @@ void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 /// @brief Constructor for the low_level_usart class
 low_level_usart::low_level_usart() {
 	UsartState = usart_low_level_state::Uninitialized;
-	UsartErrorCode = usart_low_level_error::None;
+	UsartErrorCode = usart_low_level_error::NoError;
 	NameOfPort = nullptr;
 	SerialPortHandler = -1;
 	memset(SendingBuffer, 0, USART_BUFFER_SIZE);
@@ -270,7 +270,7 @@ low_level_usart::~low_level_usart() {
 /// @callergraph
 usart_low_level_error low_level_usart::startModule(const std::string &Name) {
 	assert(usart_low_level_state::Uninitialized == UsartState);
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(NameOfPort == nullptr);
 	assert(-1 == SerialPortHandler);
 
@@ -330,7 +330,7 @@ usart_low_level_error low_level_usart::handleIdleAndSendState(bool *IsSilencePtr
                                                               uint16_t ResponseLimit) {
 	bool IsSilence = false;
 	doIdle(&IsSilence, CommandString.c_str(), ResponseLimit);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		return UsartErrorCode;
 	}
 	*IsSilencePtr = IsSilence;
@@ -360,7 +360,7 @@ usart_low_level_error low_level_usart::handleWaitForResponseState(bool *IsTimeou
 	*IsSilencePtr = false;
 	*IsOverLimitsPtr = false;
 	doWaitForResponse(IsTimeoutExceededPtr, IsSilencePtr);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		return UsartErrorCode;
 	}
 	if ((*IsTimeoutExceededPtr) || (*IsSilencePtr)) {
@@ -377,7 +377,7 @@ usart_low_level_error low_level_usart::handleWaitForResponseState(bool *IsTimeou
 /// exceeds the limit or if there are short pauses in the response and their total duration is too long
 /// @return The error code indicating the result of the operation
 usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bool *IsOverLimitsPtr) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 	assert(0 != TotalReceivedBytes);
@@ -385,7 +385,7 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 	*IsOverLimitsPtr = false;
 
 	checkSilence(IsSilencePtr);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		return UsartErrorCode;
 	}
 	if (*IsSilencePtr) {
@@ -438,14 +438,14 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 }
 
 usart_low_level_error low_level_usart::handleNoiseState(bool *IsSilencePtr) {
-	assert(usart_low_level_error::None == UsartErrorCode);
+	assert(usart_low_level_error::NoError == UsartErrorCode);
 	assert(usart_low_level_state::Open == UsartState);
 	assert(-1 != SerialPortHandler);
 
 	*IsSilencePtr = false;
 
 	checkSilence(IsSilencePtr);
-	if (usart_low_level_error::None != UsartErrorCode) {
+	if (usart_low_level_error::NoError != UsartErrorCode) {
 		return UsartErrorCode;
 	}
 	if (!(*IsSilencePtr)) {
