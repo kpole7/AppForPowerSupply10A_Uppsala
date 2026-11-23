@@ -18,7 +18,7 @@ std::string ThisApplicationDirectory;
 std::string ConfigurationFilePath;
 
 std::atomic<main_power_state> ReceivedMainPowerState{main_power_state::UNDEFINED};
-std::atomic<uint8_t> ReceivedUsartErrorCode{0};
+std::atomic<usart_low_level_error> ReceivedUsartErrorCode{usart_low_level_error::NoError};
 std::atomic<uint8_t> ReceivedCommunicationQuality{100};
 std::atomic<uint8_t> ReceivedTotalCommunicationQuality{100};
 

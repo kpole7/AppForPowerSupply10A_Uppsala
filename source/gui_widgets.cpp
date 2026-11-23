@@ -385,29 +385,25 @@ void power_indicator::setState(indicator_light_state NewState) {
 //.............................................................................................
 
 void initializeGraphicWidgets() {
-#if 0
-	FailureMessagePtr =
-	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40 - MAIN_MENU_HEIGHT, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
+	FailureMessagePtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "TODO error message");
 	FailureMessagePtr->hide();
-#endif
 
 	// the percentage ratio of the height of the first window to that of the second
-	int FirstToSecondHeightPercentageRatio = 80; // % 
+	int FirstToSecondHeightPercentageRatio = 80; // %
 	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT;
 	int SecondHeight = (100 * UsableHeight) / (FirstToSecondHeightPercentageRatio + 200);
 	int FirstHeight = UsableHeight - SecondHeight - SecondHeight;
 
 	std::cout << "Heights: " << FirstHeight << ", " << SecondHeight << ", " << SecondHeight << '\n';
 
-	PowerContactorGroupPtr =
-	    new power_contactor_group(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, FirstHeight);
+	PowerContactorGroupPtr = new power_contactor_group(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, FirstHeight);
 
 	SetpointGroup1Ptr =
-	    new setpoint_adjustment_group(0,  MAIN_MENU_HEIGHT + FirstHeight, MAIN_WINDOW_WIDTH, SecondHeight, 1);
+	    new setpoint_adjustment_group(0, MAIN_MENU_HEIGHT + FirstHeight, MAIN_WINDOW_WIDTH, SecondHeight, 1);
 	SetpointGroup1Ptr->setTitle("Prąd zadany w kwadrupolu górnym");
 
-	SetpointGroup2Ptr =
-	    new setpoint_adjustment_group(0,  MAIN_MENU_HEIGHT + FirstHeight + SecondHeight, MAIN_WINDOW_WIDTH, SecondHeight, 2);
+	SetpointGroup2Ptr = new setpoint_adjustment_group(0, MAIN_MENU_HEIGHT + FirstHeight + SecondHeight,
+	                                                  MAIN_WINDOW_WIDTH, SecondHeight, 2);
 	SetpointGroup2Ptr->setTitle("Prąd zadany w kwadrupolu dolnym");
 }
 
@@ -428,7 +424,6 @@ void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 	}
 }
 
-// TODO write once again
 static const char *getErrorDescription(initialization_failure_codes Error) {
 	switch (Error) {
 	case initialization_failure_codes::NO_FAILURE:
@@ -437,15 +432,15 @@ static const char *getErrorDescription(initialization_failure_codes Error) {
 		return "Błąd składniowy w linii komendy";
 	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
 		return "Nie można uzyskać ścieżki do programu";
-	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE:
+	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE: // TODO not used
 		return "Błąd otwierania pliku konfiguracyjnego";
-	case initialization_failure_codes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND:
+	case initialization_failure_codes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND: // TODO not used
 		return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
-	case initialization_failure_codes::ERROR_SETTINGS_REDUNDANT_PORT_NAME:
+	case initialization_failure_codes::ERROR_SETTINGS_REDUNDANT_PORT_NAME: // TODO not used
 		return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-	case initialization_failure_codes::ERROR_DEVICE_TIME_STAMP_MISMATCH:
+	case initialization_failure_codes::ERROR_DEVICE_TIME_STAMP_MISMATCH: // TODO not used
 		return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
-	case initialization_failure_codes::ANOTHER_ERROR:
+	case initialization_failure_codes::ANOTHER_ERROR: // TODO not used
 		return "Błąd ogólny";
 	default:
 		return "Nieznany błąd";
@@ -459,6 +454,45 @@ static const char *getErrorDescription(initialization_failure_codes Error) {
 void refreshWholeGui(void *Data) {
 	(void)Data; // intentionally unused
 
+	assert(FailureMessagePtr != nullptr);
+	assert(PowerContactorGroupPtr != nullptr);
+	assert(SetpointGroup2Ptr != nullptr);
+	assert(SetpointGroup1Ptr != nullptr);
+
+	static uint8_t LastStatusLevelForGui = 0xFF; // invalid value to enforce refresh on first run
+	static bool LastTemporaryCommunicationError = false;
+
+	// Critical errors check
+	if (atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire) != usart_low_level_error::NoError) {
+		if (PowerContactorGroupPtr->visible()) {
+			PowerContactorGroupPtr->hide();
+		}
+		if (SetpointGroup1Ptr->visible()) {
+			SetpointGroup1Ptr->hide();
+		}
+		if (SetpointGroup2Ptr->visible()) {
+			SetpointGroup2Ptr->hide();
+		}
+		if (!FailureMessagePtr->visible()) {
+			FailureMessagePtr->show();
+		}
+		FailureMessagePtr->label("Błąd krytyczny\nAla ma kota");
+		FailureMessagePtr->redraw();
+		return;
+	}
+
+	if (FailureMessagePtr->visible()) {
+		FailureMessagePtr->hide();
+	}
+	if (!PowerContactorGroupPtr->visible()) {
+		PowerContactorGroupPtr->show();
+	}
+	if (!SetpointGroup1Ptr->visible()) {
+		SetpointGroup1Ptr->show();
+	}
+	if (!SetpointGroup2Ptr->visible()) {
+		SetpointGroup2Ptr->show();
+	}
 
 	indicator_light_state IndicatorCurrentState;
 	switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {

@@ -113,7 +113,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 
 	usart_low_level_error ErrorCode;
 	rstl_master_fsm_state RstlMasterState = getRstlMasterState(ErrorCode);
-	ReceivedUsartErrorCode.store(static_cast<uint8_t>(ErrorCode), std::memory_order_release);
+	ReceivedUsartErrorCode.store(ErrorCode, std::memory_order_release);
 	if (RstlMasterState == rstl_master_fsm_state::CriticalError) {
 		TopLevelFsmState = top_level_fsm_states::PermanentError;
 	}

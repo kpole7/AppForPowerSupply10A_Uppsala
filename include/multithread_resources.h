@@ -6,8 +6,8 @@
 #ifndef MULTITHREAD_RESOURCES_H_
 #define MULTITHREAD_RESOURCES_H_
 
+#include "config.h"
 #include <atomic>
-#include <chrono>
 #include <cstdint>
 #include <string>
 
@@ -51,7 +51,7 @@ extern std::atomic<main_power_state> ReceivedMainPowerState;
 
 /// @brief This variable stores the last USART low-level error received from the peripheral thread.
 /// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
-extern std::atomic<uint8_t> ReceivedUsartErrorCode;
+extern std::atomic<usart_low_level_error> ReceivedUsartErrorCode;
 
 /// @brief This variable stores the current communication quality received from the peripheral thread.
 /// @details This variable is to be displayed in the FLTK thread and updated from the peripheral thread.
