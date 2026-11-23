@@ -112,6 +112,4 @@ order_processing_state getOrderProcessingState();
 
 [[nodiscard]] single_order_code getRecentOrder();
 
-[[nodiscard]] uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality);
-
 #endif // MODIFIED_RSTL_MASTER_H

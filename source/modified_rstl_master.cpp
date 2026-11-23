@@ -341,7 +341,7 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (2)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+		std::cout << "Noise (2) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 		          << __FILE__ << ")\n";
 		return;
 	}
@@ -387,7 +387,7 @@ void modified_rstl_master::fsmTickReceive() {
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
 		updateCommunicationQuality(FAILED_COMMUNICATION);
-		std::cout << "Noise (3)) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
+		std::cout << "Noise (3) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 		          << __FILE__ << ")\n";
 		return;
 	}
@@ -757,6 +757,19 @@ rstl_master_fsm_state getRstlMasterState(usart_low_level_error &ErrorCode) {
 
 bool rstlMasterTick(bool TerminationSignal) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
+
+	static uint8_t CurrentQualityCounter = 0;
+	CurrentQualityCounter++;
+	if (CurrentQualityCounter >= 100) {
+		CurrentQualityCounter = 0;
+		ReceivedCommunicationQuality.store(RstlMasterInstancePtr->getCurrentCommunicationQuality(),
+		                                   std::memory_order_release);
+	}
+	if (50 == CurrentQualityCounter) {
+		ReceivedTotalCommunicationQuality.store(RstlMasterInstancePtr->getTotalCommunicationQuality(),
+		                                        std::memory_order_release);
+	}
+
 	return RstlMasterInstancePtr->fsmTick(TerminationSignal);
 }
 
@@ -783,12 +796,6 @@ order_processing_state getOrderProcessingState() {
 [[nodiscard]] single_order_code getRecentOrder() {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
 	return RstlMasterInstancePtr->getRecentOrder();
-}
-
-uint8_t getRstlMasterCurrentCommunicationQuality(uint8_t &TotalCommunicationQuality) {
-	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
-	TotalCommunicationQuality = RstlMasterInstancePtr->getTotalCommunicationQuality();
-	return RstlMasterInstancePtr->getCurrentCommunicationQuality();
 }
 
 //=================================================================================================

@@ -19,6 +19,8 @@
 // Preprocessor directives
 //=================================================================================================
 
+#define COMMUNICATION_QUALITY_THRESHOLD 80
+
 #define SEPARATOR_COLOR 0x2A
 
 //=================================================================================================
@@ -34,6 +36,7 @@
 //=================================================================================================
 
 static Fl_Box *FailureMessagePtr;
+static Fl_Box *CommunicationQualityPtr;
 
 static power_contactor_group *PowerContactorGroupPtr;
 static setpoint_adjustment_group *SetpointGroup1Ptr;
@@ -388,6 +391,16 @@ void initializeGraphicWidgets() {
 	FailureMessagePtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "TODO error message");
 	FailureMessagePtr->hide();
 
+	CommunicationQualityPtr = new Fl_Box(MAIN_WINDOW_WIDTH / 2, 1, MAIN_WINDOW_WIDTH / 2 - 2, MAIN_MENU_HEIGHT - 2, "");
+	CommunicationQualityPtr->hide();
+	CommunicationQualityPtr->labelfont(FL_COURIER);
+	CommunicationQualityPtr->labelsize(9);
+	CommunicationQualityPtr->labelcolor(FL_BLACK);
+	CommunicationQualityPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+#if 1
+	CommunicationQualityPtr->color(FL_YELLOW);
+#endif
+
 	// the percentage ratio of the height of the first window to that of the second
 	int FirstToSecondHeightPercentageRatio = 80; // %
 	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT;
@@ -481,6 +494,27 @@ void refreshWholeGui(void *Data) {
 		return;
 	}
 
+	// Communication error check
+	uint8_t CommunicationQualityPercentage =
+	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
+	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
+		if (PowerContactorGroupPtr->visible()) {
+			PowerContactorGroupPtr->hide();
+		}
+		if (SetpointGroup1Ptr->visible()) {
+			SetpointGroup1Ptr->hide();
+		}
+		if (SetpointGroup2Ptr->visible()) {
+			SetpointGroup2Ptr->hide();
+		}
+		if (!FailureMessagePtr->visible()) {
+			FailureMessagePtr->show();
+		}
+		FailureMessagePtr->label("Brak komunikacji\nze sterownikiem");
+		FailureMessagePtr->redraw();
+		return;
+	}
+
 	if (FailureMessagePtr->visible()) {
 		FailureMessagePtr->hide();
 	}
@@ -494,50 +528,65 @@ void refreshWholeGui(void *Data) {
 		SetpointGroup2Ptr->show();
 	}
 
-	indicator_light_state IndicatorCurrentState;
-	switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
-	case main_power_state::UNDEFINED:
-		IndicatorCurrentState = indicator_light_state::UNDEFINED;
-		PowerContactorGroupPtr->setButtonActivity(true);
-		PowerContactorGroupPtr->setButtonLabel("?");
-		PowerContactorGroupPtr->setStateDescriptionText("Stycznik nieokreślony");
-		SetpointGroup1Ptr->deactivateButtons();
-		SetpointGroup2Ptr->deactivateButtons();
-		break;
-	case main_power_state::ON:
-		IndicatorCurrentState = indicator_light_state::ON;
-		PowerContactorGroupPtr->setButtonActivity(true);
-		PowerContactorGroupPtr->setButtonLabel("Wyłącz");
-		PowerContactorGroupPtr->setStateDescriptionText("Stycznik włączony");
-		SetpointGroup1Ptr->activateButtons();
-		SetpointGroup2Ptr->activateButtons();
-		break;
-	case main_power_state::OFF:
-		IndicatorCurrentState = indicator_light_state::OFF;
-		PowerContactorGroupPtr->setButtonActivity(true);
-		PowerContactorGroupPtr->setButtonLabel("Włącz");
-		PowerContactorGroupPtr->setStateDescriptionText("Stycznik wyłączony");
-		SetpointGroup1Ptr->deactivateButtons();
-		SetpointGroup2Ptr->deactivateButtons();
-		break;
-	case main_power_state::RISING:
-	case main_power_state::FALLING:
-		IndicatorCurrentState = indicator_light_state::DIM;
-		PowerContactorGroupPtr->setButtonActivity(false);
-		PowerContactorGroupPtr->setStateDescriptionText("W trakcie przełączania");
-		SetpointGroup1Ptr->deactivateButtons();
-		SetpointGroup2Ptr->deactivateButtons();
-		break;
-	default:
-		std::cout << "Unexpected main power state" << '\n';
-		PowerContactorGroupPtr->setButtonActivity(true);
-		PowerContactorGroupPtr->setStateDescriptionText("Nieznany stan stycznika");
-		SetpointGroup1Ptr->deactivateButtons();
-		SetpointGroup2Ptr->deactivateButtons();
-		break;
+	if (1 < StatusLevelForGui.load(std::memory_order_acquire)) {
+		static std::string CommunicationQualityLabel;
+		CommunicationQualityLabel = "Połączenie RS-232 " + std::to_string(CommunicationQualityPercentage) + "%";
+		CommunicationQualityPtr->label(CommunicationQualityLabel.c_str());
+		CommunicationQualityPtr->show();
+	}
+	else {
+		CommunicationQualityPtr->hide();
 	}
 
-	PowerContactorGroupPtr->setIndicatorState(IndicatorCurrentState);
+	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
+		indicator_light_state IndicatorCurrentState;
+		switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
+		case main_power_state::UNDEFINED:
+			IndicatorCurrentState = indicator_light_state::UNDEFINED;
+			PowerContactorGroupPtr->setButtonActivity(true);
+			PowerContactorGroupPtr->setButtonLabel("?");
+			PowerContactorGroupPtr->setStateDescriptionText("Stycznik nieokreślony");
+			SetpointGroup1Ptr->deactivateButtons();
+			SetpointGroup2Ptr->deactivateButtons();
+			break;
+		case main_power_state::ON:
+			IndicatorCurrentState = indicator_light_state::ON;
+			PowerContactorGroupPtr->setButtonActivity(true);
+			PowerContactorGroupPtr->setButtonLabel("Wyłącz");
+			PowerContactorGroupPtr->setStateDescriptionText("Stycznik włączony");
+			SetpointGroup1Ptr->activateButtons();
+			SetpointGroup2Ptr->activateButtons();
+			break;
+		case main_power_state::OFF:
+			IndicatorCurrentState = indicator_light_state::OFF;
+			PowerContactorGroupPtr->setButtonActivity(true);
+			PowerContactorGroupPtr->setButtonLabel("Włącz");
+			PowerContactorGroupPtr->setStateDescriptionText("Stycznik wyłączony");
+			SetpointGroup1Ptr->deactivateButtons();
+			SetpointGroup2Ptr->deactivateButtons();
+			break;
+		case main_power_state::RISING:
+		case main_power_state::FALLING:
+			IndicatorCurrentState = indicator_light_state::DIM;
+			PowerContactorGroupPtr->setButtonActivity(false);
+			PowerContactorGroupPtr->setStateDescriptionText("W trakcie przełączania");
+			SetpointGroup1Ptr->deactivateButtons();
+			SetpointGroup2Ptr->deactivateButtons();
+			break;
+		default:
+			std::cout << "Unexpected main power state" << '\n';
+			PowerContactorGroupPtr->setButtonActivity(true);
+			PowerContactorGroupPtr->setStateDescriptionText("Nieznany stan stycznika");
+			SetpointGroup1Ptr->deactivateButtons();
+			SetpointGroup2Ptr->deactivateButtons();
+			break;
+		}
+		PowerContactorGroupPtr->setIndicatorState(IndicatorCurrentState);
+		PowerContactorGroupPtr->StateDescriptionPtr->show();
+	}
+	else {
+		PowerContactorGroupPtr->StateDescriptionPtr->hide();
+	}
 
 	// Update setpoint displays
 	SetpointGroup1Ptr->updateDisplay();
