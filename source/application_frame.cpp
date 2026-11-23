@@ -45,6 +45,9 @@ class window_esc_proof : public Fl_Double_Window {
 /// This variable points to the main application window
 window_esc_proof *ApplicationWindow;
 
+/// This variable points to the menu bar widget
+static Fl_Menu_Bar *MenuWidgetPtr = nullptr;
+
 /// This variable is used to locate the configuration file
 static std::string *ConfigurationFilePathPtr;
 
@@ -96,18 +99,18 @@ int main(int argc, char **argv) {
 	}
 
 	// Menu
-	Fl_Menu_Bar MenuWidget(0, 0, MAIN_WINDOW_WIDTH, MAIN_MENU_HEIGHT);
-	MenuWidget.box(FL_FLAT_BOX);
+	MenuWidgetPtr = new Fl_Menu_Bar(0, 0, MAIN_WINDOW_WIDTH, MAIN_MENU_HEIGHT);
+	MenuWidgetPtr->box(FL_FLAT_BOX);
 
-	MenuWidget.add("Narzędzia/Status/Ukryty", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
+	MenuWidgetPtr->add("Narzędzia/Status/Ukryty", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
 	int indexOfMenuItemStatusNormal =
-	    MenuWidget.add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
-	MenuWidget.add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)2, FL_MENU_RADIO);
-	MenuWidget.add("Pomoc/Instrukcja użytkowania", 0, callbackForMenuItemHelp);
+	    MenuWidgetPtr->add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
+	MenuWidgetPtr->add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)2, FL_MENU_RADIO);
+	MenuWidgetPtr->add("Pomoc/Instrukcja użytkowania", 0, callbackForMenuItemHelp);
 
-	Fl_Menu_Item *MenuItems = const_cast<Fl_Menu_Item *>(MenuWidget.menu());
-	MenuWidget.setonly(&MenuItems[indexOfMenuItemStatusNormal]);
-	MenuWidget.textsize(12);
+	Fl_Menu_Item *MenuItems = const_cast<Fl_Menu_Item *>(MenuWidgetPtr->menu());
+	MenuWidgetPtr->setonly(&MenuItems[indexOfMenuItemStatusNormal]);
+	MenuWidgetPtr->textsize(12);
 
 	// TODO
 	// Error message widget initialization used in case of initialization failure
