@@ -31,17 +31,19 @@ enum class indicator_light_state : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED
 
 /// Indicator lamp: a colored circle with a dark gray outline
 class power_indicator : public Fl_Widget {
-  public:
-	power_indicator(int X, int Y, int W, int H, const char *Label = nullptr);
-
-	/// Sets the brightness of the indicator: OFF (dark grayish green), DIM (dim green), or ON (bright green)
-	void setBrightness(indicator_light_state NewState);
+  private:
+	indicator_light_state State{indicator_light_state::UNDEFINED};
 
   protected:
 	void draw() override;
 
-  private:
-	indicator_light_state State{indicator_light_state::UNDEFINED};
+  public:
+	power_indicator(int X, int Y, int W, int H, const char *Label = nullptr);
+
+	indicator_light_state getState() const { return State; }
+
+	/// Sets the color of the indicator: OFF (green), DIM (dim orange), or ON (bright red)
+	void setState(indicator_light_state NewState);
 };
 
 /// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
@@ -75,6 +77,26 @@ class setpoint_adjustment_group : public Fl_Group {
 	static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
 	static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
 	void updateDisplay();
+
+	friend void refreshWholeGui(void *Data);
+};
+
+class power_contactor_group : public Fl_Group {
+  public:
+	power_contactor_group(int X, int Y, int W, int H);
+
+  private:
+	Fl_Box *SeparatorPtr;
+	Fl_Box *TitlePtr;
+	power_indicator *IndicatorPtr;
+	Fl_Box *StateDescriptionPtr;
+	Fl_Button *ControlButtonPtr;
+
+	void setIndicatorState(indicator_light_state NewState);
+	void setStateDescriptionText(const char *Description);
+	void setStateDescriptionVisibility(bool Visible);
+	void setButtonActivity(bool Active);
+	void setButtonLabel(const char *Label);
 
 	friend void refreshWholeGui(void *Data);
 };

@@ -35,11 +35,7 @@
 
 static Fl_Box *FailureMessagePtr;
 
-static Fl_Box *SeparatorPtr;
-static power_indicator *PowerIndicatorPtr;
-static Fl_Button *PowerButtonPtr;
-static Fl_Box *PowerStateDescriptionPtr;
-
+static power_contactor_group *PowerContactorGroupPtr;
 static setpoint_adjustment_group *SetpointGroup1Ptr;
 static setpoint_adjustment_group *SetpointGroup2Ptr;
 
@@ -53,6 +49,64 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 //=================================================================================================
 // Function definitions
 //=================================================================================================
+
+//.................................................................................................
+// The implementation of the power_contactor_group class
+//.................................................................................................
+
+power_contactor_group::power_contactor_group(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
+	SeparatorPtr = new Fl_Box(X, Y, W, 1);
+	SeparatorPtr->box(FL_FLAT_BOX);
+	SeparatorPtr->color(SEPARATOR_COLOR);
+
+	TitlePtr = new Fl_Box(X, Y + 1, W, 20, "Stycznik mocy");
+	TitlePtr->labelfont(FL_HELVETICA);
+	TitlePtr->labelsize(16);
+	TitlePtr->labelcolor(FL_BLACK);
+	TitlePtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+	IndicatorPtr = new power_indicator(X + 60, Y + H / 3, 46, 46);
+
+	ControlButtonPtr = new Fl_Button(X + 180, Y + H / 3 + H / 29, 90, 34, "");
+	ControlButtonPtr->callback(powerButtonCallback);
+
+	StateDescriptionPtr = new Fl_Box(X, Y + 2 * (H / 3) + H / 19, (W * 9) / 20, 20, "");
+	StateDescriptionPtr->labelfont(FL_HELVETICA);
+	StateDescriptionPtr->labelsize(12);
+	StateDescriptionPtr->labelcolor(FL_BLACK);
+	StateDescriptionPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+	end();
+}
+
+void power_contactor_group::setIndicatorState(indicator_light_state NewState) {
+	if (IndicatorPtr->getState() != NewState) {
+		IndicatorPtr->setState(NewState);
+		IndicatorPtr->redraw();
+	}
+}
+
+void power_contactor_group::setStateDescriptionText(const char *Description) {
+	StateDescriptionPtr->label(Description);
+}
+
+void power_contactor_group::setStateDescriptionVisibility(bool Visible) {
+	if (Visible) {
+		StateDescriptionPtr->show();
+		return;
+	}
+	StateDescriptionPtr->hide();
+}
+
+void power_contactor_group::setButtonActivity(bool Active) {
+	if (Active) {
+		ControlButtonPtr->activate();
+		return;
+	}
+	ControlButtonPtr->deactivate();
+}
+
+void power_contactor_group::setButtonLabel(const char *Label) { ControlButtonPtr->label(Label); }
 
 /// @brief Callback function for the power button. Toggles between CommandToBeSentPowerOn and CommandToBeSentPowerOff.
 static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
@@ -76,9 +130,9 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 	}
 }
 
-//=================================================================================================
+//.................................................................................................
 // setpoint_adjustment_group implementation
-//=================================================================================================
+//.................................................................................................
 
 setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber)
     : Fl_Group(X, Y, W, H), SetpointNumber(SetpointNumber) {
@@ -284,14 +338,9 @@ void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *
 	exportNewSetpoint(pThis->SetpointNumber, -100);
 }
 
-power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
+//.................................................................................................
 
-void power_indicator::setBrightness(indicator_light_state NewState) {
-	if (State != NewState) {
-		State = NewState;
-		redraw();
-	}
-}
+power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
 void power_indicator::draw() {
 	const Fl_Color ColorOn = fl_rgb_color(0xFF, 0x5F, 0x5B); // 0xFF, 0x3C, 0x3C
@@ -328,43 +377,38 @@ void power_indicator::draw() {
 	}
 }
 
+void power_indicator::setState(indicator_light_state NewState) {
+	State = NewState;
+	redraw();
+}
+
+//.............................................................................................
+
 void initializeGraphicWidgets() {
+#if 0
 	FailureMessagePtr =
-	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
+	    new Fl_Box((MAIN_WINDOW_WIDTH * 1) / 16, 40 - MAIN_MENU_HEIGHT, (MAIN_WINDOW_WIDTH * 14) / 16, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
+#endif
 
-	SeparatorPtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, 1, nullptr);
-	SeparatorPtr->box(FL_FLAT_BOX);
-	SeparatorPtr->color(SEPARATOR_COLOR);
+	// the percentage ratio of the height of the first window to that of the second
+	int FirstToSecondHeightPercentageRatio = 80; // % 
+	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT;
+	int SecondHeight = (100 * UsableHeight) / (FirstToSecondHeightPercentageRatio + 200);
+	int FirstHeight = UsableHeight - SecondHeight - SecondHeight;
 
-	Fl_Box *ContactorTitle = new Fl_Box(0, MAIN_MENU_HEIGHT + 1 + 2, MAIN_WINDOW_WIDTH, 20, "Stycznik mocy");
-	ContactorTitle->labelfont(FL_HELVETICA);
-	ContactorTitle->labelsize(16);
-	ContactorTitle->labelcolor(FL_BLACK);
-	ContactorTitle->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+	std::cout << "Heights: " << FirstHeight << ", " << SecondHeight << ", " << SecondHeight << '\n';
 
-	PowerIndicatorPtr = new power_indicator(60, 60, 46, 46);
+	PowerContactorGroupPtr =
+	    new power_contactor_group(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, FirstHeight);
 
-	PowerButtonPtr = new Fl_Button(180, 65, 90, 34, "");
-	PowerButtonPtr->callback(powerButtonCallback);
-
-	PowerStateDescriptionPtr = new Fl_Box(0, 60 + 46 + 5, (MAIN_WINDOW_WIDTH * 9) / 20, 20, "");
-	PowerStateDescriptionPtr->labelfont(FL_HELVETICA);
-	PowerStateDescriptionPtr->labelsize(12);
-	PowerStateDescriptionPtr->labelcolor(FL_BLACK);
-	PowerStateDescriptionPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
-
-	// First setpoint adjustment group: middle 1/3 of main window
 	SetpointGroup1Ptr =
-	    new setpoint_adjustment_group(0, MAIN_WINDOW_HEIGHT / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 1);
+	    new setpoint_adjustment_group(0,  MAIN_MENU_HEIGHT + FirstHeight, MAIN_WINDOW_WIDTH, SecondHeight, 1);
 	SetpointGroup1Ptr->setTitle("Prąd zadany w kwadrupolu górnym");
 
-	// Second setpoint adjustment group: bottom 1/3 of main window
 	SetpointGroup2Ptr =
-	    new setpoint_adjustment_group(0, (MAIN_WINDOW_HEIGHT * 2) / 3, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT / 3, 2);
+	    new setpoint_adjustment_group(0,  MAIN_MENU_HEIGHT + FirstHeight + SecondHeight, MAIN_WINDOW_WIDTH, SecondHeight, 2);
 	SetpointGroup2Ptr->setTitle("Prąd zadany w kwadrupolu dolnym");
-
-	(void)PowerIndicatorPtr;
 }
 
 void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
@@ -415,57 +459,57 @@ static const char *getErrorDescription(initialization_failure_codes Error) {
 void refreshWholeGui(void *Data) {
 	(void)Data; // intentionally unused
 
-	indicator_light_state CurrentState;
 
+	indicator_light_state IndicatorCurrentState;
 	switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
 	case main_power_state::UNDEFINED:
-		CurrentState = indicator_light_state::UNDEFINED;
-		PowerButtonPtr->activate();
-		PowerButtonPtr->label("?");
-		PowerStateDescriptionPtr->label("Stycznik nieokreślony");
+		IndicatorCurrentState = indicator_light_state::UNDEFINED;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("?");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik nieokreślony");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	case main_power_state::ON:
-		CurrentState = indicator_light_state::ON;
-		PowerButtonPtr->activate();
-		PowerButtonPtr->label("Wyłącz");
-		PowerStateDescriptionPtr->label("Stycznik włączony");
+		IndicatorCurrentState = indicator_light_state::ON;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("Wyłącz");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik włączony");
 		SetpointGroup1Ptr->activateButtons();
 		SetpointGroup2Ptr->activateButtons();
 		break;
 	case main_power_state::OFF:
-		CurrentState = indicator_light_state::OFF;
-		PowerButtonPtr->activate();
-		PowerButtonPtr->label("Włącz");
-		PowerStateDescriptionPtr->label("Stycznik wyłączony");
+		IndicatorCurrentState = indicator_light_state::OFF;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("Włącz");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik wyłączony");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	case main_power_state::RISING:
 	case main_power_state::FALLING:
-		CurrentState = indicator_light_state::DIM;
-		PowerButtonPtr->deactivate();
-		PowerStateDescriptionPtr->label("W trakcie przełączania");
+		IndicatorCurrentState = indicator_light_state::DIM;
+		PowerContactorGroupPtr->setButtonActivity(false);
+		PowerContactorGroupPtr->setStateDescriptionText("W trakcie przełączania");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	default:
 		std::cout << "Unexpected main power state" << '\n';
-		PowerButtonPtr->activate();
-		PowerStateDescriptionPtr->label("Nieznany stan stycznika");
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setStateDescriptionText("Nieznany stan stycznika");
 		SetpointGroup1Ptr->deactivateButtons();
 		SetpointGroup2Ptr->deactivateButtons();
 		break;
 	}
 
-	PowerIndicatorPtr->setBrightness(CurrentState);
+	PowerContactorGroupPtr->setIndicatorState(IndicatorCurrentState);
 
 	// Update setpoint displays
-	if (SetpointGroup1Ptr != nullptr) {
-		SetpointGroup1Ptr->updateDisplay();
-	}
-	if (SetpointGroup2Ptr != nullptr) {
-		SetpointGroup2Ptr->updateDisplay();
-	}
+	SetpointGroup1Ptr->updateDisplay();
+	SetpointGroup2Ptr->updateDisplay();
+
+	PowerContactorGroupPtr->redraw();
+	SetpointGroup1Ptr->redraw();
+	SetpointGroup2Ptr->redraw();
 }
