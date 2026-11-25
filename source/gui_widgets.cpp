@@ -408,9 +408,9 @@ void initializeGraphicWidgets() {
 	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT;
 	int SecondHeight = (100 * UsableHeight) / (FirstToSecondHeightPercentageRatio + 200);
 	int FirstHeight = UsableHeight - SecondHeight - SecondHeight;
-
+#if 0
 	std::cout << "Heights: " << FirstHeight << ", " << SecondHeight << ", " << SecondHeight << '\n';
-
+#endif
 	PowerContactorGroupPtr = new power_contactor_group(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, FirstHeight);
 
 	SetpointGroup1Ptr =

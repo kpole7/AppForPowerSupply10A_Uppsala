@@ -11,7 +11,7 @@
 
 extern std::uint16_t LongestTimeTicsBehindSchedule;
 
-extern bool DebuggingSignal1;
+extern int DebuggingSignalJustPressedKey;
 
 //=================================================================================================
 // Function prototypes

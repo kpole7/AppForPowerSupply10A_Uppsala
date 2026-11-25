@@ -56,13 +56,13 @@ uint8_t communication_quality::getCurrentQuality() const {
 
 	uint16_t CurrentQuality = (SuccessCount + 32) / 640;
 
-	if (DebuggingSignal1) {
-		//		DebuggingSignal1 = false;
+#ifdef DEBUG_COMMUNICATION_QUALITY
+	//		DebuggingFlagPrinting = false;
 
-		std::cout << "getCurrentQuality: " << std::hex << ResponseFailureHistory << std::dec << " "
-		          << static_cast<int>(64 - FailureCount) << " / 64 = " << static_cast<int>(CurrentQuality)
-		          << " %             ";
-	}
+	std::cout << "getCurrentQuality: " << std::hex << ResponseFailureHistory << std::dec << " "
+				<< static_cast<int>(64 - FailureCount) << " / 64 = " << static_cast<int>(CurrentQuality)
+				<< " %             ";
+#endif
 	return static_cast<uint8_t>(CurrentQuality);
 }
 
@@ -83,12 +83,10 @@ uint8_t communication_quality::getTotalQuality() const {
 
 	uint8_t LocalQuality = static_cast<uint8_t>((LocalQualityPerMille + 5) / 10);
 
-	if (DebuggingSignal1) {
-		DebuggingSignal1 = false;
-
-		std::cout << "getTotalQuality: " << static_cast<int>(LocalSuccessCount) << " / "
-		          << static_cast<int>(TotalResponseCount) << " = " << static_cast<int>(LocalQuality) << " %\n";
-	}
+#ifdef DEBUG_COMMUNICATION_QUALITY
+	std::cout << "getTotalQuality: " << static_cast<int>(LocalSuccessCount) << " / "
+	          << static_cast<int>(TotalResponseCount) << " = " << static_cast<int>(LocalQuality) << " %\n";
+#endif
 	return LocalQuality;
 }
 

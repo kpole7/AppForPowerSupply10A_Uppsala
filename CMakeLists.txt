@@ -120,3 +120,39 @@ add_custom_target(run-sanitize
   DEPENDS AppForPowerSupply10A_Uppsala
   WORKING_DIRECTORY "$<TARGET_FILE_DIR:AppForPowerSupply10A_Uppsala>"
 )
+
+# ==============================================================================
+# Test executable: test_communication_quality
+# ==============================================================================
+add_executable(test_communication_quality
+  tests/test_communication_quality.cpp
+  source/communication_quality.cpp
+  source/debug_tools.cpp
+)
+
+target_compile_options(test_communication_quality PRIVATE
+  -g
+  -Wall
+  -Wextra
+  -Wpedantic
+  -DDEBUG_COMMUNICATION_QUALITY
+)
+
+target_include_directories(test_communication_quality PRIVATE
+  ${CMAKE_CURRENT_SOURCE_DIR}/include
+)
+
+target_link_libraries(test_communication_quality PRIVATE
+  pthread
+)
+
+set_target_properties(test_communication_quality PROPERTIES
+  RUNTIME_OUTPUT_DIRECTORY "${CMAKE_BINARY_DIR}"
+)
+
+# Optional: add a convenience target to run the test
+add_custom_target(run-test
+  COMMAND "$<TARGET_FILE:test_communication_quality>"
+  DEPENDS test_communication_quality
+  WORKING_DIRECTORY "$<TARGET_FILE_DIR:test_communication_quality>"
+)

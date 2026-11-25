@@ -55,7 +55,7 @@ class console_mode {
 // Global variables
 //=================================================================================================
 
-bool DebuggingSignal1;
+int DebuggingSignalJustPressedKey;
 
 //=================================================================================================
 // Local variables
@@ -66,6 +66,10 @@ static console_mode *ConsoleModePtr = nullptr;
 //=================================================================================================
 // Function prototypes
 //=================================================================================================
+
+
+
+
 
 int readConsoleKeyNonBlocking();
 
@@ -159,11 +163,11 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		return false;
 	}
 
-	if ('>' == JustPressedKey) {
-		DebuggingSignal1 = true;
-	}
+	DebuggingSignalJustPressedKey = JustPressedKey;
 
+#if 0 // debugging USART master
 	usartMasterDebuggingTick(JustPressedKey);
+#endif
 
 	return true;
 }
