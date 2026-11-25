@@ -25,13 +25,13 @@
 
 #define SHUT_DOWN_COUNT_DOWN (SHUT_DOWN_TIMEOUT / SHUT_DOWN_LOOP_DELAY)
 
+#define REFRESH_WHOLE_GUI_LIMIT 47 // in ticks
+
 //=================================================================================================
 // Global variables
 //=================================================================================================
 
-bool AwakeRefreshWholeGui = false;
-
-bool AwakeRefreshDebugInfoGui = false;
+bool AwakeGuiRefresh = false;
 
 uint16_t LongestTimeTicsBehindSchedule = 0;
 
@@ -113,17 +113,17 @@ static void peripheralThreadHandler() {
 
 	ContinuePeripheralsLoop = true; // start the peripheral loop
 	while (ContinuePeripheralsLoop) {
-		static uint16_t AwakeRefreshWholeGuiCounter = 0;
-		if (AwakeRefreshWholeGui) {
+		static uint16_t AwakeGuiRefreshCounter = 0;
+		if (AwakeGuiRefresh) {
 			Fl::awake(refreshWholeGui, nullptr);
-			AwakeRefreshWholeGui = false;
-			AwakeRefreshWholeGuiCounter = 0;
+			AwakeGuiRefresh = false;
+			AwakeGuiRefreshCounter = 0;
 		}
 		else {
-			AwakeRefreshWholeGuiCounter++;
-			if (AwakeRefreshWholeGuiCounter >= 47) {
+			AwakeGuiRefreshCounter++;
+			if (AwakeGuiRefreshCounter >= REFRESH_WHOLE_GUI_LIMIT) {
 				Fl::awake(refreshWholeGui, nullptr);
-				AwakeRefreshWholeGuiCounter = 0;
+				AwakeGuiRefreshCounter = 0;
 			}
 		}
 		peripheralThreadTiming();

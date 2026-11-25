@@ -151,7 +151,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 			int16_t ReceivedMainPowerStateValue = getReceivedNumericalData();
 			ReceivedMainPowerState.store(static_cast<main_power_state>(ReceivedMainPowerStateValue),
 			                             std::memory_order_release);
-			AwakeRefreshWholeGui = true;
+			AwakeGuiRefresh = true;
 			topLevelFsmPlaceOrder(single_order_code::SetZ, 1, top_level_fsm_states::SelectingChannel1);
 		}
 	} break;
@@ -294,7 +294,8 @@ void topLevelFsmTick(bool TerminationSignal) {
 
 	case top_level_fsm_states::PermanentError:
 		if (TopLevelFsmState != PreviousTopLevelFsmState) {
-			AwakeRefreshWholeGui = true;
+			AwakeGuiRefresh = true;
+			std::cout << "PERMANENT ERROR ENCOUNTERED" << '\n';
 		}
 		break;
 
@@ -492,7 +493,7 @@ static void topLevelFsmPowerOnSummaryState() {
 	// If we reach this point, the power is rising as expected
 
 	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
-	AwakeRefreshWholeGui = true;
+	AwakeGuiRefresh = true;
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);
 }
 
@@ -529,7 +530,7 @@ static void topLevelFsmPowerOffSummaryState() {
 	// If we reach this point, the power is falling as expected
 
 	ReceivedMainPowerState.store(ReceivedMainPowerStateValue, std::memory_order_release);
-	AwakeRefreshWholeGui = true;
+	AwakeGuiRefresh = true;
 
 	// Jump to the monitoring-only sequence
 	topLevelFsmPlaceOrder(single_order_code::InquiryST, 0, top_level_fsm_states::CheckingStatus);

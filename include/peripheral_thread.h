@@ -7,8 +7,6 @@
 // Global variables
 //=================================================================================================
 
-extern bool AwakeRefreshWholeGui;
-
-extern bool AwakeRefreshDebugInfoGui;
+extern bool AwakeGuiRefresh;
 
 #endif // PERIPHERAL_THREAD_H

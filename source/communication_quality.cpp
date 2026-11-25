@@ -8,6 +8,24 @@
 #include "debug_tools.h"
 
 //=================================================================================================
+// Class definitions
+//=================================================================================================
+
+class communication_quality {
+  public:
+	communication_quality();
+	void update(int8_t Weight);
+	[[nodiscard]] uint8_t getCurrentQuality() const;
+	[[nodiscard]] uint8_t getTotalQuality() const;
+
+  private:
+	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success);
+	                                 // LSB = the most recent response
+	uint32_t TotalResponseCount;
+	uint32_t TotalFailedResponseCount;
+};
+
+//=================================================================================================
 // Local variables
 //=================================================================================================
 

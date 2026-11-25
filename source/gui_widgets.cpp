@@ -73,7 +73,7 @@ power_contactor_group::power_contactor_group(int X, int Y, int W, int H) : Fl_Gr
 	ControlButtonPtr = new Fl_Button(X + 180, Y + H / 3 + H / 29, 90, 34, "");
 	ControlButtonPtr->callback(powerButtonCallback);
 
-	StateDescriptionPtr = new Fl_Box(X, Y + 2 * (H / 3) + H / 19, (W * 9) / 20, 20, "");
+	StateDescriptionPtr = new Fl_Box(X, Y + 2 * (H / 3) + H / 15, (W * 9) / 20, 20, "");
 	StateDescriptionPtr->labelfont(FL_HELVETICA);
 	StateDescriptionPtr->labelsize(12);
 	StateDescriptionPtr->labelcolor(FL_BLACK);

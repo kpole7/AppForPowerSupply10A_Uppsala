@@ -488,10 +488,6 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 		EssentialResponseStart = 4;
 		main_power_state ExternalDeviceSimplifiedState =
 		    convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
-#if 0 // show ExternalDeviceSimplifiedState for debugging purposes
-		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
-		AwakeRefreshWholeGui = true;
-#endif
 		ReceivedValueInResponse = static_cast<int16_t>(ExternalDeviceSimplifiedState);
 	} break;
 
