@@ -33,7 +33,7 @@ int main() {
             updateCommunicationQuality(1);
             CurrentQuality = getCurrentCommunicationQuality();
             TotalQuality = getTotalCommunicationQuality();
-            std::cout << "Current Quality: " << static_cast<int>(CurrentQuality)
+            std::cout << "  Current Quality: " << static_cast<int>(CurrentQuality)
                       << " %, Total Quality: " << static_cast<int>(TotalQuality) << " %\n";
         }
         if (DebuggingSignalMinusOne) {
@@ -41,7 +41,7 @@ int main() {
             updateCommunicationQuality(-1);
             CurrentQuality = getCurrentCommunicationQuality();
             TotalQuality = getTotalCommunicationQuality();
-            std::cout << "Current Quality: " << static_cast<int>(CurrentQuality)
+            std::cout << "  Current Quality: " << static_cast<int>(CurrentQuality)
                       << " %, Total Quality: " << static_cast<int>(TotalQuality) << " %\n";
         }
         if (DebuggingSignalMinusTen) {
@@ -49,7 +49,7 @@ int main() {
             updateCommunicationQuality(-10);
             CurrentQuality = getCurrentCommunicationQuality();
             TotalQuality = getTotalCommunicationQuality();
-            std::cout << "Current Quality: " << static_cast<int>(CurrentQuality)
+            std::cout << "  Current Quality: " << static_cast<int>(CurrentQuality)
                       << " %, Total Quality: " << static_cast<int>(TotalQuality) << " %\n";
         }
 

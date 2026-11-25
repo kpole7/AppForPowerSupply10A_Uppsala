@@ -19,7 +19,7 @@
 // Preprocessor directives
 //=================================================================================================
 
-#define COMMUNICATION_QUALITY_THRESHOLD 80
+#define COMMUNICATION_QUALITY_THRESHOLD 60
 
 #define SEPARATOR_COLOR 0x2A
 
