@@ -47,7 +47,7 @@ static const order_with_argument MyOrders[26] = {
 
 void printResults(bool IsResponseSuccessful, int16_t ValueReturnedInResponse, const char *EssentialResponsePtr,
                   uint8_t EssentialResponseLength) {
-#if 0
+#if 0 // show USART master response results for debugging purposes
 	std::cout << "Response success: " << (IsResponseSuccessful ? "Yes" : "No") << " ";
 	std::cout << "Value returned in response: " << ValueReturnedInResponse;
 	if (nullptr != EssentialResponsePtr) {

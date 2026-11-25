@@ -6,6 +6,7 @@
 #include <iostream>
 #include <thread>
 
+#include "communication_quality.h"
 #include "config.h"
 #include "debug_tools.h"
 #include "modified_rstl_master.h"
@@ -103,6 +104,7 @@ static void peripheralThreadHandler() {
 	std::this_thread::sleep_for(std::chrono::milliseconds(100));
 
 	debugPeripheralsInitializations();
+	usartMasterDebuggingInitialize();
 	initializeRstlMaster();
 	initializeTopLevelFsm();
 
@@ -111,9 +113,18 @@ static void peripheralThreadHandler() {
 
 	ContinuePeripheralsLoop = true; // start the peripheral loop
 	while (ContinuePeripheralsLoop) {
+		static uint16_t AwakeRefreshWholeGuiCounter = 0;
 		if (AwakeRefreshWholeGui) {
 			Fl::awake(refreshWholeGui, nullptr);
 			AwakeRefreshWholeGui = false;
+			AwakeRefreshWholeGuiCounter = 0;
+		}
+		else {
+			AwakeRefreshWholeGuiCounter++;
+			if (AwakeRefreshWholeGuiCounter >= 47) {
+				Fl::awake(refreshWholeGui, nullptr);
+				AwakeRefreshWholeGuiCounter = 0;
+			}
 		}
 		peripheralThreadTiming();
 		if (atomic_load_explicit(&DoHardClosePeripheralThread, std::memory_order_acquire)) {
@@ -153,6 +164,10 @@ static void peripheralThreadTiming() {
 		if (DurationTime.count() >= PeripheralThreadTimeInMilliseconds) {
 			break;
 		}
+
+		// transfer communication quality updates
+		ReceivedCommunicationQuality.store(getCurrentCommunicationQuality(), std::memory_order_release);
+		ReceivedTotalCommunicationQuality.store(getTotalCommunicationQuality(), std::memory_order_release);
 
 		// delay so as not to overload the processor core
 		std::this_thread::sleep_for(std::chrono::milliseconds(1));

@@ -8,6 +8,10 @@
 
 #include "usart_master.h"
 
+//=================================================================================================
+// Classes and types
+//=================================================================================================
+
 enum class rstl_master_fsm_state {
 	Uninitialized,
 	IdleAndSend,
@@ -48,10 +52,6 @@ class modified_rstl_master {
 	bool IsResentTransmissionSuccessful;
 	mutable int16_t ReceivedValueInResponse;
 	std::string CommandInTextFormat;
-	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success);
-	                                 // LSB = the most recent response
-	uint32_t TotalResponseCount;
-	uint32_t TotalFailedResponseCount;
 
 	void fsmTickUninitialized();
 	void fsmTickIdleAndSend();
@@ -59,8 +59,6 @@ class modified_rstl_master {
 	void fsmTickReceive();
 	void fsmTickNoise();
 
-	void updateCommunicationQuality(
-	    bool SuccessfulCommunication); // Updates the communication quality metrics based on the latest response
 	void placeOrderSetPC(const order_with_argument &NewOrder);
 	bool parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart,
 	                   uint8_t &EssentialResponseLength) const;
@@ -84,12 +82,13 @@ class modified_rstl_master {
 	[[nodiscard]] bool getIsResponseSuccessful() const;
 	[[nodiscard]] int16_t getReceivedNumericalData() const;
 	[[nodiscard]] single_order_code getRecentOrder() const;
-
-	[[nodiscard]] uint8_t getCurrentCommunicationQuality() const;
-	[[nodiscard]] uint8_t getTotalCommunicationQuality() const;
 };
 
 typedef modified_rstl_master *modified_rstl_master_ptr;
+
+//=================================================================================================
+// Prototypes of global functions
+//=================================================================================================
 
 usart_low_level_error initializeRstlMaster();
 

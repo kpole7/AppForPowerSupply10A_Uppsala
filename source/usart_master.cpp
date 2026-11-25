@@ -213,7 +213,7 @@ void low_level_usart::doReceiveFirstData(bool *IsOverLimitsPtr) {
 		return;
 	}
 
-#if 0
+#if 0 // show number of received bytes for debugging purposes
 	std::cout << "Number of received bytes: " << TotalReceivedBytes + NumberOfReceived << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__
 	          << " in file " << __FILE__ << "\n";
 #endif
@@ -404,7 +404,7 @@ usart_low_level_error low_level_usart::handleReceiveState(bool *IsSilencePtr, bo
 
 	// Check if adding the new received bytes would exceed the limit given by the higher layer for the particular
 	// command
-#if 0
+#if 0 // show number of received bytes for debugging purposes
 	std::cout << "Number of received bytes: " << NumberOfReceived + TotalReceivedBytes << "  Limit: " << ReceivedBytesLimit << "  Line: " << __LINE__
 	          << " in file " << __FILE__ << "\n";
 #endif

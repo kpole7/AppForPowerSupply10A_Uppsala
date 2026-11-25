@@ -232,7 +232,7 @@ static initialization_failure_codes determineVerbosity(int argc, char **argv) {
 		if (Argument == "-v") {
 			atomic_store_explicit(&VerboseMode, true, std::memory_order_release);
 
-#if 0 // debugging
+#if 0 // show command line for debugging purposes
             std::string Argument0 = argv[0];
         	std::cout << "Wywołanie programu: " << Argument0 << '\n';
 #endif
@@ -259,7 +259,7 @@ static initialization_failure_codes determineApplicationPath(char *Argv0) {
 		ConfigurationFilePath = ThisApplicationDirectory;
 		ConfigurationFilePathPtr = &ConfigurationFilePath;
 		if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
-#if 0
+#if 0 // show path for debugging purposes
         	std::cout << "PATH_MAX= " << PATH_MAX << '\n';
 #endif
 			std::cout << " Katalog programu: " << ThisApplicationDirectory << '\n'

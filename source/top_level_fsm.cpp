@@ -4,6 +4,7 @@
 /// the external device
 
 #include "top_level_fsm.h"
+#include "communication_quality.h"
 #include "config.h"
 #include "debug_tools.h"
 #include "modified_rstl_master.h"
@@ -301,7 +302,7 @@ void topLevelFsmTick(bool TerminationSignal) {
 		break;
 	}
 
-#if 0
+#if 0 // show top-level FSM state changes for debugging purposes
 	printTopLevelChanges(static_cast<uint8_t>(PreviousTopLevelFsmState), static_cast<uint8_t>(TopLevelFsmState));
 #endif
 	if (TopLevelFsmState != PreviousTopLevelFsmState) {
@@ -344,8 +345,10 @@ static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure
 
 	if (!getIsResponseSuccessful()) {
 		TopLevelFsmState = NewStateOnFailure;
+		updateCommunicationQuality(-1);
 		return false;
 	}
+	updateCommunicationQuality(1);
 	return true;
 }
 
@@ -357,10 +360,12 @@ static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeC
 
 	if (!getIsResponseSuccessful()) {
 		TopLevelFsmState = NextStateOnFailureBeforeCommand;
+		updateCommunicationQuality(-1);
 		return;
 	}
 
 	topLevelFsmPlaceOrder(NewCommand, Argument, NextStateAfterCommand);
+	updateCommunicationQuality(1);
 }
 
 static void inescapablePauseThenCommandAndJump(uint16_t PauseTicksMax, single_order_code NewCommand, int16_t Argument,
@@ -380,6 +385,7 @@ static void inescapablePauseThenCommandAndJump(uint16_t PauseTicksMax, single_or
 		return;
 	}
 	PauseCounter = 0; // Reset after completing the pause
+	updateCommunicationQuality(-10);
 
 	if (single_order_code::NoOrder == NewCommand) {
 		TopLevelFsmState = NextState;

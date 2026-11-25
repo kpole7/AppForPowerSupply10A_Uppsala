@@ -118,7 +118,7 @@ static void powerButtonCallback(Fl_Widget *Widget, void *Data) {
 
 	// Get current power state
 	main_power_state CurrentState = atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire);
-#if 0
+#if 0 // signal power button press for debugging purposes
 	std::cout << "--------------Power button pressed, current state: " << static_cast<int>(CurrentState) << "\n";
 #endif
 	// Toggle power command based on current state
@@ -158,6 +158,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	// Title at the top of the group
 	TitlePtr = new Fl_Box(X, Y + TitleSpacing, W, TitleHeight);
 	TitlePtr->box(FL_FLAT_BOX);
+	TitlePtr->labelfont(FL_HELVETICA);
 	TitlePtr->labelsize(16);
 	TitlePtr->labelcolor(FL_BLACK);
 	TitlePtr->color(COLOR_BACKGROUND);
@@ -174,7 +175,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	// Label "A" (Amperes) next to the value
 	Fl_Box *UnitLabel =
 	    new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
-	UnitLabel->labelfont(FL_COURIER_BOLD);
+	UnitLabel->labelfont(FL_COURIER);
 	UnitLabel->labelsize(22);
 	UnitLabel->labelcolor(FL_BLACK);
 	UnitLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
@@ -184,25 +185,25 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	int ButtonGroupStartY = Y + VerticalCenterPadding + TitleSpace;
 
 	Button_Plus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY, ButtonWidth, ButtonHeight, "+1");
-	Button_Plus1Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Plus1Ptr->labelfont(FL_COURIER);
 	Button_Plus1Ptr->labelsize(12);
 	Button_Plus1Ptr->callback(buttonPlusOneCallback, this);
 
 	Button_Plus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + ButtonHeight + ButtonSpacing, ButtonWidth,
 	                                 ButtonHeight, "+0.1");
-	Button_Plus01Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Plus01Ptr->labelfont(FL_COURIER);
 	Button_Plus01Ptr->labelsize(12);
 	Button_Plus01Ptr->callback(buttonPlusTenthCallback, this);
 
 	Button_Minus01Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 2 * (ButtonHeight + ButtonSpacing),
 	                                  ButtonWidth, ButtonHeight, "-0.1");
-	Button_Minus01Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Minus01Ptr->labelfont(FL_COURIER);
 	Button_Minus01Ptr->labelsize(12);
 	Button_Minus01Ptr->callback(buttonMinusTenthCallback, this);
 
 	Button_Minus1Ptr = new Fl_Button(ButtonGroupStartX, ButtonGroupStartY + 3 * (ButtonHeight + ButtonSpacing),
 	                                 ButtonWidth, ButtonHeight, "-1");
-	Button_Minus1Ptr->labelfont(FL_COURIER_BOLD);
+	Button_Minus1Ptr->labelfont(FL_COURIER);
 	Button_Minus1Ptr->labelsize(12);
 	Button_Minus1Ptr->callback(buttonMinusOneCallback, this);
 
@@ -393,13 +394,14 @@ void initializeGraphicWidgets() {
 
 	CommunicationQualityPtr = new Fl_Box(MAIN_WINDOW_WIDTH / 2, 1, MAIN_WINDOW_WIDTH / 2 - 2, MAIN_MENU_HEIGHT - 2, "");
 	CommunicationQualityPtr->hide();
+#if 0 // show service info box for debugging purposes
+	CommunicationQualityPtr->box(FL_FLAT_BOX);
+	CommunicationQualityPtr->color(FL_CYAN);
+#endif
 	CommunicationQualityPtr->labelfont(FL_COURIER);
 	CommunicationQualityPtr->labelsize(9);
 	CommunicationQualityPtr->labelcolor(FL_BLACK);
 	CommunicationQualityPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
-#if 1
-	CommunicationQualityPtr->color(FL_YELLOW);
-#endif
 
 	// the percentage ratio of the height of the first window to that of the second
 	int FirstToSecondHeightPercentageRatio = 80; // %
@@ -472,9 +474,10 @@ void refreshWholeGui(void *Data) {
 	assert(SetpointGroup2Ptr != nullptr);
 	assert(SetpointGroup1Ptr != nullptr);
 
+#if 0
 	static uint8_t LastStatusLevelForGui = 0xFF; // invalid value to enforce refresh on first run
 	static bool LastTemporaryCommunicationError = false;
-
+#endif
 	// Critical errors check
 	if (atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire) != usart_low_level_error::NoError) {
 		if (PowerContactorGroupPtr->visible()) {
@@ -497,6 +500,8 @@ void refreshWholeGui(void *Data) {
 	// Communication error check
 	uint8_t CommunicationQualityPercentage =
 	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
+	uint8_t CommunicationQualityTotalPercentage =
+	    atomic_load_explicit(&ReceivedTotalCommunicationQuality, std::memory_order_acquire);
 	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
 		if (PowerContactorGroupPtr->visible()) {
 			PowerContactorGroupPtr->hide();
@@ -530,7 +535,8 @@ void refreshWholeGui(void *Data) {
 
 	if (1 < StatusLevelForGui.load(std::memory_order_acquire)) {
 		static std::string CommunicationQualityLabel;
-		CommunicationQualityLabel = "Połączenie RS-232 " + std::to_string(CommunicationQualityPercentage) + "%";
+		CommunicationQualityLabel = "Łącze szeregowe: " + std::to_string(CommunicationQualityPercentage) + "% (" +
+		                            std::to_string(CommunicationQualityTotalPercentage) + "% ogółem)";
 		CommunicationQualityPtr->label(CommunicationQualityLabel.c_str());
 		CommunicationQualityPtr->show();
 	}

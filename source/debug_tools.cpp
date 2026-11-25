@@ -1,7 +1,6 @@
 /// @file debug_tools.cpp
 /// @brief Provides non-blocking console input functionality.
 
-#include <cassert>
 #include <cerrno>
 #include <iomanip>
 #include <iostream>
@@ -13,11 +12,6 @@
 #include <unistd.h>
 
 #include "debug_tools.h"
-#include "multithread_resources.h"
-#include "peripheral_thread.h"
-
-// Module under test:
-#include "usart_master.h"
 
 //=================================================================================================
 // Classes
@@ -56,6 +50,12 @@ class console_mode {
 };
 
 } // namespace
+
+//=================================================================================================
+// Global variables
+//=================================================================================================
+
+bool DebuggingSignal1;
 
 //=================================================================================================
 // Local variables
@@ -109,7 +109,6 @@ void debugPeripheralsInitializations() {
 			ConsoleModePtr = nullptr;
 		}
 	}
-	usartMasterDebuggingInitialize();
 }
 
 /// @brief Handles a single tick of peripheral operations.
@@ -137,7 +136,7 @@ bool debuggingToolsTick(bool TerminationSignal) {
 	}
 	PreviousKey = Key;
 
-#if 0 // selftest
+#if 0 // show pressed keys for debugging purposes
 	if ((JustPressedKey >= (int)' ') && (JustPressedKey <= (int)'~')) {
 		std::cout << "Key pressed: " << (char)JustPressedKey << '\n';
 	}
@@ -158,6 +157,10 @@ bool debuggingToolsTick(bool TerminationSignal) {
 		}
 		std::cout << "Terminating debugging peripherals tick properly." << '\n';
 		return false;
+	}
+
+	if ('>' == JustPressedKey) {
+		DebuggingSignal1 = true;
 	}
 
 	usartMasterDebuggingTick(JustPressedKey);

@@ -22,13 +22,6 @@
 #include "usart_master_debug.h"
 
 //=================================================================================================
-// Preprocessor directives
-//=================================================================================================
-
-#define SUCCESSFUL_COMMUNICATION true
-#define FAILED_COMMUNICATION false
-
-//=================================================================================================
 // Types
 //=================================================================================================
 
@@ -86,9 +79,6 @@ modified_rstl_master::modified_rstl_master() {
 	LowLevelUsartPtr = new low_level_usart();
 	OrderProcessingState = order_processing_state::NotReady;
 	IsResentTransmissionSuccessful = true;
-	ResponseFailureHistory = 0;
-	TotalResponseCount = 0;
-	TotalFailedResponseCount = 0;
 }
 
 modified_rstl_master::~modified_rstl_master() { delete LowLevelUsartPtr; }
@@ -177,35 +167,7 @@ int16_t modified_rstl_master::getReceivedNumericalData() const {
 	return ReceivedValueInResponse;
 }
 
-uint8_t modified_rstl_master::getCurrentCommunicationQuality() const {
-	if (TotalResponseCount == 0) {
-		return 100;
-	}
-	int FailureCount = 0;
-	for (int i = 0; i < 64; ++i) {
-		if ((ResponseFailureHistory & (1ULL << i)) != 0) {
-			FailureCount++;
-		}
-	}
-	return static_cast<uint8_t>(((TotalResponseCount - FailureCount) * 100 + TotalResponseCount / 2) /
-	                            TotalResponseCount);
-}
-
 single_order_code modified_rstl_master::getRecentOrder() const { return CurrentOrder.OrderCode; }
-
-uint8_t modified_rstl_master::getTotalCommunicationQuality() const {
-	if (TotalResponseCount == 0) {
-		return 100;
-	}
-	uint32_t LocalTotalCount = TotalResponseCount;
-	uint32_t LocalFailedCount = TotalFailedResponseCount;
-	if (TotalResponseCount > (uint32_t)0xFFFFFFU) {
-		// Prevent overflow by scaling down the counts
-		LocalTotalCount /= 2;
-		LocalFailedCount /= 2;
-	}
-	return static_cast<uint8_t>(((LocalTotalCount - LocalFailedCount) * 100 + LocalTotalCount / 2) / LocalTotalCount);
-}
 
 /// @brief Handles a single tick of operations related to the external device managed with the modified RSTL protocol
 /// @param TerminationSignal tells the function whether it should prepare to terminate the peripheral operations
@@ -244,7 +206,7 @@ bool modified_rstl_master::fsmTick(bool TerminationSignal) {
 		// Wait for termination
 		break;
 	}
-#if 0
+#if 0 // show low-level USART state for debugging purposes
 	printStateChanges(LowLevelUsartPtr, CurrentState, nullptr);
 #endif
 	switch (CurrentState) {
@@ -331,7 +293,6 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	if (TimeoutExceeded) {
 		// The silence lasted longer than expected
 		CurrentState = rstl_master_fsm_state::IdleAndSend;
-		updateCommunicationQuality(FAILED_COMMUNICATION);
 		return;
 	}
 	if (Silence) {
@@ -340,7 +301,6 @@ void modified_rstl_master::fsmTickWaitForResponse() {
 	}
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
-		updateCommunicationQuality(FAILED_COMMUNICATION);
 		std::cout << "Noise (2) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 		          << __FILE__ << ")\n";
 		return;
@@ -371,7 +331,6 @@ void modified_rstl_master::fsmTickReceive() {
 
 		if (!IsResponseSyntaxCorrect) {
 			CurrentState = rstl_master_fsm_state::Noise;
-			updateCommunicationQuality(FAILED_COMMUNICATION);
 			std::cout << "Response syntax incorrect for order #" << static_cast<int>(CurrentOrder.OrderCode)
 			          << " (line " << __LINE__ << " in file " << __FILE__ << ")\n";
 			return;
@@ -381,12 +340,10 @@ void modified_rstl_master::fsmTickReceive() {
 		(*RstlCallback)(IsResponseSyntaxCorrect, ValueReturned, ReceivingBuffer, EssentialLength);
 		CurrentState = rstl_master_fsm_state::IdleAndSend; // the command-response cycle successfully completed
 		IsResentTransmissionSuccessful = true;
-		updateCommunicationQuality(SUCCESSFUL_COMMUNICATION);
 		return;
 	}
 	if (LimitsExceeded) {
 		CurrentState = rstl_master_fsm_state::Noise;
-		updateCommunicationQuality(FAILED_COMMUNICATION);
 		std::cout << "Noise (3) #" << static_cast<int>(CurrentOrder.OrderCode) << " (line " << __LINE__ << " in file "
 		          << __FILE__ << ")\n";
 		return;
@@ -399,6 +356,7 @@ void modified_rstl_master::fsmTickNoise() {
 	assert(usart_low_level_state::Open == LowLevelUsartPtr->getState());
 	bool Silence = false;
 	usart_low_level_error Error = LowLevelUsartPtr->handleNoiseState(&Silence);
+
 	if (Error != usart_low_level_error::NoError) {
 		CurrentState = rstl_master_fsm_state::CriticalError;
 		return;
@@ -410,15 +368,6 @@ void modified_rstl_master::fsmTickNoise() {
 	}
 
 	// Remain in the Noise state
-}
-
-void modified_rstl_master::updateCommunicationQuality(bool SuccessfulCommunication) {
-	ResponseFailureHistory <<= 1;
-	if (!SuccessfulCommunication) {
-		ResponseFailureHistory |= 1;
-		TotalFailedResponseCount++;
-	}
-	TotalResponseCount++;
 }
 
 void modified_rstl_master::placeOrderSetPC(const order_with_argument &NewOrder) {
@@ -453,7 +402,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	const char *ReceivingBuffer = LowLevelUsartPtr->getReceivingBuffer();
 	assert(ReceivingBuffer != nullptr);
 
-#if 0
+#if 0 // show SendingBuffer for debugging purposes
 	std::cout << "  SendingBuffer: ";
 	printAllCharacters(SendingBuffer);
 	std::cout << "ReceivingBuffer: ";
@@ -473,7 +422,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	}
 	ReceivingBuffer += SendingBufferLength;
 
-#if 0
+#if 0 // show essential part of ReceivingBuffer for debugging purposes
 	std::cout << "Essentials: ";
 	printAllCharacters(ReceivingBuffer);
 	std::cout << '\n';
@@ -539,7 +488,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 		EssentialResponseStart = 4;
 		main_power_state ExternalDeviceSimplifiedState =
 		    convertToExternalDeviceSimplifiedState(ValueReturnedInResponse);
-#if 0
+#if 0 // show ExternalDeviceSimplifiedState for debugging purposes
 		atomic_store_explicit(&ReceivedMainPowerState, ExternalDeviceSimplifiedState, std::memory_order_release);
 		AwakeRefreshWholeGui = true;
 #endif
@@ -757,19 +706,6 @@ rstl_master_fsm_state getRstlMasterState(usart_low_level_error &ErrorCode) {
 
 bool rstlMasterTick(bool TerminationSignal) {
 	assert(nullptr != RstlMasterInstancePtr); // Ensure the instance exists
-
-	static uint8_t CurrentQualityCounter = 0;
-	CurrentQualityCounter++;
-	if (CurrentQualityCounter >= 100) {
-		CurrentQualityCounter = 0;
-		ReceivedCommunicationQuality.store(RstlMasterInstancePtr->getCurrentCommunicationQuality(),
-		                                   std::memory_order_release);
-	}
-	if (50 == CurrentQualityCounter) {
-		ReceivedTotalCommunicationQuality.store(RstlMasterInstancePtr->getTotalCommunicationQuality(),
-		                                        std::memory_order_release);
-	}
-
 	return RstlMasterInstancePtr->fsmTick(TerminationSignal);
 }
 
