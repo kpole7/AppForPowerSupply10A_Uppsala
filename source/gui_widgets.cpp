@@ -9,14 +9,14 @@
 
 #include <FL/Fl.H>
 #include <FL/Fl_Box.H>
-#include <FL/Fl_Group.H>
-#include <FL/Fl_PNG_Image.H>
-#include <FL/Fl_Widget.H>
-#include <FL/fl_draw.H>
 #include <FL/Fl_Button.H>
 #include <FL/Fl_Double_Window.H> // to eliminate flickering
+#include <FL/Fl_Group.H>
+#include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Widget.H>
 #include <FL/Fl_Window.H>
+#include <FL/fl_draw.H>
 
 #include "gui_widgets.h"
 #include "multithread_resources.h"
@@ -97,11 +97,34 @@ class power_contactor_group : public Fl_Group {
 	power_indicator *IndicatorPtr;
 	Fl_Box *StateDescriptionPtr;
 	Fl_Button *ControlButtonPtr;
+	Fl_Box *ServiceInformationPtr;
 
 	void setIndicatorState(indicator_light_state NewState);
 	void setStateDescriptionText(const char *Description);
 	void setButtonActivity(bool Active);
 	void setButtonLabel(const char *Label);
+
+	friend void refreshWholeGui(void *Data);
+};
+
+class status_bar_group_on_error : public Fl_Group {
+  public:
+	status_bar_group_on_error(int X, int Y, int W, int H);
+
+  private:
+	Fl_Box *FramePtr;
+	Fl_Box *ErrorMessagePtr;
+
+	friend void refreshWholeGui(void *Data);
+};
+
+class status_bar_group_normal : public Fl_Group {
+  public:
+	status_bar_group_normal(int X, int Y, int W, int H);
+
+  private:
+	Fl_Box *SeparatorPtr;
+	Fl_Box *NormalMessagePtr;
 
 	friend void refreshWholeGui(void *Data);
 };
@@ -144,11 +167,12 @@ static const char *InitializationFailureTextsPtr[] = {"No failure",
 //=================================================================================================
 
 static Fl_Box *FailureMessagePtr;
-static Fl_Box *CommunicationQualityPtr;
 
 static power_contactor_group *PowerContactorGroupPtr;
 static setpoint_adjustment_group *SetpointGroup1Ptr;
 static setpoint_adjustment_group *SetpointGroup2Ptr;
+static status_bar_group_on_error *StatusBarErrorPtr;
+static status_bar_group_normal *StatusBarNormalPtr;
 
 //=================================================================================================
 // Local function prototypes
@@ -185,6 +209,17 @@ power_contactor_group::power_contactor_group(int X, int Y, int W, int H) : Fl_Gr
 	StateDescriptionPtr->labelsize(12);
 	StateDescriptionPtr->labelcolor(FL_BLACK);
 	StateDescriptionPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+
+	ServiceInformationPtr = new Fl_Box(X + (3 * W) / 4, Y + 22, W / 4 - 1, H - 26, "");
+	ServiceInformationPtr->hide();
+#if 1 // show service info box for debugging purposes
+	ServiceInformationPtr->box(FL_FLAT_BOX);
+	ServiceInformationPtr->color(FL_GRAY);
+#endif
+	ServiceInformationPtr->labelfont(FL_COURIER);
+	ServiceInformationPtr->labelsize(9);
+	ServiceInformationPtr->labelcolor(FL_BLACK);
+	ServiceInformationPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
 	end();
 }
@@ -486,21 +521,48 @@ void power_indicator::setState(indicator_light_state NewState) {
 }
 
 //.............................................................................................
+status_bar_group_on_error::status_bar_group_on_error(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
+	FramePtr = new Fl_Box(X, Y, W, H);
+	FramePtr->box(FL_FLAT_BOX);
+	FramePtr->color(FL_RED);
+
+	int FrameThickness = 5;
+	ErrorMessagePtr =
+	    new Fl_Box(X + FrameThickness, Y + FrameThickness, W - 2 * FrameThickness, H - 2 * FrameThickness);
+	ErrorMessagePtr->box(FL_FLAT_BOX);
+	ErrorMessagePtr->color(FL_YELLOW);
+	ErrorMessagePtr->labelcolor(FL_BLACK);
+	ErrorMessagePtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
+	ErrorMessagePtr->labelsize(16);
+	ErrorMessagePtr->labelfont(FL_HELVETICA_BOLD);
+
+	ErrorMessagePtr->label("Brak transmisji");
+	end();
+}
+
+status_bar_group_normal::status_bar_group_normal(int X, int Y, int W, int H) : Fl_Group(X, Y, W, H) {
+	SeparatorPtr = new Fl_Box(X, Y, W, 1);
+	SeparatorPtr->box(FL_FLAT_BOX);
+	SeparatorPtr->color(SEPARATOR_COLOR);
+
+	int Space = 5;
+	NormalMessagePtr = new Fl_Box(X + Space, Y + Space, W - 2 * Space, H - 2 * Space);
+	NormalMessagePtr->box(FL_FLAT_BOX);
+	NormalMessagePtr->color(COLOR_BACKGROUND);
+	NormalMessagePtr->labelcolor(FL_BLACK);
+	NormalMessagePtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
+	NormalMessagePtr->labelsize(12);
+	NormalMessagePtr->labelfont(FL_HELVETICA);
+
+	NormalMessagePtr->label("Status: OK");
+	end();
+}
+
+//.............................................................................................
 
 void initializeGraphicWidgets() {
 	FailureMessagePtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
-
-	CommunicationQualityPtr = new Fl_Box(MAIN_WINDOW_WIDTH / 2, 1, MAIN_WINDOW_WIDTH / 2 - 2, MAIN_MENU_HEIGHT - 2, "");
-	CommunicationQualityPtr->hide();
-#if 0 // show service info box for debugging purposes
-	CommunicationQualityPtr->box(FL_FLAT_BOX);
-	CommunicationQualityPtr->color(FL_CYAN);
-#endif
-	CommunicationQualityPtr->labelfont(FL_COURIER);
-	CommunicationQualityPtr->labelsize(9);
-	CommunicationQualityPtr->labelcolor(FL_BLACK);
-	CommunicationQualityPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
 	// the percentage ratio of the height of the first window to that of the second
 	int FirstToSecondHeightPercentageRatio = 80; // %
@@ -519,6 +581,14 @@ void initializeGraphicWidgets() {
 	SetpointGroup2Ptr = new setpoint_adjustment_group(0, MAIN_MENU_HEIGHT + FirstHeight + SecondHeight,
 	                                                  MAIN_WINDOW_WIDTH, SecondHeight, 2);
 	SetpointGroup2Ptr->setTitle("Prąd zadany w kwadrupolu dolnym");
+
+	StatusBarErrorPtr = new status_bar_group_on_error(0, MAIN_MENU_HEIGHT + FirstHeight + 2 * SecondHeight,
+	                                                  MAIN_WINDOW_WIDTH, STATUS_BAR_HEIGHT);
+	StatusBarErrorPtr->hide();
+
+	StatusBarNormalPtr = new status_bar_group_normal(0, MAIN_MENU_HEIGHT + FirstHeight + 2 * SecondHeight,
+	                                                 MAIN_WINDOW_WIDTH, STATUS_BAR_HEIGHT);
+	StatusBarNormalPtr->show();
 }
 
 void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
@@ -564,6 +634,12 @@ void refreshWholeGui(void *Data) {
 		if (SetpointGroup2Ptr->visible()) {
 			SetpointGroup2Ptr->hide();
 		}
+		if (StatusBarErrorPtr->visible()) {
+			StatusBarErrorPtr->hide();
+		}
+		if (StatusBarNormalPtr->visible()) {
+			StatusBarNormalPtr->hide();
+		}
 		if (!FailureMessagePtr->visible()) {
 			FailureMessagePtr->show();
 		}
@@ -583,28 +659,7 @@ void refreshWholeGui(void *Data) {
 		return;
 	}
 
-	// Communication error check
-	uint8_t CommunicationQualityPercentage =
-	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
-	uint8_t CommunicationQualityTotalPercentage =
-	    atomic_load_explicit(&ReceivedTotalCommunicationQuality, std::memory_order_acquire);
-	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
-		if (PowerContactorGroupPtr->visible()) {
-			PowerContactorGroupPtr->hide();
-		}
-		if (SetpointGroup1Ptr->visible()) {
-			SetpointGroup1Ptr->hide();
-		}
-		if (SetpointGroup2Ptr->visible()) {
-			SetpointGroup2Ptr->hide();
-		}
-		if (!FailureMessagePtr->visible()) {
-			FailureMessagePtr->show();
-		}
-		FailureMessagePtr->label("Brak komunikacji\nze sterownikiem");
-		FailureMessagePtr->redraw();
-		return;
-	}
+	// Reset the failure message visibility if no critical errors are present
 
 	if (FailureMessagePtr->visible()) {
 		FailureMessagePtr->hide();
@@ -619,15 +674,47 @@ void refreshWholeGui(void *Data) {
 		SetpointGroup2Ptr->show();
 	}
 
-	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
-		static std::string CommunicationQualityLabel;
-		CommunicationQualityLabel = "Transmisja: " + std::to_string(CommunicationQualityPercentage) + "%\n(" +
-		                            std::to_string(CommunicationQualityTotalPercentage) + "% ogółem)";
-		CommunicationQualityPtr->label(CommunicationQualityLabel.c_str());
-		CommunicationQualityPtr->show();
+	// Communication error check
+	uint8_t CommunicationQualityPercentage =
+	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
+	uint8_t CommunicationQualityTotalPercentage =
+	    atomic_load_explicit(&ReceivedTotalCommunicationQuality, std::memory_order_acquire);
+	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
+		if (PowerContactorGroupPtr->active()) {
+			PowerContactorGroupPtr->deactivate();
+		}
+		if (SetpointGroup1Ptr->active()) {
+			SetpointGroup1Ptr->deactivate();
+		}
+		if (SetpointGroup2Ptr->active()) {
+			SetpointGroup2Ptr->deactivate();
+		}
+
+		if (!StatusBarErrorPtr->visible()) {
+			StatusBarErrorPtr->show();
+		}
+		if (StatusBarNormalPtr->visible()) {
+			StatusBarNormalPtr->hide();
+		}
+
+		return;
 	}
-	else {
-		CommunicationQualityPtr->hide();
+
+	if (!PowerContactorGroupPtr->active()) {
+		PowerContactorGroupPtr->activate();
+	}
+	if (!SetpointGroup1Ptr->active()) {
+		SetpointGroup1Ptr->activate();
+	}
+	if (!SetpointGroup2Ptr->active()) {
+		SetpointGroup2Ptr->activate();
+	}
+
+	if (StatusBarErrorPtr->visible()) {
+		StatusBarErrorPtr->hide();
+	}
+	if (!StatusBarNormalPtr->visible()) {
+		StatusBarNormalPtr->show();
 	}
 
 	indicator_light_state IndicatorCurrentState;
@@ -681,4 +768,15 @@ void refreshWholeGui(void *Data) {
 	PowerContactorGroupPtr->redraw();
 	SetpointGroup1Ptr->redraw();
 	SetpointGroup2Ptr->redraw();
+
+	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
+		static std::string ServiceInformationString;
+		ServiceInformationString = "Transmisja: " + std::to_string(CommunicationQualityPercentage) + "%\n(" +
+		                           std::to_string(CommunicationQualityTotalPercentage) + "% ogółem)";
+		PowerContactorGroupPtr->ServiceInformationPtr->label(ServiceInformationString.c_str());
+		PowerContactorGroupPtr->ServiceInformationPtr->show();
+	}
+	else {
+		PowerContactorGroupPtr->ServiceInformationPtr->hide();
+	}
 }
