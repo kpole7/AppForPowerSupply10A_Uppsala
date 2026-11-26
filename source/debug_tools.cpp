@@ -67,10 +67,6 @@ static console_mode *ConsoleModePtr = nullptr;
 // Function prototypes
 //=================================================================================================
 
-
-
-
-
 int readConsoleKeyNonBlocking();
 
 /// Reads one byte from the console without waiting.

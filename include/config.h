@@ -22,7 +22,7 @@ static_assert(sizeof(int) == 4, "Expected int to be 4 bytes.");
 
 // TODO review
 // Attention: compare with getErrorDescription()
-enum class initialization_failure_codes {
+enum class initialization_failure_codes : uint8_t {
 	NO_FAILURE,
 	ERROR_COMMAND_LINE_SYNTAX,
 	ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH,

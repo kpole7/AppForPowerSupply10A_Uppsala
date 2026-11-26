@@ -1,6 +1,7 @@
 /// @file gui_widgets.cpp
 
 #include <cassert>
+#include <cstdint>
 #include <cstdio>
 #include <iostream>
 #include <memory>
@@ -12,8 +13,13 @@
 #include <FL/Fl_PNG_Image.H>
 #include <FL/Fl_Widget.H>
 #include <FL/fl_draw.H>
+#include <FL/Fl_Button.H>
+#include <FL/Fl_Double_Window.H> // to eliminate flickering
+#include <FL/Fl_Text_Display.H>
+#include <FL/Fl_Window.H>
 
 #include "gui_widgets.h"
+#include "multithread_resources.h"
 
 //=================================================================================================
 // Preprocessor directives
@@ -24,12 +30,114 @@
 #define SEPARATOR_COLOR 0x2A
 
 //=================================================================================================
+// Widgets
+//=================================================================================================
+
+enum class indicator_light_state : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED = 3 };
+
+/// Indicator lamp: a colored circle with a dark gray outline
+class power_indicator : public Fl_Widget {
+  private:
+	indicator_light_state State{indicator_light_state::UNDEFINED};
+
+  protected:
+	void draw() override;
+
+  public:
+	power_indicator(int X, int Y, int W, int H, const char *Label = nullptr);
+
+	indicator_light_state getState() const { return State; }
+
+	/// Sets the color of the indicator: OFF (green), DIM (dim orange), or ON (bright red)
+	void setState(indicator_light_state NewState);
+};
+
+/// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
+class setpoint_adjustment_group : public Fl_Group {
+  public:
+	/// Constructor for setpoint adjustment group
+	/// @param X X position
+	/// @param Y Y position
+	/// @param W Width (should span entire main window width)
+	/// @param H Height
+	/// @param SetpointNumber 1 or 2 to identify which setpoint to control
+	setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber);
+
+	void activateButtons();
+	void deactivateButtons();
+	void setTitle(const char *Title);
+
+  private:
+	uint8_t SetpointNumber;
+	Fl_Box *SeparatorPtr;
+	Fl_Box *ValueDisplayPtr;
+	Fl_Box *TitlePtr;
+	Fl_Button *Button_Plus1Ptr;
+	Fl_Button *Button_Plus01Ptr;
+	Fl_Button *Button_Minus01Ptr;
+	Fl_Button *Button_Minus1Ptr;
+
+	static void buttonPlusOneCallback(Fl_Widget *Widget, void *Data);
+	static void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data);
+	static void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data);
+	static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
+	static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
+	void updateDisplay();
+
+	friend void refreshWholeGui(void *Data);
+};
+
+class power_contactor_group : public Fl_Group {
+  public:
+	power_contactor_group(int X, int Y, int W, int H);
+
+  private:
+	Fl_Box *SeparatorPtr;
+	Fl_Box *TitlePtr;
+	power_indicator *IndicatorPtr;
+	Fl_Box *StateDescriptionPtr;
+	Fl_Button *ControlButtonPtr;
+
+	void setIndicatorState(indicator_light_state NewState);
+	void setStateDescriptionText(const char *Description);
+	void setButtonActivity(bool Active);
+	void setButtonLabel(const char *Label);
+
+	friend void refreshWholeGui(void *Data);
+};
+
+//=================================================================================================
 // Definitions of types
 //=================================================================================================
 
 //=================================================================================================
 // Local constants
 //=================================================================================================
+
+static const char *UsartFailureTextsPtr[] = {
+    "NoError",
+    "UsartDeviceNotFound", // port manipulation error
+    "OpenFailed",          // port manipulation error
+    "SelectFailed",        // port manipulation error
+    "ReadFailed",          // port manipulation error
+    "WriteFailed",         // port manipulation error
+    "InternalError",       // internal error within the usart_master module
+    "CallError"            // internal error within this module
+};
+
+#define USART_FAILURE_TEXTS_COUNT (sizeof(UsartFailureTextsPtr) / sizeof(UsartFailureTextsPtr[0]))
+
+static const char *InitializationFailureTextsPtr[] = {"No failure",
+                                                      "Command line syntax error",
+                                                      "Unable to obtain settings path",
+                                                      "Unable to open settings file",
+                                                      "Port name not found in settings",
+                                                      "Redundant port name in settings",
+                                                      "Device time stamp mismatch",
+                                                      "Another error"};
+
+#define INITIALIZATION_FAILURE_TEXTS_COUNT                                                                             \
+	(sizeof(InitializationFailureTextsPtr) / sizeof(InitializationFailureTextsPtr[0]))
 
 //=================================================================================================
 // Local variables
@@ -46,7 +154,6 @@ static setpoint_adjustment_group *SetpointGroup2Ptr;
 // Local function prototypes
 //=================================================================================================
 
-static const char *getErrorDescription(initialization_failure_codes Error);
 static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 
 //=================================================================================================
@@ -91,14 +198,6 @@ void power_contactor_group::setIndicatorState(indicator_light_state NewState) {
 
 void power_contactor_group::setStateDescriptionText(const char *Description) {
 	StateDescriptionPtr->label(Description);
-}
-
-void power_contactor_group::setStateDescriptionVisibility(bool Visible) {
-	if (Visible) {
-		StateDescriptionPtr->show();
-		return;
-	}
-	StateDescriptionPtr->hide();
 }
 
 void power_contactor_group::setButtonActivity(bool Active) {
@@ -176,7 +275,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	Fl_Box *UnitLabel =
 	    new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
 	UnitLabel->labelfont(FL_COURIER);
-	UnitLabel->labelsize(22);
+	UnitLabel->labelsize(26);
 	UnitLabel->labelcolor(FL_BLACK);
 	UnitLabel->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
@@ -389,7 +488,7 @@ void power_indicator::setState(indicator_light_state NewState) {
 //.............................................................................................
 
 void initializeGraphicWidgets() {
-	FailureMessagePtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "TODO error message");
+	FailureMessagePtr = new Fl_Box(0, MAIN_MENU_HEIGHT, MAIN_WINDOW_WIDTH, MAIN_WINDOW_HEIGHT, "");
 	FailureMessagePtr->hide();
 
 	CommunicationQualityPtr = new Fl_Box(MAIN_WINDOW_WIDTH / 2, 1, MAIN_WINDOW_WIDTH / 2 - 2, MAIN_MENU_HEIGHT - 2, "");
@@ -405,7 +504,7 @@ void initializeGraphicWidgets() {
 
 	// the percentage ratio of the height of the first window to that of the second
 	int FirstToSecondHeightPercentageRatio = 80; // %
-	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT;
+	int UsableHeight = MAIN_WINDOW_HEIGHT - MAIN_MENU_HEIGHT - STATUS_BAR_HEIGHT;
 	int SecondHeight = (100 * UsableHeight) / (FirstToSecondHeightPercentageRatio + 200);
 	int FirstHeight = UsableHeight - SecondHeight - SecondHeight;
 #if 0
@@ -424,10 +523,13 @@ void initializeGraphicWidgets() {
 
 void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 	static char Buffer[300];
+	if (static_cast<uint8_t>(FailureCodeForGui) >= INITIALIZATION_FAILURE_TEXTS_COUNT) {
+		FailureCodeForGui = initialization_failure_codes::ANOTHER_ERROR;
+	}
 	snprintf(Buffer, sizeof(Buffer) - 1,
 	         "Błędy podczas startu aplikacji\n%s\n\nUruchom aplikację z parametrem -v w konsoli,\nżeby uzyskać "
 	         "dodatkowe informacje",
-	         getErrorDescription(FailureCodeForGui));
+	         InitializationFailureTextsPtr[static_cast<uint8_t>(FailureCodeForGui)]);
 	FailureMessagePtr->label(Buffer);
 	FailureMessagePtr->show();
 	if (atomic_load_explicit(&VerboseMode, std::memory_order_acquire)) {
@@ -436,29 +538,6 @@ void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 		std::cout << Buffer << '\n';
 		std::cout << "-----------------------------------------------------------------------------------------------"
 		          << '\n';
-	}
-}
-
-static const char *getErrorDescription(initialization_failure_codes Error) {
-	switch (Error) {
-	case initialization_failure_codes::NO_FAILURE:
-		return "Brak błędów";
-	case initialization_failure_codes::ERROR_COMMAND_LINE_SYNTAX:
-		return "Błąd składniowy w linii komendy";
-	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OBTAIN_PATH:
-		return "Nie można uzyskać ścieżki do programu";
-	case initialization_failure_codes::ERROR_SETTINGS_UNABLE_TO_OPEN_FILE: // TODO not used
-		return "Błąd otwierania pliku konfiguracyjnego";
-	case initialization_failure_codes::ERROR_SETTINGS_PORT_NAME_NOT_FOUND: // TODO not used
-		return "Błąd nazwy portu szeregowego w pliku konfiguracyjnym";
-	case initialization_failure_codes::ERROR_SETTINGS_REDUNDANT_PORT_NAME: // TODO not used
-		return "Nadmiarowa nazwa portu szeregowego w pliku konfiguracyjnym";
-	case initialization_failure_codes::ERROR_DEVICE_TIME_STAMP_MISMATCH: // TODO not used
-		return "Nieprawidłowa sygnatura czasowa urządzenia odczytana z Modbus";
-	case initialization_failure_codes::ANOTHER_ERROR: // TODO not used
-		return "Błąd ogólny";
-	default:
-		return "Nieznany błąd";
 	}
 }
 
@@ -474,10 +553,6 @@ void refreshWholeGui(void *Data) {
 	assert(SetpointGroup2Ptr != nullptr);
 	assert(SetpointGroup1Ptr != nullptr);
 
-#if 0
-	static uint8_t LastStatusLevelForGui = 0xFF; // invalid value to enforce refresh on first run
-	static bool LastTemporaryCommunicationError = false;
-#endif
 	// Critical errors check
 	if (atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire) != usart_low_level_error::NoError) {
 		if (PowerContactorGroupPtr->visible()) {
@@ -492,7 +567,18 @@ void refreshWholeGui(void *Data) {
 		if (!FailureMessagePtr->visible()) {
 			FailureMessagePtr->show();
 		}
-		FailureMessagePtr->label("Błąd krytyczny\nAla ma kota");
+
+		usart_low_level_error CurrentUsartError =
+		    atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire);
+
+		std::string ErrorMessage = "Błąd krytyczny\n";
+		if (static_cast<size_t>(CurrentUsartError) < USART_FAILURE_TEXTS_COUNT) {
+			ErrorMessage += UsartFailureTextsPtr[static_cast<size_t>(CurrentUsartError)];
+		}
+		else {
+			ErrorMessage += "Nieznany błąd USART";
+		}
+		FailureMessagePtr->label(ErrorMessage.c_str());
 		FailureMessagePtr->redraw();
 		return;
 	}
@@ -533,9 +619,9 @@ void refreshWholeGui(void *Data) {
 		SetpointGroup2Ptr->show();
 	}
 
-	if (1 < StatusLevelForGui.load(std::memory_order_acquire)) {
+	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
 		static std::string CommunicationQualityLabel;
-		CommunicationQualityLabel = "Łącze szeregowe: " + std::to_string(CommunicationQualityPercentage) + "% (" +
+		CommunicationQualityLabel = "Transmisja: " + std::to_string(CommunicationQualityPercentage) + "%\n(" +
 		                            std::to_string(CommunicationQualityTotalPercentage) + "% ogółem)";
 		CommunicationQualityPtr->label(CommunicationQualityLabel.c_str());
 		CommunicationQualityPtr->show();
@@ -544,55 +630,49 @@ void refreshWholeGui(void *Data) {
 		CommunicationQualityPtr->hide();
 	}
 
-	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
-		indicator_light_state IndicatorCurrentState;
-		switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
-		case main_power_state::UNDEFINED:
-			IndicatorCurrentState = indicator_light_state::UNDEFINED;
-			PowerContactorGroupPtr->setButtonActivity(true);
-			PowerContactorGroupPtr->setButtonLabel("?");
-			PowerContactorGroupPtr->setStateDescriptionText("Stycznik nieokreślony");
-			SetpointGroup1Ptr->deactivateButtons();
-			SetpointGroup2Ptr->deactivateButtons();
-			break;
-		case main_power_state::ON:
-			IndicatorCurrentState = indicator_light_state::ON;
-			PowerContactorGroupPtr->setButtonActivity(true);
-			PowerContactorGroupPtr->setButtonLabel("Wyłącz");
-			PowerContactorGroupPtr->setStateDescriptionText("Stycznik włączony");
-			SetpointGroup1Ptr->activateButtons();
-			SetpointGroup2Ptr->activateButtons();
-			break;
-		case main_power_state::OFF:
-			IndicatorCurrentState = indicator_light_state::OFF;
-			PowerContactorGroupPtr->setButtonActivity(true);
-			PowerContactorGroupPtr->setButtonLabel("Włącz");
-			PowerContactorGroupPtr->setStateDescriptionText("Stycznik wyłączony");
-			SetpointGroup1Ptr->deactivateButtons();
-			SetpointGroup2Ptr->deactivateButtons();
-			break;
-		case main_power_state::RISING:
-		case main_power_state::FALLING:
-			IndicatorCurrentState = indicator_light_state::DIM;
-			PowerContactorGroupPtr->setButtonActivity(false);
-			PowerContactorGroupPtr->setStateDescriptionText("W trakcie przełączania");
-			SetpointGroup1Ptr->deactivateButtons();
-			SetpointGroup2Ptr->deactivateButtons();
-			break;
-		default:
-			std::cout << "Unexpected main power state" << '\n';
-			PowerContactorGroupPtr->setButtonActivity(true);
-			PowerContactorGroupPtr->setStateDescriptionText("Nieznany stan stycznika");
-			SetpointGroup1Ptr->deactivateButtons();
-			SetpointGroup2Ptr->deactivateButtons();
-			break;
-		}
-		PowerContactorGroupPtr->setIndicatorState(IndicatorCurrentState);
-		PowerContactorGroupPtr->StateDescriptionPtr->show();
+	indicator_light_state IndicatorCurrentState;
+	switch (atomic_load_explicit(&ReceivedMainPowerState, std::memory_order_acquire)) {
+	case main_power_state::UNDEFINED:
+		IndicatorCurrentState = indicator_light_state::UNDEFINED;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("?");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik nieokreślony");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
+		break;
+	case main_power_state::ON:
+		IndicatorCurrentState = indicator_light_state::ON;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("Wyłącz");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik włączony");
+		SetpointGroup1Ptr->activateButtons();
+		SetpointGroup2Ptr->activateButtons();
+		break;
+	case main_power_state::OFF:
+		IndicatorCurrentState = indicator_light_state::OFF;
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setButtonLabel("Włącz");
+		PowerContactorGroupPtr->setStateDescriptionText("Stycznik wyłączony");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
+		break;
+	case main_power_state::RISING:
+	case main_power_state::FALLING:
+		IndicatorCurrentState = indicator_light_state::DIM;
+		PowerContactorGroupPtr->setButtonActivity(false);
+		PowerContactorGroupPtr->setStateDescriptionText("W trakcie przełączania");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
+		break;
+	default:
+		std::cout << "Unexpected main power state" << '\n';
+		PowerContactorGroupPtr->setButtonActivity(true);
+		PowerContactorGroupPtr->setStateDescriptionText("Nieznany stan stycznika");
+		SetpointGroup1Ptr->deactivateButtons();
+		SetpointGroup2Ptr->deactivateButtons();
+		break;
 	}
-	else {
-		PowerContactorGroupPtr->StateDescriptionPtr->hide();
-	}
+	PowerContactorGroupPtr->setIndicatorState(IndicatorCurrentState);
 
 	// Update setpoint displays
 	SetpointGroup1Ptr->updateDisplay();

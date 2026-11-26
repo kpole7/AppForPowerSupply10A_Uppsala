@@ -59,10 +59,8 @@ void communication_quality::update(int8_t Weight) {
 		TotalFailedResponseCount /= 2;
 	}
 #ifdef DEBUG_COMMUNICATION_QUALITY
-	std::cout << "update: Weight = " << static_cast<int>(Weight)
-				<< ", History = " << std::hex << ResponseFailureHistory << std::dec
-				<< ", Total = " << TotalResponseCount
-				<< ", Failed = " << TotalFailedResponseCount;
+	std::cout << "update: Weight = " << static_cast<int>(Weight) << ", History = " << std::hex << ResponseFailureHistory
+	          << std::dec << ", Total = " << TotalResponseCount << ", Failed = " << TotalFailedResponseCount;
 #endif
 }
 
