@@ -111,6 +111,6 @@ void peripheralThreadExit();
 // Prototypes of functions that are to be run in the FLTK thread, but are awakened by the peripheral thread.
 //=================================================================================================
 
-void refreshWholeGui(void *Data);
+void refreshGui(void *Data);
 
 #endif // MULTITHREAD_RESOURCES_H_

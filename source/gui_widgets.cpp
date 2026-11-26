@@ -55,6 +55,28 @@ class power_indicator : public Fl_Widget {
 	void deactivate();
 };
 
+class power_contactor_group : public Fl_Group {
+  public:
+	power_contactor_group(int X, int Y, int W, int H);
+	void activate();
+	void deactivate();
+
+  private:
+	Fl_Box *SeparatorPtr;
+	Fl_Box *TitlePtr;
+	power_indicator *IndicatorPtr;
+	Fl_Box *StateDescriptionPtr;
+	Fl_Button *ControlButtonPtr;
+
+	void setIndicatorState(indicator_light_state NewState);
+	void setStateDescriptionText(const char *Description);
+	void setButtonActivity(bool Active);
+	void setButtonLabel(const char *Label);
+
+	friend void refreshGui(void *Data);
+	friend void refreshGuiNormal();
+};
+
 /// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
 class setpoint_adjustment_group : public Fl_Group {
   public:
@@ -87,29 +109,8 @@ class setpoint_adjustment_group : public Fl_Group {
 	static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
 	void updateDisplay();
 
-	friend void refreshWholeGui(void *Data);
-};
-
-class power_contactor_group : public Fl_Group {
-  public:
-	power_contactor_group(int X, int Y, int W, int H);
-	void activate();
-	void deactivate();
-
-  private:
-	Fl_Box *SeparatorPtr;
-	Fl_Box *TitlePtr;
-	power_indicator *IndicatorPtr;
-	Fl_Box *StateDescriptionPtr;
-	Fl_Button *ControlButtonPtr;
-	Fl_Box *ServiceInformationPtr;
-
-	void setIndicatorState(indicator_light_state NewState);
-	void setStateDescriptionText(const char *Description);
-	void setButtonActivity(bool Active);
-	void setButtonLabel(const char *Label);
-
-	friend void refreshWholeGui(void *Data);
+	friend void refreshGui(void *Data);
+	friend void refreshGuiNormal();
 };
 
 class status_bar_group_on_error : public Fl_Group {
@@ -120,7 +121,8 @@ class status_bar_group_on_error : public Fl_Group {
 	Fl_Box *FramePtr;
 	Fl_Box *ErrorMessagePtr;
 
-	friend void refreshWholeGui(void *Data);
+	friend void refreshGui(void *Data);
+	friend void refreshGuiNormal();
 };
 
 class status_bar_group_normal : public Fl_Group {
@@ -131,7 +133,8 @@ class status_bar_group_normal : public Fl_Group {
 	Fl_Box *SeparatorPtr;
 	Fl_Box *NormalMessagePtr;
 
-	friend void refreshWholeGui(void *Data);
+	friend void refreshGui(void *Data);
+	friend void refreshGuiNormal();
 };
 
 //=================================================================================================
@@ -179,11 +182,14 @@ static setpoint_adjustment_group *SetpointGroup2Ptr;
 static status_bar_group_on_error *StatusBarErrorPtr;
 static status_bar_group_normal *StatusBarNormalPtr;
 
+static Fl_Box *ServiceInformationPtr;
+
 //=================================================================================================
 // Local function prototypes
 //=================================================================================================
 
 static void powerButtonCallback(Fl_Widget *Widget, void *Data);
+void refreshGuiNormal();
 
 //=================================================================================================
 // Function definitions
@@ -651,91 +657,7 @@ void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 // Definitions of functions related to peripheral thread
 //=================================================================================================
 
-void refreshWholeGui(void *Data) {
-	(void)Data; // intentionally unused
-
-	assert(FailureMessagePtr != nullptr);
-	assert(PowerContactorGroupPtr != nullptr);
-	assert(SetpointGroup2Ptr != nullptr);
-	assert(SetpointGroup1Ptr != nullptr);
-
-	// Critical errors check
-	if (atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire) != usart_low_level_error::NoError) {
-		if (PowerContactorGroupPtr->visible()) {
-			PowerContactorGroupPtr->hide();
-		}
-		if (SetpointGroup1Ptr->visible()) {
-			SetpointGroup1Ptr->hide();
-		}
-		if (SetpointGroup2Ptr->visible()) {
-			SetpointGroup2Ptr->hide();
-		}
-		if (StatusBarErrorPtr->visible()) {
-			StatusBarErrorPtr->hide();
-		}
-		if (StatusBarNormalPtr->visible()) {
-			StatusBarNormalPtr->hide();
-		}
-		if (!FailureMessagePtr->visible()) {
-			FailureMessagePtr->show();
-		}
-
-		usart_low_level_error CurrentUsartError =
-		    atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire);
-
-		std::string ErrorMessage = "Błąd krytyczny\n";
-		if (static_cast<size_t>(CurrentUsartError) < USART_FAILURE_TEXTS_COUNT) {
-			ErrorMessage += UsartFailureTextsPtr[static_cast<size_t>(CurrentUsartError)];
-		}
-		else {
-			ErrorMessage += "Nieznany błąd USART";
-		}
-		FailureMessagePtr->label(ErrorMessage.c_str());
-		FailureMessagePtr->redraw();
-		return;
-	}
-
-	// Reset the failure message visibility if no critical errors are present
-
-	if (FailureMessagePtr->visible()) {
-		FailureMessagePtr->hide();
-	}
-	if (!PowerContactorGroupPtr->visible()) {
-		PowerContactorGroupPtr->show();
-	}
-	if (!SetpointGroup1Ptr->visible()) {
-		SetpointGroup1Ptr->show();
-	}
-	if (!SetpointGroup2Ptr->visible()) {
-		SetpointGroup2Ptr->show();
-	}
-
-	// Communication error check
-	uint8_t CommunicationQualityPercentage =
-	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
-	uint8_t CommunicationQualityTotalPercentage =
-	    atomic_load_explicit(&ReceivedTotalCommunicationQuality, std::memory_order_acquire);
-	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
-		if (PowerContactorGroupPtr->active()) {
-			PowerContactorGroupPtr->deactivate();
-		}
-		if (SetpointGroup1Ptr->active()) {
-			SetpointGroup1Ptr->deactivate();
-		}
-		if (SetpointGroup2Ptr->active()) {
-			SetpointGroup2Ptr->deactivate();
-		}
-
-		if (!StatusBarErrorPtr->visible()) {
-			StatusBarErrorPtr->show();
-		}
-		if (StatusBarNormalPtr->visible()) {
-			StatusBarNormalPtr->hide();
-		}
-
-		return;
-	}
-
+void refreshGuiNormal() {
 	if (!PowerContactorGroupPtr->active()) {
 		PowerContactorGroupPtr->activate();
 	}
@@ -804,15 +726,112 @@ void refreshWholeGui(void *Data) {
 	PowerContactorGroupPtr->redraw();
 	SetpointGroup1Ptr->redraw();
 	SetpointGroup2Ptr->redraw();
+	StatusBarNormalPtr->redraw();
+}
 
+void refreshGuiOnCriticalError() {
+	if (PowerContactorGroupPtr->visible()) {
+		PowerContactorGroupPtr->hide();
+	}
+	if (SetpointGroup1Ptr->visible()) {
+		SetpointGroup1Ptr->hide();
+	}
+	if (SetpointGroup2Ptr->visible()) {
+		SetpointGroup2Ptr->hide();
+	}
+	if (StatusBarErrorPtr->visible()) {
+		StatusBarErrorPtr->hide();
+	}
+	if (StatusBarNormalPtr->visible()) {
+		StatusBarNormalPtr->hide();
+	}
+	if (!FailureMessagePtr->visible()) {
+		FailureMessagePtr->show();
+	}
+
+	usart_low_level_error CurrentUsartError =
+		atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire);
+
+	std::string ErrorMessage = "Błąd krytyczny\n";
+	if (static_cast<size_t>(CurrentUsartError) < USART_FAILURE_TEXTS_COUNT) {
+		ErrorMessage += UsartFailureTextsPtr[static_cast<size_t>(CurrentUsartError)];
+	}
+	else {
+		ErrorMessage += "Nieznany błąd USART";
+	}
+	FailureMessagePtr->label(ErrorMessage.c_str());
+	FailureMessagePtr->redraw();
+}
+
+void refreshGuiOnCommunicationError() {
+	if (PowerContactorGroupPtr->active()) {
+		PowerContactorGroupPtr->deactivate();
+	}
+	if (SetpointGroup1Ptr->active()) {
+		SetpointGroup1Ptr->deactivate();
+	}
+	if (SetpointGroup2Ptr->active()) {
+		SetpointGroup2Ptr->deactivate();
+	}
+
+	if (!StatusBarErrorPtr->visible()) {
+		StatusBarErrorPtr->show();
+	}
+	if (StatusBarNormalPtr->visible()) {
+		StatusBarNormalPtr->hide();
+	}
+}
+
+void refreshGui(void *Data) {
+	(void)Data; // intentionally unused
+
+	assert(FailureMessagePtr != nullptr);
+	assert(PowerContactorGroupPtr != nullptr);
+	assert(SetpointGroup2Ptr != nullptr);
+	assert(SetpointGroup1Ptr != nullptr);
+	assert(ServiceInformationPtr != nullptr);
+
+	uint8_t CommunicationQualityPercentage =
+	    atomic_load_explicit(&ReceivedCommunicationQuality, std::memory_order_acquire);
+	uint8_t CommunicationQualityTotalPercentage =
+	    atomic_load_explicit(&ReceivedTotalCommunicationQuality, std::memory_order_acquire);
 	if (0 < StatusLevelForGui.load(std::memory_order_acquire)) {
 		static std::string ServiceInformationString;
 		ServiceInformationString = "Transmisja: " + std::to_string(CommunicationQualityPercentage) + "%\n(" +
 		                           std::to_string(CommunicationQualityTotalPercentage) + "% ogółem)";
-		PowerContactorGroupPtr->ServiceInformationPtr->label(ServiceInformationString.c_str());
-		PowerContactorGroupPtr->ServiceInformationPtr->show();
+		ServiceInformationPtr->label(ServiceInformationString.c_str());
+		ServiceInformationPtr->show();
 	}
 	else {
-		PowerContactorGroupPtr->ServiceInformationPtr->hide();
+		ServiceInformationPtr->hide();
 	}
+	ServiceInformationPtr->redraw();
+
+	// Critical errors check
+	if (atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire) != usart_low_level_error::NoError) {
+		refreshGuiOnCriticalError();
+		return;
+	}
+
+	// Reset the failure message visibility if no critical errors are present
+
+	if (FailureMessagePtr->visible()) {
+		FailureMessagePtr->hide();
+	}
+	if (!PowerContactorGroupPtr->visible()) {
+		PowerContactorGroupPtr->show();
+	}
+	if (!SetpointGroup1Ptr->visible()) {
+		SetpointGroup1Ptr->show();
+	}
+	if (!SetpointGroup2Ptr->visible()) {
+		SetpointGroup2Ptr->show();
+	}
+
+	// Communication error check
+	if (CommunicationQualityPercentage < COMMUNICATION_QUALITY_THRESHOLD) {
+		refreshGuiOnCommunicationError();
+		return;
+	}
+	refreshGuiNormal();
 }
