@@ -39,6 +39,7 @@ enum class indicator_light_state : uint8_t { OFF = 0, DIM = 1, ON = 2, UNDEFINED
 class power_indicator : public Fl_Widget {
   private:
 	indicator_light_state State{indicator_light_state::UNDEFINED};
+	bool Active{true};
 
   protected:
 	void draw() override;
@@ -50,6 +51,8 @@ class power_indicator : public Fl_Widget {
 
 	/// Sets the color of the indicator: OFF (green), DIM (dim orange), or ON (bright red)
 	void setState(indicator_light_state NewState);
+	void activate();
+	void deactivate();
 };
 
 /// Setpoint adjustment widget group: displays setpoint value and provides adjustment buttons
@@ -90,6 +93,8 @@ class setpoint_adjustment_group : public Fl_Group {
 class power_contactor_group : public Fl_Group {
   public:
 	power_contactor_group(int X, int Y, int W, int H);
+	void activate();
+	void deactivate();
 
   private:
 	Fl_Box *SeparatorPtr;
@@ -222,6 +227,16 @@ power_contactor_group::power_contactor_group(int X, int Y, int W, int H) : Fl_Gr
 	ServiceInformationPtr->align(FL_ALIGN_LEFT | FL_ALIGN_INSIDE);
 
 	end();
+}
+
+void power_contactor_group::activate() {
+	Fl_Group::activate();
+	IndicatorPtr->activate();
+}
+
+void power_contactor_group::deactivate() {
+	Fl_Group::deactivate();
+	IndicatorPtr->deactivate();
 }
 
 void power_contactor_group::setIndicatorState(indicator_light_state NewState) {
@@ -481,34 +496,45 @@ void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *
 power_indicator::power_indicator(int X, int Y, int W, int H, const char *Label) : Fl_Widget(X, Y, W, H, Label) {}
 
 void power_indicator::draw() {
-	const Fl_Color ColorOn = fl_rgb_color(0xFF, 0x5F, 0x5B); // 0xFF, 0x3C, 0x3C
-	const Fl_Color ColorDim = fl_rgb_color(0xE3, 0xD3, 0x7A);
-	const Fl_Color ColorOff = fl_rgb_color(0x00, 0x91, 0x00); // 0x00, 0x7A, 0x00
+	const Fl_Color ColorOnActive = fl_rgb_color(0xFF, 0x5F, 0x5B);
+	const Fl_Color ColorDimActive = fl_rgb_color(0xE3, 0xD3, 0x7A);
+	const Fl_Color ColorOffActive = fl_rgb_color(0x00, 0x91, 0x00);
+	const Fl_Color ColorRimActive = fl_rgb_color(0x5C, 0x5C, 0x5C);
+
+	const Fl_Color ColorOnInactive = fl_rgb_color(0xE3, 0x99, 0x90);
+	const Fl_Color ColorDimInactive = fl_rgb_color(0xCE, 0xC5, 0xA0);
+	const Fl_Color ColorOffInactive = fl_rgb_color(0x8C, 0xB3, 0x81);
+	const Fl_Color ColorRimInactive = fl_rgb_color(0xAC, 0xAC, 0xAC);
+
 	const Fl_Color ColorUndefined = fl_rgb_color(0xD0, 0xD8, 0xD0);
-	const Fl_Color ColorRim = fl_rgb_color(0x5C, 0x5C, 0x5C);
 	const Fl_Color ColorRimUndefined = fl_rgb_color(0xCC, 0xCC, 0xCC);
 
 	int Diameter = (w() < h()) ? w() : h();
 	int PosX = x() + (w() - Diameter) / 2;
 	int PosY = y() + (h() - Diameter) / 2;
 
-	fl_color(State == indicator_light_state::UNDEFINED ? ColorRimUndefined : ColorRim);
+	if (State == indicator_light_state::UNDEFINED) {
+		fl_color(ColorRimUndefined);
+	}
+	else {
+		fl_color(Active ? ColorRimActive : ColorRimInactive);
+	}
 	fl_pie(PosX, PosY, Diameter, Diameter, 0.0, 360.0);
 
 	int Rim = (Diameter >= 12) ? 4 : 1;
 	int Inner = Diameter - 2 * Rim;
 	if (Inner > 0) {
 		if (indicator_light_state::ON == State) {
-			fl_color(ColorOn);
+			fl_color(Active ? ColorOnActive : ColorOnInactive);
 		}
 		else if (indicator_light_state::DIM == State) {
-			fl_color(ColorDim);
+			fl_color(Active ? ColorDimActive : ColorDimInactive);
 		}
 		else if (indicator_light_state::UNDEFINED == State) {
 			fl_color(ColorUndefined);
 		}
 		else {
-			fl_color(ColorOff);
+			fl_color(Active ? ColorOffActive : ColorOffInactive);
 		}
 
 		fl_pie(PosX + Rim, PosY + Rim, Inner, Inner, 0.0, 360.0);
@@ -517,6 +543,16 @@ void power_indicator::draw() {
 
 void power_indicator::setState(indicator_light_state NewState) {
 	State = NewState;
+	redraw();
+}
+
+void power_indicator::activate() {
+	Active = true;
+	redraw();
+}
+
+void power_indicator::deactivate() {
+	Active = false;
 	redraw();
 }
 
