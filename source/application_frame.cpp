@@ -102,9 +102,9 @@ int main(int argc, char **argv) {
 	MenuWidgetPtr = new Fl_Menu_Bar(0, 0, MAIN_WINDOW_WIDTH, MAIN_MENU_HEIGHT);
 	MenuWidgetPtr->box(FL_FLAT_BOX);
 
-	MenuWidgetPtr->add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
 	int indexOfMenuItemStatusNormal =
-	    MenuWidgetPtr->add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
+	    MenuWidgetPtr->add("Narzędzia/Status/Normalny", 0, callbackForMenuItemStatus, (void *)nullptr, FL_MENU_RADIO);
+	MenuWidgetPtr->add("Narzędzia/Status/Serwisowy", 0, callbackForMenuItemStatus, (void *)1, FL_MENU_RADIO);
 	MenuWidgetPtr->add("Pomoc/Instrukcja użytkowania", 0, callbackForMenuItemHelp);
 
 	Fl_Menu_Item *MenuItems = const_cast<Fl_Menu_Item *>(MenuWidgetPtr->menu());
