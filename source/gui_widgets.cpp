@@ -47,7 +47,7 @@ class power_indicator : public Fl_Widget {
   public:
 	power_indicator(int X, int Y, int W, int H, const char *Label = nullptr);
 
-	indicator_light_state getState() const { return State; }
+	[[nodiscard]] indicator_light_state getState() const { return State; }
 
 	/// Sets the color of the indicator: OFF (green), DIM (dim orange), or ON (bright red)
 	void setState(indicator_light_state NewState);
@@ -88,6 +88,7 @@ class setpoint_adjustment_group : public Fl_Group {
 	/// @param SetpointNumber 1 or 2 to identify which setpoint to control
 	setpoint_adjustment_group(int X, int Y, int W, int H, uint8_t SetpointNumber);
 
+	[[nodiscard]] uint8_t getSetpointNumber() const { return SetpointNumber; }
 	void activateButtons();
 	void deactivateButtons();
 	void setTitle(const char *Title);
@@ -96,17 +97,13 @@ class setpoint_adjustment_group : public Fl_Group {
 	uint8_t SetpointNumber;
 	Fl_Box *SeparatorPtr;
 	Fl_Box *ValueDisplayPtr;
+	Fl_Box *UnitLabel;
 	Fl_Box *TitlePtr;
 	Fl_Button *Button_Plus1Ptr;
 	Fl_Button *Button_Plus01Ptr;
 	Fl_Button *Button_Minus01Ptr;
 	Fl_Button *Button_Minus1Ptr;
 
-	static void buttonPlusOneCallback(Fl_Widget *Widget, void *Data);
-	static void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data);
-	static void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data);
-	static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
-	static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
 	void updateDisplay();
 
 	friend void refreshGui(void *Data);
@@ -136,10 +133,6 @@ class status_bar_group_normal : public Fl_Group {
 	friend void refreshGui(void *Data);
 	friend void refreshGuiNormal();
 };
-
-//=================================================================================================
-// Definitions of types
-//=================================================================================================
 
 //=================================================================================================
 // Local constants
@@ -190,6 +183,14 @@ static Fl_Box *ServiceInformationPtr;
 
 static void powerButtonCallback(Fl_Widget *Widget, void *Data);
 void refreshGuiNormal();
+void refreshGuiOnCriticalError();
+void refreshGuiOnCommunicationError();
+static void trimToLimits(int16_t &Value);
+static void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth);
+static void buttonPlusOneCallback(Fl_Widget *Widget, void *Data);
+static void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data);
+static void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data);
+static void buttonMinusOneCallback(Fl_Widget *Widget, void *Data);
 
 //=================================================================================================
 // Function definitions
@@ -328,7 +329,7 @@ setpoint_adjustment_group::setpoint_adjustment_group(int X, int Y, int W, int H,
 	ValueDisplayPtr->align(FL_ALIGN_CENTER | FL_ALIGN_INSIDE);
 
 	// Label "A" (Amperes) next to the value
-	Fl_Box *UnitLabel =
+	UnitLabel =
 	    new Fl_Box(X + 40 + ValueDisplayWidth + 5, Y + (H - 20) / 2 + TitleSpace - 20, AmpereLabelWidth, 20, "A");
 	UnitLabel->labelfont(FL_COURIER);
 	UnitLabel->labelsize(26);
@@ -398,70 +399,59 @@ void setpoint_adjustment_group::updateDisplay() {
 
 	double DisplayValue = static_cast<double>(CurrentValue) / 100.0;
 	snprintf(Buffer, sizeof(Buffer), "%.2f", DisplayValue);
-	ValueDisplayPtr->label(strdup(Buffer));
+	ValueDisplayPtr->copy_label(Buffer);
 	ValueDisplayPtr->redraw();
+}
+
+static void trimToLimits(int16_t &Value) {
+	if (Value > ABSOLUTE_MAXIMUM_SETTING) {
+		Value = ABSOLUTE_MAXIMUM_SETTING;
+	}
+	if (Value < ABSOLUTE_MINIMUM_SETTING) {
+		Value = ABSOLUTE_MINIMUM_SETTING;
+	}
 }
 
 /// @brief Exports a new setpoint value for the specified setpoint index, taking into account the growth value and
 /// handling both multiclick and single click scenarios.
 /// @param SetpointIndex The index of the setpoint to be adjusted (1 or 2)
 /// @param Growth The amount by which to adjust the setpoint (positive or negative)
-void setpoint_adjustment_group::exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth) {
+void exportNewSetpoint(uint8_t SetpointIndex, int16_t Growth) {
 	int16_t NewValue;
 	int16_t NewSetpointValue;
 	if (SetpointIndex == 1) {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + Growth;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + Growth;
+		NewValue = (int16_t)(atomic_load_explicit(&ReceivedSetpoint1, std::memory_order_acquire) + Growth);
+		NewSetpointValue = (int16_t)(atomic_load_explicit(&ValueToBeSentSetpoint1, std::memory_order_acquire) + Growth);
 		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint1, std::memory_order_acquire);
 		if (IsBeingAdjusted) {
 			// multiclick case
-			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
+			trimToLimits(NewSetpointValue);
 			atomic_store_explicit(&ValueToBeSentSetpoint1, NewSetpointValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
 		}
 		else {
 			// the case of a single click or a slow click
-			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
+			trimToLimits(NewValue);
 			atomic_store_explicit(&ValueToBeSentSetpoint1, NewValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint1, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint1, false, std::memory_order_release);
 		}
 	}
 	else {
-		NewValue = atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + Growth;
-		NewSetpointValue = atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + Growth;
+		NewValue = (int16_t)(atomic_load_explicit(&ReceivedSetpoint2, std::memory_order_acquire) + Growth);
+		NewSetpointValue = (int16_t)(atomic_load_explicit(&ValueToBeSentSetpoint2, std::memory_order_acquire) + Growth);
 		bool IsBeingAdjusted = !atomic_load_explicit(&IsFreshReceivedSetpoint2, std::memory_order_acquire);
 		if (IsBeingAdjusted) {
 			// multiclick case
-			if (NewSetpointValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			if (NewSetpointValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewSetpointValue = ABSOLUTE_MINIMUM_SETTING;
-			}
+			trimToLimits(NewSetpointValue);
 			atomic_store_explicit(&ValueToBeSentSetpoint2, NewSetpointValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
 		}
 		else {
 			// the case of a single click or a slow click
-			if (NewValue > ABSOLUTE_MAXIMUM_SETTING) {
-				NewValue = ABSOLUTE_MAXIMUM_SETTING;
-			}
-			if (NewValue < ABSOLUTE_MINIMUM_SETTING) {
-				NewValue = ABSOLUTE_MINIMUM_SETTING;
-			}
+			trimToLimits(NewValue);
 			atomic_store_explicit(&ValueToBeSentSetpoint2, NewValue, std::memory_order_release);
 			atomic_store_explicit(&CommandToBeSentSetpoint2, true, std::memory_order_release);
 			atomic_store_explicit(&IsFreshReceivedSetpoint2, false, std::memory_order_release);
@@ -469,32 +459,32 @@ void setpoint_adjustment_group::exportNewSetpoint(uint8_t SetpointIndex, int16_t
 	}
 }
 
-void setpoint_adjustment_group::buttonPlusOneCallback(Fl_Widget *Widget, void *Data) {
+void buttonPlusOneCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	exportNewSetpoint(pThis->SetpointNumber, 100);
+	exportNewSetpoint(pThis->getSetpointNumber(), 100);
 }
 
-void setpoint_adjustment_group::buttonPlusTenthCallback(Fl_Widget *Widget, void *Data) {
+void buttonPlusTenthCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	exportNewSetpoint(pThis->SetpointNumber, 10);
+	exportNewSetpoint(pThis->getSetpointNumber(), 10);
 }
 
-void setpoint_adjustment_group::buttonMinusTenthCallback(Fl_Widget *Widget, void *Data) {
+void buttonMinusTenthCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	exportNewSetpoint(pThis->SetpointNumber, -10);
+	exportNewSetpoint(pThis->getSetpointNumber(), -10);
 }
 
-void setpoint_adjustment_group::buttonMinusOneCallback(Fl_Widget *Widget, void *Data) {
+void buttonMinusOneCallback(Fl_Widget *Widget, void *Data) {
 	(void)Widget;
 	setpoint_adjustment_group *pThis = static_cast<setpoint_adjustment_group *>(Data);
 
-	exportNewSetpoint(pThis->SetpointNumber, -100);
+	exportNewSetpoint(pThis->getSetpointNumber(), -100);
 }
 
 //.................................................................................................
@@ -658,20 +648,20 @@ void showFailureMessageWidget(initialization_failure_codes FailureCodeForGui) {
 //=================================================================================================
 
 void refreshGuiNormal() {
-	if (!PowerContactorGroupPtr->active()) {
+	if (0 == PowerContactorGroupPtr->active()) {
 		PowerContactorGroupPtr->activate();
 	}
-	if (!SetpointGroup1Ptr->active()) {
+	if (0 == SetpointGroup1Ptr->active()) {
 		SetpointGroup1Ptr->activate();
 	}
-	if (!SetpointGroup2Ptr->active()) {
+	if (0 == SetpointGroup2Ptr->active()) {
 		SetpointGroup2Ptr->activate();
 	}
 
-	if (StatusBarErrorPtr->visible()) {
+	if (0 != StatusBarErrorPtr->visible()) {
 		StatusBarErrorPtr->hide();
 	}
-	if (!StatusBarNormalPtr->visible()) {
+	if (0 == StatusBarNormalPtr->visible()) {
 		StatusBarNormalPtr->show();
 	}
 
@@ -730,27 +720,26 @@ void refreshGuiNormal() {
 }
 
 void refreshGuiOnCriticalError() {
-	if (PowerContactorGroupPtr->visible()) {
+	if (0 != PowerContactorGroupPtr->visible()) {
 		PowerContactorGroupPtr->hide();
 	}
-	if (SetpointGroup1Ptr->visible()) {
+	if (0 != SetpointGroup1Ptr->visible()) {
 		SetpointGroup1Ptr->hide();
 	}
-	if (SetpointGroup2Ptr->visible()) {
+	if (0 != SetpointGroup2Ptr->visible()) {
 		SetpointGroup2Ptr->hide();
 	}
-	if (StatusBarErrorPtr->visible()) {
+	if (0 != StatusBarErrorPtr->visible()) {
 		StatusBarErrorPtr->hide();
 	}
-	if (StatusBarNormalPtr->visible()) {
+	if (0 != StatusBarNormalPtr->visible()) {
 		StatusBarNormalPtr->hide();
 	}
-	if (!FailureMessagePtr->visible()) {
+	if (0 == FailureMessagePtr->visible()) {
 		FailureMessagePtr->show();
 	}
 
-	usart_low_level_error CurrentUsartError =
-		atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire);
+	usart_low_level_error CurrentUsartError = atomic_load_explicit(&ReceivedUsartErrorCode, std::memory_order_acquire);
 
 	std::string ErrorMessage = "Błąd krytyczny\n";
 	if (static_cast<size_t>(CurrentUsartError) < USART_FAILURE_TEXTS_COUNT) {
@@ -764,20 +753,20 @@ void refreshGuiOnCriticalError() {
 }
 
 void refreshGuiOnCommunicationError() {
-	if (PowerContactorGroupPtr->active()) {
+	if (0 != PowerContactorGroupPtr->active()) {
 		PowerContactorGroupPtr->deactivate();
 	}
-	if (SetpointGroup1Ptr->active()) {
+	if (0 != SetpointGroup1Ptr->active()) {
 		SetpointGroup1Ptr->deactivate();
 	}
-	if (SetpointGroup2Ptr->active()) {
+	if (0 != SetpointGroup2Ptr->active()) {
 		SetpointGroup2Ptr->deactivate();
 	}
 
-	if (!StatusBarErrorPtr->visible()) {
+	if (0 == StatusBarErrorPtr->visible()) {
 		StatusBarErrorPtr->show();
 	}
-	if (StatusBarNormalPtr->visible()) {
+	if (0 != StatusBarNormalPtr->visible()) {
 		StatusBarNormalPtr->hide();
 	}
 }
@@ -815,16 +804,16 @@ void refreshGui(void *Data) {
 
 	// Reset the failure message visibility if no critical errors are present
 
-	if (FailureMessagePtr->visible()) {
+	if (0 != FailureMessagePtr->visible()) {
 		FailureMessagePtr->hide();
 	}
-	if (!PowerContactorGroupPtr->visible()) {
+	if (0 == PowerContactorGroupPtr->visible()) {
 		PowerContactorGroupPtr->show();
 	}
-	if (!SetpointGroup1Ptr->visible()) {
+	if (0 == SetpointGroup1Ptr->visible()) {
 		SetpointGroup1Ptr->show();
 	}
-	if (!SetpointGroup2Ptr->visible()) {
+	if (0 == SetpointGroup2Ptr->visible()) {
 		SetpointGroup2Ptr->show();
 	}
 

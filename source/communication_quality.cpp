@@ -13,16 +13,15 @@
 
 class communication_quality {
   public:
-	communication_quality();
 	void update(int8_t Weight);
 	[[nodiscard]] uint8_t getCurrentQuality() const;
 	[[nodiscard]] uint8_t getTotalQuality() const;
 
   private:
-	uint64_t ResponseFailureHistory; // Bitfield tracking the history of response failures (1 = failure, 0 = success);
-	                                 // LSB = the most recent response
-	uint32_t TotalResponseCount;
-	uint32_t TotalFailedResponseCount;
+	uint64_t ResponseFailureHistory{0}; // Bitfield tracking the history of response failures (1 = failure, 0 =
+	                                    // success); LSB = the most recent response
+	uint32_t TotalResponseCount{0};
+	uint32_t TotalFailedResponseCount{0};
 };
 
 //=================================================================================================
@@ -34,9 +33,6 @@ static communication_quality CommunicationQualityInstance;
 //=================================================================================================
 // Local class member function implementations
 //=================================================================================================
-
-communication_quality::communication_quality()
-    : ResponseFailureHistory(0), TotalResponseCount(0), TotalFailedResponseCount(0) {}
 
 void communication_quality::update(int8_t Weight) {
 	const uint64_t Ones[21] = {0,         0x1ULL,    0x3ULL,    0x7ULL,     0xFULL,     0x1FULL,    0x3FULL,

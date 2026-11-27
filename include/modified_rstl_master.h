@@ -62,12 +62,6 @@ class modified_rstl_master {
 	void placeOrderSetPC(const order_with_argument &NewOrder);
 	bool parseResponse(int16_t &ValueReturnedInResponse, uint8_t &EssentialResponseStart,
 	                   uint8_t &EssentialResponseLength) const;
-	bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length,
-	                            int16_t &ValueExtracted, uint8_t Position, uint8_t MinValue, uint8_t MaxValue) const;
-	bool parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) const;
-	bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted,
-	                        uint8_t &EssentialResponseLength) const;
-	bool parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) const;
 
   public:
 	modified_rstl_master();

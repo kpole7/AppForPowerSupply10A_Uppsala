@@ -134,7 +134,7 @@ void low_level_usart::doIdle(bool *IsSilencePtr, const char *CommandTextPtr, uin
 
 	if (nullptr != CommandTextPtr) {
 		// there is a new command to send
-		TotalCommandBytes = strlen(CommandTextPtr);
+		TotalCommandBytes = static_cast<uint16_t>(strlen(CommandTextPtr));
 		assert(TotalCommandBytes < USART_BUFFER_SIZE);
 		strncpy(SendingBuffer, CommandTextPtr, USART_BUFFER_SIZE - 1);
 		SendingBuffer[USART_BUFFER_SIZE - 1] = '\0';

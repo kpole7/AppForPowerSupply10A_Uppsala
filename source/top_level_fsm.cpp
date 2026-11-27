@@ -88,7 +88,7 @@ static void topLevelFsmPlaceOrder(single_order_code NewCommand, int16_t Argument
                                   top_level_fsm_states NextStateOnSuccess);
 static bool checkResponseAndJumpOnFailure(top_level_fsm_states NewStateOnFailure);
 static void topLevelCommonCommand(top_level_fsm_states NextStateOnFailureBeforeCommand, single_order_code NewCommand,
-                                  int16_t Argument, top_level_fsm_states NextStateOnSuccess);
+                                  int16_t Argument, top_level_fsm_states NextStateAfterCommand);
 static void inescapablePauseThenCommandAndJump(uint16_t PauseTicksMax, single_order_code NewCommand, int16_t Argument,
                                                top_level_fsm_states NextState);
 static void topLevelFsmTakeUpNewOrder();

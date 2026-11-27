@@ -2,6 +2,9 @@ cmake_minimum_required(VERSION 3.20)
 
 project(AppForPowerSupply10A_Uppsala LANGUAGES CXX)
 
+# Generate compile_commands.json for clang-tidy and LSP
+set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
+
 # The project is Linux-only
 if(NOT UNIX OR APPLE)
   message(FATAL_ERROR "This project is intended to be built on Linux (e.g., Linux Mint) only.")

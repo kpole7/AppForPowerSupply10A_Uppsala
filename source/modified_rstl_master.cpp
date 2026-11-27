@@ -66,8 +66,12 @@ static modified_rstl_master_ptr RstlMasterInstancePtr = nullptr;
 // Local function declarations
 //=================================================================================================
 
+static bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length,
+                                   int16_t &ValueExtracted, uint8_t Position, uint8_t MinValue, uint8_t MaxValue);
+static bool parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength);
+static bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength);
+static bool parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse);
 static main_power_state convertToExternalDeviceSimplifiedState(uint16_t ExternalDevicedState);
-
 static void printAllCharacters(const char *Buffer);
 
 //=================================================================================================
@@ -410,8 +414,8 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	std::cout << '\n';
 #endif
 
-	int SendingBufferLength = static_cast<int>(strlen(SendingBuffer));
-	int ReceivingBufferLength = static_cast<int>(strlen(ReceivingBuffer));
+	int SendingBufferLength = static_cast<int>(strnlen(SendingBuffer, USART_BUFFER_SIZE));
+	int ReceivingBufferLength = static_cast<int>(strnlen(ReceivingBuffer, USART_BUFFER_SIZE));
 	if (ReceivingBufferLength <= SendingBufferLength) {
 		return false;
 	}
@@ -436,7 +440,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	case single_order_code::SetPC:
 	case single_order_code::SetPower:
 	case single_order_code::SetZ: {
-		bool Success = (0 == strncmp(ReceivingBuffer, ">", 2));
+		bool Success = (0 == strcmp(ReceivingBuffer, ">"));
 		if (!Success) {
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
@@ -444,7 +448,7 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	} break;
 
 	case single_order_code::ResetErrors: {
-		bool Success = (0 == strncmp(ReceivingBuffer, "Resetting errors\r\n>", 20));
+		bool Success = (0 == strcmp(ReceivingBuffer, "Resetting errors\r\n>"));
 		if (!Success) {
 			printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 			return false;
@@ -508,9 +512,8 @@ bool modified_rstl_master::parseResponse(int16_t &ValueReturnedInResponse, uint8
 	return true;
 }
 
-bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase,
-                                                  size_t Length, int16_t &ValueExtracted, uint8_t Position,
-                                                  uint8_t MinValue, uint8_t MaxValue) const {
+static bool testAndExtractOneDigit(const char *BufferUnderTest, const char *ConstantPhrase, size_t Length,
+                                   int16_t &ValueExtracted, uint8_t Position, uint8_t MinValue, uint8_t MaxValue) {
 	if (0 != strncmp(BufferUnderTest, ConstantPhrase, Position - 1)) {
 		printf("Response syntax error in %s at line %d; [", __FILE__, __LINE__);
 		printAllCharacters(BufferUnderTest);
@@ -527,7 +530,7 @@ bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, c
 		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 		return false;
 	}
-	ValueExtracted = BufferUnderTest[Position - 1] - '0';
+	ValueExtracted = (int16_t)(BufferUnderTest[Position - 1] - (int16_t)'0');
 	if ((ValueExtracted < MinValue) || (ValueExtracted > MaxValue)) {
 		printf("Response syntax error in %s at line %d.\n", __FILE__, __LINE__);
 		return false;
@@ -535,13 +538,13 @@ bool modified_rstl_master::testAndExtractOneDigit(const char *BufferUnderTest, c
 	return true;
 }
 
-bool modified_rstl_master::parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) const {
+static bool parseInquiryVersion(const char *BufferUnderTest, uint8_t &EssentialResponseLength) {
 	// Example:
 	// Command:  [VERSION~~]
 	// Response: [VERSION~~ver. Oct  8 2026, 15:04:13~~>]
 	// BufferUnderTest: "ver. Oct  8 2026, 15:04:13\r\n>"
 	int RequiredLength = 29;
-	if ((int)strlen(BufferUnderTest) != RequiredLength) {
+	if ((int)strnlen(BufferUnderTest, USART_BUFFER_SIZE) != RequiredLength) {
 		printf("Response syntax error in %s at line %d; [", __FILE__, __LINE__);
 		printAllCharacters(BufferUnderTest);
 		printf("]\n");
@@ -585,15 +588,14 @@ bool modified_rstl_master::parseInquiryVersion(const char *BufferUnderTest, uint
 	return true;
 }
 
-bool modified_rstl_master::parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted,
-                                              uint8_t &EssentialResponseLength) const {
+static bool parseInquiryStatus(const char *BufferUnderTest, int16_t &ValueExtracted, uint8_t &EssentialResponseLength) {
 	// Example:
 	// Command:  [ST~~]
 	// Response: [ST~~sig2 ?? ?? ?? ?? i2c 0 0 uart 0 fsm 0~~>]
 	// Response: [ST~~sig2 LH LH LH LH i2c 0 0 uart 0 fsm 8~~>]
 	//                1234567890123456789012345678901234567890
 	// BufferUnderTest: "sig2 LH LH LH LH i2c 0 0 uart 0 fsm 8\r\n>"
-	int MeasuredLength = strlen(BufferUnderTest);
+	int MeasuredLength = static_cast<int>(strnlen(BufferUnderTest, USART_BUFFER_SIZE));
 	if (MeasuredLength < 40) {
 		return false;
 	}
@@ -621,16 +623,16 @@ bool modified_rstl_master::parseInquiryStatus(const char *BufferUnderTest, int16
 	return true;
 }
 
-bool modified_rstl_master::parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) const {
+static bool parseInquiryPC(const char *BufferUnderTest, int16_t &ValueReturnedInResponse) {
 	// Example:
-	// Command:  [PC~~]
+	// Command:  [?PC~~]
 	// Response: [?PC~~-10.00~~>]
 	// Response: [?PC~~-3.00~~>]
 	// Response: [?PC~~0.00~~>]
 	// Response: [?PC~~2.00~~>]
 	// Response: [?PC~~10.00~~>]
 	//                 123456789
-	int MeasuredLength = strlen(BufferUnderTest);
+	int MeasuredLength = static_cast<int>(strnlen(BufferUnderTest, USART_BUFFER_SIZE));
 	if (MeasuredLength < 7) {
 		return false;
 	}
@@ -656,16 +658,20 @@ bool modified_rstl_master::parseInquiryPC(const char *BufferUnderTest, int16_t &
 	if (EndPtr != DotPtr) {
 		return false;
 	}
+	if ((Value1 < ABSOLUTE_MINIMUM_SETTING / 100) || (Value1 > ABSOLUTE_MAXIMUM_SETTING / 100)) {
+		return false;
+	}
+
 	int16_t Value2 = static_cast<int16_t>(strtol(DotPtr + 1, &EndPtr, 10));
 	if (EndPtr != EndingPtr) {
 		return false;
 	}
 
 	if (BufferUnderTest[0] != '-') {
-		ValueReturnedInResponse = Value1 * 100 + Value2;
+		ValueReturnedInResponse = (int16_t)(Value1 * (int16_t)100 + Value2);
 	}
 	else {
-		ValueReturnedInResponse = Value1 * 100 - Value2;
+		ValueReturnedInResponse = (int16_t)(Value1 * (int16_t)100 - Value2);
 	}
 	if ((ValueReturnedInResponse < ABSOLUTE_MINIMUM_SETTING) || (ValueReturnedInResponse > ABSOLUTE_MAXIMUM_SETTING)) {
 		return false;
